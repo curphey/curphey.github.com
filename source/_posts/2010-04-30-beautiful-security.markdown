@@ -2,7 +2,7 @@
 layout: post
 title: Beautiful Security 
 status: publish
-comments: true
+comments: false
 type: post
 published: true
 meta:

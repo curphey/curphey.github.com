@@ -4,7 +4,6 @@ title: Notes from Richard Branson - Screw it Just Do It !
 status: publish
 type: post
 published: true
-meta:
 categories: Life
 ---
 I have always admired Richard Branson. The way he lives his life, the values he brings to business, the adventures he goes on, the wrongs he rights and the way he does things differently simply inspires me. Like most people I am prone to stagnate, feel comfortable, get in a rut and need a jolt to realize my potential. <br />

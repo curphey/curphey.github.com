@@ -1,0 +1,32 @@
+---
+layout: post
+title: "Quick Recovery When Your Mac Won't Boot - Disk Full"
+date: 2012-10-24 10:46
+comments: true
+categories: [OSX]
+---
+I am a lazy sys-admin. When I was a Windows user I used to have to re-build my desktop so often than cruft got cleared out naturally but OSX is so stable that I have to remember to manually spring  clean the 'Downloads' folder (cough, cough clear out the bit-torrents). This morning I rebooted for the first time in ages and my MacBook Pro failed to start. I booted into recovery mode and the disk utility showed me I only had 10Mb spare. Yikes! As a Apple 'fan boi' my lizard brain tried to convince me that this was a good time to go pick up one of those nice new Retina MacBook Pros <a href="http://www.cultofmac.com/197414/everything-apple-announced-at-todays-ipad-mini-event-mega-roundup/">released yesterday</a> but there is a quick way to get up and running fast. Google wasn't helpful in  returning a single result so here it is in 5 simple steps: <!--more -->
+
+1. Check the Issue
+2. Boot in Single User Mode
+3. Mount Drive in RW
+4. Delete Cruft
+5. Sit Back and Feel Smug
+
+<strong>Check the issue</strong> </br>
+In order to check that the issue is indeed "full disk" boot into recovery mode and run the Disk Utility. To do this hold down Command + R on the power up sequence. Select the disk utility. In the bottom panel of the application first check the disk space. Mine was 18 Mb this morning (164Gb after cleaning out my cruft). Next run Verify Disk and note any issues. 
+
+<strong>Boot into Single User Mode</strong></br>
+To do this hold down Command + S on the power up sequence. You will get the standard graphical login screen. Don't get confused and think it's not working like I first did expecting a terminal login. Login with your root account. After a successful login you will be presented with a terminal prompt. At this point you can navigate around the file system but the drive is only mounted in a read-only mode and so you can not delete files. 
+
+<strong>Mount Drive in RW</strong></br>
+To do this you will need to run "sudo /sbin/mount -uw /" from the command line. At this point you will now have a shell with the ability to delete files. 
+
+<strong>Delete the Cruft</strong></br>
+rm -f <filename>. Navigate to your "Downlaods" folder and rm -f *.mp4, rm -f *.avi and rm -f *.dmg are probably your new best friends..
+
+<strong>Sit Back and Feel Smug</strong></br>
+After cleaning out your cruft, type exit, grab a coffee and you will be back on your way to morning smugness!
+
+
+
