@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Software Security | Mark Curphey]]></title>
   <link href="http://curphey.github.com/blog/categories/software-security/atom.xml" rel="self"/>
   <link href="http://curphey.github.com/"/>
-  <updated>2013-02-04T14:42:10-08:00</updated>
+  <updated>2013-02-05T02:03:13-06:00</updated>
   <id>http://curphey.github.com/</id>
   <author>
     <name><![CDATA[Mark Curphey]]></name>
@@ -16,7 +16,7 @@
   <entry>
     <title type="html"><![CDATA[You Get One Shot at Disruption]]></title>
     <link href="http://curphey.github.com/blog/2012/10/22/you-get-one-shot-at-disruption/"/>
-    <updated>2012-10-22T10:05:00-07:00</updated>
+    <updated>2012-10-22T10:05:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/10/22/you-get-one-shot-at-disruption</id>
     <content type="html"><![CDATA[<p>In a video last week on the <a href="http://www.goodlifeproject.com/seth-godin/">Good Life Project</a>, <a href="http://sethgodin.typepad.com">Seth Godin</a> spoke about why he liked projects. Projects have definite lifetimes, you can jump in, experiment, learn and then right jump out again when it suits you. I also like projects for the same reasons as Seth but during the interview he said something else profoundly interesting that has had me gripped all weekend. When talking about technology disruption he said (and I paraphrase) '37 Signals can no longer be disruptive because they now have a large following and lots of customers. With that mass of followers and customers comes baggage.'</p>
 
@@ -40,7 +40,7 @@
   <entry>
     <title type="html"><![CDATA[Investing in developing software security talent]]></title>
     <link href="http://curphey.github.com/blog/2012/10/19/investing-in-software-security-talent/"/>
-    <updated>2012-10-19T09:18:00-07:00</updated>
+    <updated>2012-10-19T09:18:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/10/19/investing-in-software-security-talent</id>
     <content type="html"><![CDATA[<p>Every single person I speak to in the software security industry agrees on one thing. There is a talent war. Put another way the demand for good software security people far outstrips the supply,  or yet another way there aren't enough people to secure the software that needs to be secured for the digital economy to continue to growing at the current rate. I could go on but you get the point. This is of course not a security industry issue but a general software engineering issue, amplified in niche areas and the dial turned right up to eleven for 'red hot' niches like security. Most companies approach the issue by making their company a more attractive place to work. Bigger salaries, better perks and a better work environment. If you judged the state of the economy by the amount of recruiter calls you would think we are in boom times. <!--more--></p>
 
@@ -94,7 +94,7 @@ I know I would sign-up for something like this as a sponsor and as a mentor in a
   <entry>
     <title type="html"><![CDATA[The new blog, OWASP &amp other notes]]></title>
     <link href="http://curphey.github.com/blog/2012/10/17/new-blog-owasp-and-other-notes/"/>
-    <updated>2012-10-17T21:20:00-07:00</updated>
+    <updated>2012-10-17T21:20:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/10/17/new-blog-owasp-and-other-notes</id>
     <content type="html"><![CDATA[<p>I love Twitter but sometimes 140 characters just isn't enough. Let's be honest 140 characters is rarely enough for anything except your Lizard brain but the frictionless way of both sharing and reading snippets of information is so convenient that it is usually good enough for me. I do have a mental bank of notes that require co-herent sentences and so to light up the electrons of my new blog here goes:<!--more--></p>
 

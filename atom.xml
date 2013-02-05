@@ -4,7 +4,7 @@
   <title><![CDATA[Mark Curphey]]></title>
   <link href="http://curphey.github.com/atom.xml" rel="self"/>
   <link href="http://curphey.github.com/"/>
-  <updated>2013-02-04T14:42:10-08:00</updated>
+  <updated>2013-02-05T02:03:13-06:00</updated>
   <id>http://curphey.github.com/</id>
   <author>
     <name><![CDATA[Mark Curphey]]></name>
@@ -14,9 +14,30 @@
 
   
   <entry>
+    <title type="html"><![CDATA[Priorities and Changes for 2013]]></title>
+    <link href="http://curphey.github.com/blog/2013/02/05/priorities-and-changes-for-2013/"/>
+    <updated>2013-02-05T01:04:00-06:00</updated>
+    <id>http://curphey.github.com/blog/2013/02/05/priorities-and-changes-for-2013</id>
+    <content type="html"><![CDATA[<p>I am embarrassed that I never got around to writing this post sooner. Over Christmas I took a whole week off from work and from being online. I needed it and enjoyed it immensely. I came to the conclusion that consulting full-time, writing a book, trying to start a community and launch a start-up all at the same time is not possible (for me at least) and somethings needed to give. I also realized that I needed to change some working habits so when I got back in the new year I made some decisions.</p>
+
+<p>Seconauts is on hold for the foreseeable future. While I still believe there is room and need for a different type of software security community that appeals primarily to developers, I just don&#8217;t have the time to do it. I spent some personal money last year on a developer to work on the site and had a great group of folks lined up to help grow the community. We even had some impressive sponsor commitments but a community is more than a few people and more than money. That&#8217;s a marketing effort and there are enough of those out there. If it&#8217;s worth doing its worth doing right. It&#8217;s not dead but it it on ice. I will open source the code (Rails) if anyone wants to hack on it (we were close to doing that anyway). We needed a Wiki and a few other things added to make it a good base so there is  list to work down. If you are interested just let me know. On that note with the recent shift of Google+ to create community software I am now not convinced that building a community site as opposed to using a community site is a great investment although that is another topic. I always wanted us to eat our own dog food.</p>
+
+<p>My priority for 2013 are very much focused on <a href="http://www.sourceclear.com">SourceClear</a>. We have the first few developers (my co-founders) ramping up, a wonderful academic data scientist / mathematician and a very strong advisory board who believe in what we are doing. We are building a product (nothing like it exists on the market today and we are solving a very compelling problem) but we will be leading with services and training (some of which we plan to sell through an indirect partner model). We will launch a public website sometime in the next month or so, probably after RSA) and have some neat free tools / code brewing! It&#8217;s time for some innovation in the software security space and we are going to bring it!</p>
+
+<p>I am woefully behind on the Practical Software Security Book although making steady progress. I am going to stop predicting publication dates at this point as I can&#8217;t seem to finish the content that will allow my co-authors to start their work in earnest but it is coming along and will happen. What I have completed I am really happy with and have been using on some consulting projects working with developers with great success.</p>
+
+<p>I also enjoyed my time away from Twitter and realized that while I value social media, I don&#8217;t have the mental capacity or fortitude anymore to filter the raw noise from the raw signal. Zite may not be perfect but it does a &#8216;good enough&#8217; job when fed my Twitter feed of only showing me stories that I seem to always find relevant.I have pruned my Twitter lists (culled them really) and am almost exclusively using Zite for news. Some may say &#8216;that just shows you don&#8217;t get Twitter&#8217; and they maybe right but it works for me. I have found over time that I like stories from established press sources and a few selected individuals although totally appreciate people who have found the exact opposite. I know there are lot of people with a lot of important and valuable things to say but there are only 24 hours in each day and I am not able to process it all.</p>
+
+<p>On that note I have actually managed to find 26 hours for at least five days a week (working days) and its a neat personal hack that you might want to consider. In November I moved into a <a href="http://www.agnesunderground.com">new office </a> which was a perfect time to change my daily pattern. I read that many successful people are early risers and struggling to find time to get everything done I started getting into the office at 7am. I always try and leave by 7pm even if I often continue working at home. From 7am to 9am I try and write and while consulting work often gets in the way I have effectively created 10 hours a week of extra working time.</p>
+
+<p>OK back to playing with SalesForce, cash-flow spreadsheets and stock plans!</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[App Sec Programs Are Like Multi-Axis Gyroscopes]]></title>
     <link href="http://curphey.github.com/blog/2012/11/29/appsec-programs-are-like-multi-axis-gyroscopes/"/>
-    <updated>2012-11-29T11:45:00-08:00</updated>
+    <updated>2012-11-29T11:45:00-06:00</updated>
     <id>http://curphey.github.com/blog/2012/11/29/appsec-programs-are-like-multi-axis-gyroscopes</id>
     <content type="html"><![CDATA[<p>The Practical Software Security book has five main sections:</p>
 
@@ -54,7 +75,7 @@ Operations &amp; Monitoring</p>
   <entry>
     <title type="html"><![CDATA[Outsourcing Doesn't Mean The Security problem Goes Away]]></title>
     <link href="http://curphey.github.com/blog/2012/11/27/outsourcing-doesnt-mean-the-security-problem-goes-away/"/>
-    <updated>2012-11-27T11:43:00-08:00</updated>
+    <updated>2012-11-27T11:43:00-06:00</updated>
     <id>http://curphey.github.com/blog/2012/11/27/outsourcing-doesnt-mean-the-security-problem-goes-away</id>
     <content type="html"><![CDATA[<p>Over the last decade or so I have dealt with a lot of outsourcing situations. I have run large outsourced teams (over 120 off-shore developers in India and China at one point) and been responsible for reviewing the security of the work products of many others both as an employee and as a consultant. I am yet to experience a single firm or team that produced reasonable quality ‘secure’ code without significant active ongoing involvement from the purchaser. Despite legal pre-cautions (and best intentions) the outsourcing model is an economic model and it is good advice to never forget that. This is not a cultural or regional issue (although they all exist as well). Some of the best developers I have worked with were born in India, Russia and China. Outsourcing relies on large pools of skilled workers at a significantly lower cost per head than where the purchaser is located. Large pools of skilled workers are hard to find and keep in any location. The magic satellite office of transient workers is a pipe-dream.
 Software development is also a social process where people must communicate effectively. A reference on the Wikipedia article for body language says:</p>
@@ -80,7 +101,7 @@ Software development is also a social process where people must communicate effe
   <entry>
     <title type="html"><![CDATA[Scottish Verdicts and Security]]></title>
     <link href="http://curphey.github.com/blog/2012/11/27/scottish-verdicts-and-security/"/>
-    <updated>2012-11-27T11:41:00-08:00</updated>
+    <updated>2012-11-27T11:41:00-06:00</updated>
     <id>http://curphey.github.com/blog/2012/11/27/scottish-verdicts-and-security</id>
     <content type="html"><![CDATA[<p>Every few months I watch Greg Wilsons excellent speech from CuSec,  What We Actually Know About Software Development, and Why We Believe It’s True.</p>
 
@@ -102,7 +123,7 @@ The ‘Not Proven’ verdict is an acquittal used when the judge or jury does no
   <entry>
     <title type="html"><![CDATA[Great Freelancing]]></title>
     <link href="http://curphey.github.com/blog/2012/11/14/great-freelancing-tools/"/>
-    <updated>2012-11-14T11:35:00-08:00</updated>
+    <updated>2012-11-14T11:35:00-06:00</updated>
     <id>http://curphey.github.com/blog/2012/11/14/great-freelancing-tools</id>
     <content type="html"><![CDATA[<p>I think I have a pretty sweet setup that lets me spend the maximum amount of time working on projects and the minimal amount of time dealing with over-head. Time is limited so I like using it wisely. These are the business tools I am currently using.</p>
 
@@ -126,7 +147,7 @@ ShoeBoxed - Colleagues now how much I hate doing expenses. Almost everyone I kno
   <entry>
     <title type="html"><![CDATA[SourceClear - My New Company]]></title>
     <link href="http://curphey.github.com/blog/2012/11/13/sourceclear-my-new-company/"/>
-    <updated>2012-11-13T11:32:00-08:00</updated>
+    <updated>2012-11-13T11:32:00-06:00</updated>
     <id>http://curphey.github.com/blog/2012/11/13/sourceclear-my-new-company</id>
     <content type="html"><![CDATA[<p>Last Friday was my last day at Foundstone and my last day as an employee. Yesterday was my first day as the founder of a startup called SourceClear. Screw it, I just did it!</p>
 
@@ -147,7 +168,7 @@ ShoeBoxed - Colleagues now how much I hate doing expenses. Almost everyone I kno
   <entry>
     <title type="html"><![CDATA[Ready to Pick a Fight]]></title>
     <link href="http://curphey.github.com/blog/2012/11/08/ready-to-pick-a-fight/"/>
-    <updated>2012-11-08T11:27:00-08:00</updated>
+    <updated>2012-11-08T11:27:00-06:00</updated>
     <id>http://curphey.github.com/blog/2012/11/08/ready-to-pick-a-fight</id>
     <content type="html"><![CDATA[<p>I think I am ready to pick a fight. It’s not a new fight (at least not for me) and it’s not a fight with a person or a company but it’s a fight with the status-quo.</p>
 
@@ -173,7 +194,7 @@ ShoeBoxed - Colleagues now how much I hate doing expenses. Almost everyone I kno
   <entry>
     <title type="html"><![CDATA[Follow Up on Investing in Software Security Talent]]></title>
     <link href="http://curphey.github.com/blog/2012/11/08/follow-up-on-investing-in-software-security-talent/"/>
-    <updated>2012-11-08T11:20:00-08:00</updated>
+    <updated>2012-11-08T11:20:00-06:00</updated>
     <id>http://curphey.github.com/blog/2012/11/08/follow-up-on-investing-in-software-security-talent</id>
     <content type="html"><![CDATA[<p>A few weeks ago I posted Investing in Developing Software Security Talent. It got a good reaction and stimulated some good discussion. I have now spoken at length to a quite a few people including folks that head up recruitment at BIG Internet companies and a number of security services and product firms. There was an over-whelming sense of “very interesting”, “no brainer”, “you go boy”, “someone needs to do it” and just an overall warm positive response. Thanks to those who spent time on the phone or in person listening to me and sharing their thoughts. I even had verbal offers of over $40K to support such a program from people I spoke to so it clearly wasn’t people just being nice. There were of course the usual array of negative people; one guy even wrote a long blog post criticizing the idea clearly without having read it, but it’s the Internet after all. No time for negativity, I am on a happiness drive!</p>
 
@@ -186,7 +207,7 @@ ShoeBoxed - Colleagues now how much I hate doing expenses. Almost everyone I kno
   <entry>
     <title type="html"><![CDATA[My Happiness Project]]></title>
     <link href="http://curphey.github.com/blog/2012/11/02/my-happiness-project/"/>
-    <updated>2012-11-02T11:18:00-07:00</updated>
+    <updated>2012-11-02T11:18:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/11/02/my-happiness-project</id>
     <content type="html"><![CDATA[<p>I have been an arm-chair phyciatrist for many years reading books like Blink, Drive, The Dip and notably The Art of Happiness (a book that had a profound impact on me). I just read How to Be Happy, Dammit: A Cynic’s Guide to Spiritual Happiness. I say read but it was more a case of flicking through the slides as the book is an ordered collection of small pieces of advice set against relevant images.</p>
 
@@ -205,7 +226,7 @@ ShoeBoxed - Colleagues now how much I hate doing expenses. Almost everyone I kno
   <entry>
     <title type="html"><![CDATA[Choose Your Clients Wisely]]></title>
     <link href="http://curphey.github.com/blog/2012/11/02/choose-your-clients-wisely/"/>
-    <updated>2012-11-02T11:13:00-07:00</updated>
+    <updated>2012-11-02T11:13:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/11/02/choose-your-clients-wisely</id>
     <content type="html"><![CDATA[<p>Anyone that has been consulting for a while has experienced the ‘tough client’ (aka ‘the bad client’). The company that doesn’t really want your advice but really wants another pair of hands to do what they don’t want to do themselves. The company that wants you to do the tasks that are beneath them or boring or meaningless. The company that doesn’t really want you to do the job they hired you to do but really wants you to deliver a set of information pushing forward thier pre-determined agenda or results. The person that treats you like their pet. The company that pays you for your brain but treats you like a manual laborer. I just left Chicago O’Hare and couldn&#8217;t help but over-hear a conversation between two colleagues from a big consulting firm (company name embossed on laptop bags). Relaxing with their guard down at the end of the week one was bitching about the project they were on. From what I could tell they were BI developers. One turned to the other and said, “I hate customers like XXXX and I honestly think YYYY [person] is a jerk dude.” The second quickly replied “I disagree, I prefer clients like this, if you lose them it really doesn’t matter.” The idiocy of this conversation is surely not lost on many.</p>
 
@@ -224,7 +245,7 @@ ShoeBoxed - Colleagues now how much I hate doing expenses. Almost everyone I kno
   <entry>
     <title type="html"><![CDATA[Smart Devices Require Smart Content]]></title>
     <link href="http://curphey.github.com/blog/2012/10/27/smart-devices-require-smart-content/"/>
-    <updated>2012-10-27T17:41:00-07:00</updated>
+    <updated>2012-10-27T17:41:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/10/27/smart-devices-require-smart-content</id>
     <content type="html"><![CDATA[<p>If we are to move to a world where we can access our digital content anywhere (and in the process digital content providers make money by displaying their digital content anywhere) then content providers need to accept that the traditional TV, computer and mobile devices have merged. A TV is now nothing more or nothing less than a computer display.</p>
 
@@ -243,7 +264,7 @@ ShoeBoxed - Colleagues now how much I hate doing expenses. Almost everyone I kno
   <entry>
     <title type="html"><![CDATA[Who Pays That Person?]]></title>
     <link href="http://curphey.github.com/blog/2012/10/25/security-evangelists/"/>
-    <updated>2012-10-25T23:13:00-07:00</updated>
+    <updated>2012-10-25T23:13:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/10/25/security-evangelists</id>
     <content type="html"><![CDATA[<p>The security industry seems to be brimming with security evangelists. These are not to be confused with a <a href="http://en.wikipedia.org/wiki/Televangelist">Televangelist</a>: or should they? Every time I cross-paths with an evangelist of any kind I ask myself a simple question: who pays them?</p>
 
@@ -255,7 +276,7 @@ ShoeBoxed - Colleagues now how much I hate doing expenses. Almost everyone I kno
   <entry>
     <title type="html"><![CDATA[Quick Recovery When Your Mac Won't Boot - Disk Full]]></title>
     <link href="http://curphey.github.com/blog/2012/10/24/mac-wont-boot-full-disk/"/>
-    <updated>2012-10-24T10:46:00-07:00</updated>
+    <updated>2012-10-24T10:46:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/10/24/mac-wont-boot-full-disk</id>
     <content type="html"><![CDATA[<p>I am a lazy sys-admin. When I was a Windows user I used to have to re-build my desktop so often than cruft got cleared out naturally but OSX is so stable that I have to remember to manually spring  clean the &#8216;Downloads&#8217; folder (cough, cough clear out the bit-torrents). This morning I rebooted for the first time in ages and my MacBook Pro failed to start. I booted into recovery mode and the disk utility showed me I only had 10Mb spare. Yikes! As a Apple &#8216;fan boi&#8217; my lizard brain tried to convince me that this was a good time to go pick up one of those nice new Retina MacBook Pros <a href="http://www.cultofmac.com/197414/everything-apple-announced-at-todays-ipad-mini-event-mega-roundup/">released yesterday</a> but there is a quick way to get up and running fast. Google wasn&#8217;t helpful in  returning a single result so here it is in 5 simple steps: <!--more --></p>
 
@@ -288,7 +309,7 @@ After cleaning out your cruft, type exit, grab a coffee and you will be back on 
   <entry>
     <title type="html"><![CDATA[You Get One Shot at Disruption]]></title>
     <link href="http://curphey.github.com/blog/2012/10/22/you-get-one-shot-at-disruption/"/>
-    <updated>2012-10-22T10:05:00-07:00</updated>
+    <updated>2012-10-22T10:05:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/10/22/you-get-one-shot-at-disruption</id>
     <content type="html"><![CDATA[<p>In a video last week on the <a href="http://www.goodlifeproject.com/seth-godin/">Good Life Project</a>, <a href="http://sethgodin.typepad.com">Seth Godin</a> spoke about why he liked projects. Projects have definite lifetimes, you can jump in, experiment, learn and then right jump out again when it suits you. I also like projects for the same reasons as Seth but during the interview he said something else profoundly interesting that has had me gripped all weekend. When talking about technology disruption he said (and I paraphrase) &#8216;37 Signals can no longer be disruptive because they now have a large following and lots of customers. With that mass of followers and customers comes baggage.&#8217;</p>
 
@@ -312,7 +333,7 @@ After cleaning out your cruft, type exit, grab a coffee and you will be back on 
   <entry>
     <title type="html"><![CDATA[Investing in developing software security talent]]></title>
     <link href="http://curphey.github.com/blog/2012/10/19/investing-in-software-security-talent/"/>
-    <updated>2012-10-19T09:18:00-07:00</updated>
+    <updated>2012-10-19T09:18:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/10/19/investing-in-software-security-talent</id>
     <content type="html"><![CDATA[<p>Every single person I speak to in the software security industry agrees on one thing. There is a talent war. Put another way the demand for good software security people far outstrips the supply,  or yet another way there aren&#8217;t enough people to secure the software that needs to be secured for the digital economy to continue to growing at the current rate. I could go on but you get the point. This is of course not a security industry issue but a general software engineering issue, amplified in niche areas and the dial turned right up to eleven for &#8216;red hot&#8217; niches like security. Most companies approach the issue by making their company a more attractive place to work. Bigger salaries, better perks and a better work environment. If you judged the state of the economy by the amount of recruiter calls you would think we are in boom times. <!--more--></p>
 
@@ -366,7 +387,7 @@ I know I would sign-up for something like this as a sponsor and as a mentor in a
   <entry>
     <title type="html"><![CDATA[The new blog, OWASP &amp other notes]]></title>
     <link href="http://curphey.github.com/blog/2012/10/17/new-blog-owasp-and-other-notes/"/>
-    <updated>2012-10-17T21:20:00-07:00</updated>
+    <updated>2012-10-17T21:20:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/10/17/new-blog-owasp-and-other-notes</id>
     <content type="html"><![CDATA[<p>I love Twitter but sometimes 140 characters just isn&#8217;t enough. Let&#8217;s be honest 140 characters is rarely enough for anything except your Lizard brain but the frictionless way of both sharing and reading snippets of information is so convenient that it is usually good enough for me. I do have a mental bank of notes that require co-herent sentences and so to light up the electrons of my new blog here goes:<!--more--></p>
 
@@ -397,7 +418,7 @@ I know I would sign-up for something like this as a sponsor and as a mentor in a
   <entry>
     <title type="html"><![CDATA[Notes from Richard Branson - Screw it Just Do It !]]></title>
     <link href="http://curphey.github.com/blog/2012/09/10/notes-from-richard-branson-screw-it-just-do-it/"/>
-    <updated>2012-09-10T00:00:00-07:00</updated>
+    <updated>2012-09-10T00:00:00-05:00</updated>
     <id>http://curphey.github.com/blog/2012/09/10/notes-from-richard-branson-screw-it-just-do-it</id>
     <content type="html"><![CDATA[<p>I have always admired Richard Branson. The way he lives his life, the values he brings to business, the adventures he goes on, the wrongs he rights and the way he does things differently simply inspires me. Like most people I am prone to stagnate, feel comfortable, get in a rut and need a jolt to realize my potential. <br /></p>
 
@@ -506,7 +527,7 @@ I know I would sign-up for something like this as a sponsor and as a mentor in a
   <entry>
     <title type="html"><![CDATA[Beautiful Security]]></title>
     <link href="http://curphey.github.com/blog/2010/04/30/beautiful-security/"/>
-    <updated>2010-04-30T00:00:00-07:00</updated>
+    <updated>2010-04-30T00:00:00-05:00</updated>
     <id>http://curphey.github.com/blog/2010/04/30/beautiful-security</id>
     <content type="html"><![CDATA[<p>A few years ago I contributed a stand-alone chapter to Beautiful Security, published by O&#8217;Reilly and avaiable for purchase on Amazon <a href="http://www.amazon.com/Beautiful-Security-Leading-Experts-Explain/dp/0596527489">here.</a></p>
 
