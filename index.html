@@ -1,80 +1,541 @@
 <!DOCTYPE html>
-<!--[if lt IE 8 ]><html class="no-js ie ie7" lang="en"> <![endif]-->
-<!--[if IE 8 ]><html class="no-js ie ie8" lang="en"> <![endif]-->
-<!--[if (gte IE 8)|!(IE)]><!--><html class="no-js" lang="en"> <!--<![endif]-->
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curphey System Terminal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-   <!--- Basic Page Needs
-   ================================================== -->
-   <meta charset="utf-8">
-	<title>Mark Curphey</title>
-	<meta name="description" content="">
-	<meta name="author" content="">
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #0a0a0a;
+            color: #00ff41;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
 
-   <!-- Mobile Specific Metas
-   ================================================== -->
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        /* CRT monitor effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 100;
+        }
 
-	<!-- CSS
-    ================================================== -->
-   <link rel="stylesheet" href="css/default.css">
-	<link rel="stylesheet" href="css/layout.css">
-   <link rel="stylesheet" href="css/media-queries.css">
-   <link rel="stylesheet" href="css/magnific-popup.css">
+        /* Screen flicker */
+        @keyframes flicker {
+            0% { opacity: 0.98; }
+            5% { opacity: 0.95; }
+            10% { opacity: 0.98; }
+            15% { opacity: 0.94; }
+            20% { opacity: 0.98; }
+            100% { opacity: 0.98; }
+        }
 
-   <!-- Script
-   ================================================== -->
-	<script src="js/modernizr.js"></script>
+        .terminal-container {
+            width: 100%;
+            height: 100vh;
+            padding: 40px;
+            background: radial-gradient(ellipse at center, #0a1a0f 0%, #000000 100%);
+            animation: flicker 10s infinite;
+            position: relative;
+        }
 
-   <!-- Favicons
-	================================================== -->
-	<link rel="shortcut icon" href="favicon.ico" >
+        /* Terminal window */
+        .terminal {
+            max-width: 1200px;
+            height: calc(100vh - 80px);
+            margin: 0 auto;
+            background: rgba(0, 20, 10, 0.9);
+            border: 2px solid #00ff41;
+            border-radius: 8px;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.5),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
 
+        /* Terminal header */
+        .terminal-header {
+            background: linear-gradient(180deg, #00ff41 0%, #00cc33 100%);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #00ff41;
+        }
+
+        .terminal-title {
+            color: #000;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 0, 0, 0.3);
+        }
+
+        .close { background: #ff5f56; }
+        .minimize { background: #ffbd2e; }
+        .maximize { background: #27c93f; }
+
+        /* Terminal body */
+        .terminal-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Typing animation */
+        .terminal-line {
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .prompt {
+            color: #00ff41;
+            margin-right: 10px;
+        }
+
+        .command {
+            color: #ffffff;
+        }
+
+        .output {
+            color: #00ff41;
+            margin-left: 20px;
+        }
+
+        .error {
+            color: #ff4444;
+        }
+
+        .warning {
+            color: #ffaa00;
+        }
+
+        .success {
+            color: #00ffaa;
+        }
+
+        .system {
+            color: #00aaff;
+        }
+
+        /* ASCII art title */
+        .ascii-art {
+            color: #00ff41;
+            font-size: 10px;
+            line-height: 1.2;
+            white-space: pre;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+            margin: 20px 0;
+        }
+
+        /* Blinking cursor */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: #00ff41;
+            animation: blink 1s infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Navigation menu */
+        .menu-container {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #00ff41;
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        .menu-title {
+            color: #00ff41;
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .menu-item {
+            padding: 15px;
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid #00ff41;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #00ff41;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .menu-item:hover::before {
+            left: 100%;
+        }
+
+        .menu-item:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .menu-item-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .menu-item-description {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        /* Matrix rain background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .matrix-column {
+            position: absolute;
+            top: -100vh;
+            font-size: 14px;
+            line-height: 20px;
+            animation: matrix-fall linear infinite;
+            color: #00ff41;
+        }
+
+        @keyframes matrix-fall {
+            to {
+                transform: translateY(200vh);
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+
+        /* Glitch effect */
+        @keyframes glitch {
+            0%, 100% {
+                text-shadow: 
+                    0 0 10px rgba(0, 255, 65, 0.8),
+                    0 0 20px rgba(0, 255, 65, 0.6);
+            }
+            25% {
+                text-shadow: 
+                    -2px 0 #ff00ff,
+                    2px 0 #00ffff,
+                    0 0 10px rgba(0, 255, 65, 0.8);
+            }
+            50% {
+                text-shadow: 
+                    2px 0 #ff00ff,
+                    -2px 0 #00ffff,
+                    0 0 20px rgba(0, 255, 65, 0.6);
+            }
+        }
+
+        .glitch {
+            animation: glitch 3s infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .terminal-container {
+                padding: 10px;
+            }
+            
+            .ascii-art {
+                font-size: 6px;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-
 <body>
+    <!-- Matrix rain background -->
+    <div class="matrix-bg" id="matrixBg"></div>
 
-   <!-- Header
-   ================================================== -->
-   <header id="home">
+    <div class="terminal-container">
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-title">CURPHEY_SYSTEM_TERMINAL_v2.0.1</div>
+                <div class="terminal-buttons">
+                    <div class="terminal-button close"></div>
+                    <div class="terminal-button minimize"></div>
+                    <div class="terminal-button maximize"></div>
+                </div>
+            </div>
+            
+            <div class="terminal-body" id="terminalBody">
+                <!-- Terminal content will be dynamically generated here -->
+            </div>
+        </div>
+    </div>
 
+    <script>
+        // Terminal content
+        const terminalBody = document.getElementById('terminalBody');
+        let lineIndex = 0;
 
+        // ASCII art for title
+        const asciiArt = `
+ ██████╗██╗   ██╗██████╗ ██████╗ ██╗  ██╗███████╗██╗   ██╗
+██╔════╝██║   ██║██╔══██╗██╔══██╗██║  ██║██╔════╝╚██╗ ██╔╝
+██║     ██║   ██║██████╔╝██████╔╝███████║█████╗   ╚████╔╝ 
+██║     ██║   ██║██╔══██╗██╔═══╝ ██╔══██║██╔══╝    ╚██╔╝  
+╚██████╗╚██████╔╝██║  ██║██║     ██║  ██║███████╗   ██║   
+ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝   ╚═╝   `;
 
-   </header> <!-- Header End -->
+        // Terminal lines to display
+        const terminalLines = [
+            { type: 'command', text: '$ system --initialize', delay: 0 },
+            { type: 'output', text: 'Initializing CURPHEY family system...', delay: 500 },
+            { type: 'output loading', text: 'Loading core modules', delay: 700 },
+            { type: 'success', text: '✓ Core modules loaded successfully', delay: 2000 },
+            { type: 'output', text: '', delay: 100 },
+            { type: 'command', text: '$ family --status', delay: 300 },
+            { type: 'system', text: 'FAMILY_STATUS: ONLINE', delay: 500 },
+            { type: 'system', text: 'MEMBERS_DETECTED: 6', delay: 700 },
+            { type: 'system', text: 'SCANNING...', delay: 900 },
+            { type: 'output', text: '', delay: 100 },
+            { type: 'success', text: '► CARA    [STATUS: ACTIVE] [ROLE: HEAD_GARDENER]', delay: 1200 },
+            { type: 'success', text: '► MARK    [STATUS: ACTIVE] [ROLE: EVIL_HACKER_BIKE_RACER]', delay: 1400 },
+            { type: 'success', text: '► JACK    [STATUS: ACTIVE] [ROLE: MECHANIC_GAMER]', delay: 1600 },
+            { type: 'success', text: '► GABE    [STATUS: ACTIVE] [ROLE: BUSINESS_MAN]', delay: 1800 },
+            { type: 'success', text: '► HANA    [STATUS: ACTIVE] [ROLE: BARRISTER_IN_WAITING]', delay: 2000 },
+            { type: 'success', text: '► MARG    [STATUS: ACTIVE] [ROLE: LOYAL_CHIHUAHUA]', delay: 2200 },
+            { type: 'output', text: '', delay: 100 },
+            { type: 'command', text: '$ display --welcome', delay: 500 },
+            { type: 'ascii', text: asciiArt, delay: 700 },
+            { type: 'output', text: '', delay: 100 },
+            { type: 'system glitch', text: 'WELCOME TO THE CURPHEY FAMILY DIGITAL HUB', delay: 1000 },
+            { type: 'output', text: '═══════════════════════════════════════════', delay: 100 },
+            { type: 'output', text: '', delay: 100 }
+        ];
 
+        // Type out text with animation
+        function typeText(element, text, callback) {
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    if (callback) callback();
+                }
+            }, 20);
+        }
 
+        // Add line to terminal
+        function addLine(lineData) {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.style.animationDelay = '0s';
 
-   <!-- footer
-   ================================================== -->
-   <footer>
+            if (lineData.type === 'command') {
+                const prompt = document.createElement('span');
+                prompt.className = 'prompt';
+                prompt.textContent = 'curphey@family:~';
+                line.appendChild(prompt);
 
-      <div class="row">
+                const command = document.createElement('span');
+                command.className = 'command';
+                line.appendChild(command);
+                terminalBody.appendChild(line);
+                
+                typeText(command, lineData.text);
+            } else if (lineData.type === 'ascii') {
+                const pre = document.createElement('pre');
+                pre.className = 'ascii-art glitch';
+                pre.textContent = lineData.text;
+                line.appendChild(pre);
+                terminalBody.appendChild(line);
+            } else {
+                let className = lineData.type.replace(' loading', '');
+                line.className = `terminal-line ${className}`;
+                
+                if (lineData.type.includes('loading')) {
+                    line.innerHTML = `<span class="output">${lineData.text}</span><span class="loading"></span>`;
+                } else if (lineData.type.includes('glitch')) {
+                    line.innerHTML = `<span class="${className}">${lineData.text}</span>`;
+                } else {
+                    line.textContent = lineData.text;
+                }
+                terminalBody.appendChild(line);
+            }
 
+            // Auto-scroll to bottom
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
 
+        // Display terminal lines sequentially
+        function displayLines() {
+            if (lineIndex < terminalLines.length) {
+                setTimeout(() => {
+                    addLine(terminalLines[lineIndex]);
+                    lineIndex++;
+                    displayLines();
+                }, terminalLines[lineIndex].delay);
+            } else {
+                // Add blinking cursor at the end
+                setTimeout(() => {
+                    const cursorLine = document.createElement('div');
+                    cursorLine.className = 'terminal-line';
+                    cursorLine.innerHTML = '<span class="prompt">curphey@family:~</span><span class="command">$</span><span class="cursor"></span>';
+                    terminalBody.appendChild(cursorLine);
+                    terminalBody.scrollTop = terminalBody.scrollHeight;
+                }, 500);
+            }
+        }
 
-            <ul class="copyright">
-               <li></li>
-            </ul>
+        // Create matrix rain effect
+        function createMatrixRain() {
+            const matrixBg = document.getElementById('matrixBg');
+            const columns = Math.floor(window.innerWidth / 20);
+            
+            for (let i = 0; i < columns; i++) {
+                const column = document.createElement('div');
+                column.className = 'matrix-column';
+                column.style.left = i * 20 + 'px';
+                column.style.animationDuration = Math.random() * 15 + 10 + 's';
+                column.style.animationDelay = Math.random() * 10 + 's';
+                
+                // Random characters
+                let text = '';
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*()_+-=[]{}|;:,.<>?';
+                for (let j = 0; j < 100; j++) {
+                    text += chars.charAt(Math.floor(Math.random() * chars.length)) + '\n';
+                }
+                column.textContent = text;
+                matrixBg.appendChild(column);
+            }
+        }
 
-         </div>
+        // Handle menu clicks
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.menu-item')) {
+                e.preventDefault();
+                const item = e.target.closest('.menu-item');
+                const href = item.getAttribute('href');
+                
+                // Add click feedback
+                const clickLine = document.createElement('div');
+                clickLine.className = 'terminal-line command';
+                clickLine.innerHTML = `<span class="prompt">curphey@family:~</span><span class="command">$ navigate ${href}</span>`;
+                terminalBody.appendChild(clickLine);
+                
+                setTimeout(() => {
+                    const responseLine = document.createElement('div');
+                    responseLine.className = 'terminal-line success';
+                    responseLine.textContent = `Accessing ${href.substring(1).toUpperCase()} module...`;
+                    terminalBody.appendChild(responseLine);
+                    terminalBody.scrollTop = terminalBody.scrollHeight;
+                }, 300);
+            }
+        });
 
+        // Initialize
+        window.addEventListener('load', () => {
+            createMatrixRain();
+            setTimeout(displayLines, 500);
+        });
 
-      </div>
-
-   </footer> <!-- Footer End-->
-
-   <!-- Java Script
-   ================================================== -->
-   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-   <script>window.jQuery || document.write('<script src="js/jquery-1.10.2.min.js"><\/script>')</script>
-   <script type="text/javascript" src="js/jquery-migrate-1.2.1.min.js"></script>
-
-   <script src="js/jquery.flexslider.js"></script>
-   <script src="js/waypoints.js"></script>
-   <script src="js/jquery.fittext.js"></script>
-   <script src="js/magnific-popup.js"></script>
-   <script src="js/init.js"></script>
-
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const matrixBg = document.getElementById('matrixBg');
+            matrixBg.innerHTML = '';
+            createMatrixRain();
+        });
+    </script>
 </body>
-
 </html>
