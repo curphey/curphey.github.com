@@ -1,541 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Curphey System Terminal</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Curphey Collection</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; }
+  .wall { position: relative; z-index: 1; padding: 30px 16px; max-width: 1050px; width: 100%; }
+  .gallery-title { text-align: center; margin-bottom: 36px; }
+  .gallery-title h1 { font-family: 'Playfair Display', serif; font-size: 13px; letter-spacing: 8px; color: #d4af37; text-transform: uppercase; text-shadow: 0 0 30px rgba(212,175,55,0.12); }
+  .gallery-title .sub { font-size: 8px; letter-spacing: 4px; color: #2a2a2a; margin-top: 5px; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 960px; margin: 0 auto; }
 
-        body {
-            font-family: 'JetBrains Mono', monospace;
-            background: #0a0a0a;
-            color: #00ff41;
-            min-height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
+  .frame {
+    position: relative;
+    background: linear-gradient(145deg, #1a1816, #0c0a08, #161412, #0e0c0a);
+    border: 5px solid #1e1c1a;
+    box-shadow: 12px 16px 40px rgba(0,0,0,0.85), -4px -3px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.02);
+    padding: 18px;
+    transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), z-index 0s, box-shadow 0.4s ease;
+    cursor: pointer;
+  }
+  .frame::before { content:''; position:absolute; top:0;left:0;right:0;bottom:0; background: repeating-linear-gradient(92deg, rgba(255,255,255,0.005) 0px, transparent 1px, transparent 8px, rgba(255,255,255,0.003) 9px); pointer-events:none; }
+  .frame::after { content:''; position:absolute; top:4px;left:4px;right:4px;bottom:4px; border:1px solid rgba(255,255,255,0.02); pointer-events:none; }
+  .frame.expanded { transform: scale(2); z-index: 100; box-shadow: 0 0 80px rgba(0,0,0,0.9), 0 0 0 2000px rgba(0,0,0,0.5); }
+  .frame[data-pos="0"] { transform-origin: top left; }
+  .frame[data-pos="1"] { transform-origin: top center; }
+  .frame[data-pos="2"] { transform-origin: top right; }
+  .frame[data-pos="3"] { transform-origin: bottom left; }
+  .frame[data-pos="4"] { transform-origin: bottom center; }
+  .frame[data-pos="5"] { transform-origin: bottom right; }
 
-        /* CRT monitor effect */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0, 0, 0, 0.15),
-                rgba(0, 0, 0, 0.15) 1px,
-                transparent 1px,
-                transparent 2px
-            );
-            pointer-events: none;
-            z-index: 100;
-        }
+  .matte { padding:16px 14px 14px; background: linear-gradient(160deg, #0d0c0b, #080706, #0b0a09); box-shadow: inset 0 2px 12px rgba(0,0,0,0.9); position:relative; overflow:hidden; }
+  .glass { position:absolute; top:0;left:0;right:0;bottom:0; background: linear-gradient(130deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.01) 30%, rgba(255,255,255,0.035) 38%, rgba(255,255,255,0.05) 42%, rgba(255,255,255,0.035) 46%, rgba(255,255,255,0.01) 54%, rgba(255,255,255,0) 70%); pointer-events:none; z-index:20; }
 
-        /* Screen flicker */
-        @keyframes flicker {
-            0% { opacity: 0.98; }
-            5% { opacity: 0.95; }
-            10% { opacity: 0.98; }
-            15% { opacity: 0.94; }
-            20% { opacity: 0.98; }
-            100% { opacity: 0.98; }
-        }
+  .disc-area { width:160px; height:160px; margin:5px auto 14px; position:relative; }
+  .disc { width:100%; height:100%; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center; }
+  .disc-metal { position:absolute; width:100%; height:100%; border-radius:50%; background: conic-gradient(from 30deg at 50% 50%, #c49a2c, #dbb840, #c9a530, #b8922a, #d4af37, #ecc94e, #d4af37, #ba952c, #c49a2c, #dbb840, #ccaa34, #b8922a, #d4af37, #ecc94e, #c49a2c); box-shadow: 0 3px 18px rgba(0,0,0,0.5), inset 0 0 30px rgba(0,0,0,0.15); }
+  .disc-grooves { position:absolute; width:100%; height:100%; border-radius:50%; background: radial-gradient(circle at 50% 50%, transparent 16%, rgba(0,0,0,0.04) 16.5%, transparent 17%, rgba(0,0,0,0.03) 19.5%, transparent 20%, rgba(0,0,0,0.04) 22.5%, transparent 23%, rgba(0,0,0,0.03) 25.5%, transparent 26%, rgba(0,0,0,0.04) 28.5%, transparent 29%, rgba(0,0,0,0.03) 31.5%, transparent 32%, rgba(0,0,0,0.04) 34.5%, transparent 35%, rgba(0,0,0,0.03) 37.5%, transparent 38%, rgba(0,0,0,0.04) 40.5%, transparent 41%, rgba(0,0,0,0.03) 43.5%, transparent 44%, rgba(0,0,0,0.04) 46.5%, transparent 47%, rgba(0,0,0,0.03) 49.5%, transparent 50%, rgba(0,0,0,0.04) 52.5%, transparent 53%, rgba(0,0,0,0.03) 55.5%, transparent 56%, rgba(0,0,0,0.04) 58.5%, transparent 59%, rgba(0,0,0,0.03) 61.5%, transparent 62%, rgba(0,0,0,0.04) 64.5%, transparent 65%, rgba(0,0,0,0.03) 67.5%, transparent 68%, rgba(0,0,0,0.04) 70.5%, transparent 71%, rgba(0,0,0,0.03) 73.5%, transparent 74%, rgba(0,0,0,0.04) 76.5%, transparent 77%, rgba(0,0,0,0.03) 79.5%, transparent 80%, rgba(0,0,0,0.04) 82.5%, transparent 83%, rgba(0,0,0,0.03) 85.5%, transparent 86%, rgba(0,0,0,0.04) 88.5%, transparent 89%, rgba(0,0,0,0.03) 91.5%, transparent 92%, rgba(0,0,0,0.04) 94.5%, transparent 95%); }
+  .disc-streak { position:absolute; width:100%; height:100%; border-radius:50%; background: linear-gradient(135deg, transparent 20%, rgba(255,255,240,0.08) 35%, rgba(255,255,240,0.18) 42%, rgba(255,255,255,0.22) 46%, rgba(255,255,240,0.18) 50%, rgba(255,255,240,0.08) 57%, transparent 72%); pointer-events:none; }
+  .disc-glow { position:absolute; top:3%; left:5%; width:40%; height:35%; background: radial-gradient(ellipse, rgba(255,255,240,0.06), transparent); border-radius:50%; pointer-events:none; }
+  .disc-rim { position:absolute; width:100%; height:100%; border-radius:50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 0 0 2px rgba(255,255,255,0.03), 0 0 0 1px rgba(0,0,0,0.3); }
+  .disc-label { position:absolute; top:50%; left:50%; width:32%; height:32%; transform:translate(-50%,-50%); border-radius:50%; background: linear-gradient(145deg, #151515, #1e1e1e); border:2px solid #2a2a2a; display:flex; align-items:center; justify-content:center; flex-direction:column; box-shadow: inset 0 2px 5px rgba(0,0,0,0.6); z-index:2; }
+  .disc-label-name { font-size:5px; letter-spacing:1.5px; color:#d4af37; font-weight:bold; text-transform:uppercase; }
+  .disc-label-hole { width:3px; height:3px; border-radius:50%; background:#0a0a0a; border:1px solid #252525; margin-top:2px; }
 
-        .terminal-container {
-            width: 100%;
-            height: 100vh;
-            padding: 40px;
-            background: radial-gradient(ellipse at center, #0a1a0f 0%, #000000 100%);
-            animation: flicker 10s infinite;
-            position: relative;
-        }
+  .bottom-row { display:flex; gap:10px; margin-top:14px; align-items:stretch; }
+  .headshot { width:70px; height:70px; flex-shrink:0; border:1px solid #222; box-shadow:0 2px 6px rgba(0,0,0,0.4); overflow:hidden; }
+  .headshot img { width:100%; height:100%; object-fit:cover; }
+  .plaque { flex:1; background: linear-gradient(145deg, #d4af37, #c9a530, #dbb840, #c9a530, #d4af37); padding:8px 10px; text-align:center; box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15); border:1px solid rgba(0,0,0,0.08); display:flex; flex-direction:column; justify-content:center; }
+  .plaque-title { font-size:5px; letter-spacing:2.5px; color:rgba(0,0,0,0.35); text-transform:uppercase; margin-bottom:2px; }
+  .plaque-name { font-family:'Playfair Display',serif; font-size:10px; color:rgba(0,0,0,0.65); font-weight:bold; margin:1px 0; }
+  .plaque-detail { font-size:4.5px; letter-spacing:0.8px; color:rgba(0,0,0,0.3); line-height:1.6; margin-top:2px; }
 
-        /* Terminal window */
-        .terminal {
-            max-width: 1200px;
-            height: calc(100vh - 80px);
-            margin: 0 auto;
-            background: rgba(0, 20, 10, 0.9);
-            border: 2px solid #00ff41;
-            border-radius: 8px;
-            box-shadow: 
-                0 0 20px rgba(0, 255, 65, 0.5),
-                inset 0 0 20px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
+  /* MARK GLITCH */
+  .mark-glitch-canvas { position:absolute; top:0;left:0; width:100%;height:100%; z-index:11; pointer-events:none; opacity:0; transition:opacity 0.05s; }
+  .mask-channel { position:absolute; top:0;left:0;right:0;bottom:0; display:flex; align-items:center; justify-content:center; z-index:12; opacity:0; pointer-events:none; mix-blend-mode:screen; }
+  .mask-img { width:90px; height:auto; }
+  .mask-r .mask-img { filter: grayscale(1) sepia(1) saturate(5) hue-rotate(-10deg) brightness(0.7); }
+  .mask-g .mask-img { filter: grayscale(1) sepia(1) saturate(5) hue-rotate(80deg) brightness(0.7); }
+  .mask-b .mask-img { filter: grayscale(1) sepia(1) saturate(5) hue-rotate(190deg) brightness(0.7); }
+  .mark-tear { position:absolute; left:0;right:0; height:0; z-index:13; pointer-events:none; opacity:0; }
 
-        /* Terminal header */
-        .terminal-header {
-            background: linear-gradient(180deg, #00ff41 0%, #00cc33 100%);
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 2px solid #00ff41;
-        }
+  /* CARA FLOWERS — bigger daisies with petals, very slow growth */
+  .flower-bed { position:absolute; bottom:0; left:5%; right:5%; height:40px; pointer-events:none; z-index:8; }
+  .daisy-stem { position:absolute; bottom:0; width:1.5px; height:0; background:linear-gradient(to top,#2a5225,#4a8a3f); transform-origin:bottom center; }
+  .daisy-stem:nth-child(1){left:12%;--h:28px;animation:dg 12s ease-out 1s forwards, ds 5s ease-in-out 14s infinite;}
+  .daisy-stem:nth-child(2){left:35%;--h:35px;animation:dg 14s ease-out 2s forwards, ds 4.5s ease-in-out 16s infinite;}
+  .daisy-stem:nth-child(3){left:60%;--h:22px;animation:dg 11s ease-out 3s forwards, ds 5.5s ease-in-out 15s infinite;}
+  .daisy-stem:nth-child(4){left:82%;--h:30px;animation:dg 13s ease-out 1.5s forwards, ds 4s ease-in-out 15s infinite;}
+  @keyframes dg{0%{height:0;}100%{height:var(--h);}}
+  @keyframes ds{0%,100%{transform:rotate(0deg);}50%{transform:rotate(1deg);}}
 
-        .terminal-title {
-            color: #000;
-            font-weight: bold;
-            font-size: 14px;
-            letter-spacing: 2px;
-        }
+  /* Daisy leaf */
+  .daisy-leaf { position:absolute; width:6px; height:9px; background:#3d7a35; border-radius:0 70% 0 70%; opacity:0; }
+  .daisy-leaf.right { left:2px; }
+  .daisy-leaf.left { right:2px; border-radius:70% 0 70% 0; }
+  .daisy-stem:nth-child(1) .daisy-leaf { top:55%; animation: dl 1s ease-out 8s forwards; }
+  .daisy-stem:nth-child(2) .daisy-leaf:nth-of-type(1) { top:40%; animation: dl 1s ease-out 10s forwards; }
+  .daisy-stem:nth-child(2) .daisy-leaf:nth-of-type(2) { top:65%; animation: dl 1s ease-out 11s forwards; }
+  .daisy-stem:nth-child(3) .daisy-leaf { top:50%; animation: dl 1s ease-out 9s forwards; }
+  .daisy-stem:nth-child(4) .daisy-leaf:nth-of-type(1) { top:35%; animation: dl 1s ease-out 9.5s forwards; }
+  .daisy-stem:nth-child(4) .daisy-leaf:nth-of-type(2) { top:60%; animation: dl 1s ease-out 10.5s forwards; }
+  @keyframes dl{0%{opacity:0;transform:scale(0);}100%{opacity:0.8;transform:scale(1);}}
 
-        .terminal-buttons {
-            display: flex;
-            gap: 8px;
-        }
+  /* Daisy flower head with petals */
+  .daisy-head { position:absolute; top:-8px; left:50%; transform:translateX(-50%) scale(0); width:16px; height:16px; opacity:0; }
+  .daisy-stem:nth-child(1) .daisy-head { animation: db 2s ease-out 10s forwards; }
+  .daisy-stem:nth-child(2) .daisy-head { animation: db 2s ease-out 13s forwards; }
+  .daisy-stem:nth-child(3) .daisy-head { animation: db 2s ease-out 11s forwards; }
+  .daisy-stem:nth-child(4) .daisy-head { animation: db 2s ease-out 12s forwards; }
+  @keyframes db{0%{opacity:0;transform:translateX(-50%) scale(0);}60%{opacity:1;transform:translateX(-50%) scale(1.1);}100%{opacity:1;transform:translateX(-50%) scale(1);}}
 
-        .terminal-button {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            border: 1px solid rgba(0, 0, 0, 0.3);
-        }
+  .petal { position:absolute; width:4px; height:7px; background:#f0ead6; border-radius:50%; top:50%; left:50%; transform-origin:center bottom; }
+  .petal:nth-child(1){transform:translate(-50%,-100%) rotate(0deg);}
+  .petal:nth-child(2){transform:translate(-50%,-100%) rotate(45deg);}
+  .petal:nth-child(3){transform:translate(-50%,-100%) rotate(90deg);}
+  .petal:nth-child(4){transform:translate(-50%,-100%) rotate(135deg);}
+  .petal:nth-child(5){transform:translate(-50%,-100%) rotate(180deg);}
+  .petal:nth-child(6){transform:translate(-50%,-100%) rotate(225deg);}
+  .petal:nth-child(7){transform:translate(-50%,-100%) rotate(270deg);}
+  .petal:nth-child(8){transform:translate(-50%,-100%) rotate(315deg);}
+  .daisy-center { position:absolute; width:5px; height:5px; border-radius:50%; background:radial-gradient(circle,#f5d060,#daa520); top:50%; left:50%; transform:translate(-50%,-50%); z-index:1; }
 
-        .close { background: #ff5f56; }
-        .minimize { background: #ffbd2e; }
-        .maximize { background: #27c93f; }
+  /* Pink daisy variant */
+  .daisy-pink .petal { background:#e8a0b0; }
+  /* Blue daisy variant */
+  .daisy-blue .petal { background:#a8c0d8; }
 
-        /* Terminal body */
-        .terminal-body {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            position: relative;
-        }
+  /* JACK CRACKS */
+  .crack-svg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:11;pointer-events:none;}
+  .crack-line{stroke:rgba(255,255,255,0.3);stroke-width:0.8;fill:none;filter:drop-shadow(0 0 2px rgba(255,255,255,0.2));}
+  .crack-line-thin{stroke:rgba(255,255,255,0.18);stroke-width:0.5;fill:none;}
+  .crack-impact{position:absolute;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.15),rgba(255,255,255,0.05) 40%,transparent);z-index:12;pointer-events:none;}
 
-        /* Typing animation */
-        .terminal-line {
-            margin-bottom: 15px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            opacity: 0;
-            animation: fadeIn 0.5s forwards;
-        }
+  /* GABE TICKER */
+  .ticker-container{overflow:hidden;width:100%;height:9px;margin-top:3px;border-top:1px solid rgba(0,0,0,0.08);padding-top:2px;position:relative;}
+  .ticker-track{display:flex;position:absolute;white-space:nowrap;will-change:transform;}
+  .ticker-item{font-size:5.5px;font-weight:bold;letter-spacing:0.3px;padding:0 4px;flex-shrink:0;}
+  .ticker-up{color:rgba(0,100,0,0.7);} .ticker-down{color:rgba(160,0,0,0.6);} .ticker-sep{color:rgba(0,0,0,0.15);}
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
+  /* HANA WOBBLE */
+  @keyframes tiltWobble{0%,70%{transform:rotate(0deg);}73%{transform:rotate(1.5deg);}76%{transform:rotate(-1deg);}79%{transform:rotate(0.7deg);}82%{transform:rotate(-0.4deg);}85%{transform:rotate(0.2deg);}88%,100%{transform:rotate(0deg);}}
+  .frame-hana .matte{animation:tiltWobble 7s ease-in-out infinite;transform-origin:top center;}
 
-        .prompt {
-            color: #00ff41;
-            margin-right: 10px;
-        }
+  /* MARG PAW PRINTS */
+  .paw-prints{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:9;}
+  .paw{position:absolute;opacity:0;font-size:18px;filter:grayscale(1) brightness(0.4);}
+  @keyframes pawAppear{0%{opacity:0;}10%{opacity:0.25;}80%{opacity:0.25;}100%{opacity:0;}}
+  .paw-1{top:72%;left:12%;transform:rotate(-20deg);animation:pawAppear 8s ease-in-out 2s infinite;}
+  .paw-2{top:55%;left:30%;transform:rotate(-15deg);animation:pawAppear 8s ease-in-out 3s infinite;}
+  .paw-3{top:38%;left:18%;transform:rotate(-25deg);animation:pawAppear 8s ease-in-out 4s infinite;}
+  .paw-4{top:22%;left:38%;transform:rotate(-10deg);animation:pawAppear 8s ease-in-out 5s infinite;}
+  .paw-5{top:10%;left:55%;transform:rotate(-30deg);animation:pawAppear 8s ease-in-out 6s infinite;}
+  .scratch-svg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;}
+  .scratch-line{stroke:rgba(255,255,255,0.05);stroke-width:0.3;fill:none;stroke-linecap:round;}
 
-        .command {
-            color: #ffffff;
-        }
-
-        .output {
-            color: #00ff41;
-            margin-left: 20px;
-        }
-
-        .error {
-            color: #ff4444;
-        }
-
-        .warning {
-            color: #ffaa00;
-        }
-
-        .success {
-            color: #00ffaa;
-        }
-
-        .system {
-            color: #00aaff;
-        }
-
-        /* ASCII art title */
-        .ascii-art {
-            color: #00ff41;
-            font-size: 10px;
-            line-height: 1.2;
-            white-space: pre;
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
-            margin: 20px 0;
-        }
-
-        /* Blinking cursor */
-        .cursor {
-            display: inline-block;
-            width: 10px;
-            height: 20px;
-            background: #00ff41;
-            animation: blink 1s infinite;
-            vertical-align: text-bottom;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        /* Navigation menu */
-        .menu-container {
-            margin: 30px 0;
-            padding: 20px;
-            border: 1px solid #00ff41;
-            background: rgba(0, 255, 65, 0.05);
-        }
-
-        .menu-title {
-            color: #00ff41;
-            font-size: 18px;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .menu-item {
-            padding: 15px;
-            background: rgba(0, 255, 65, 0.1);
-            border: 1px solid #00ff41;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: #00ff41;
-            display: block;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .menu-item:hover::before {
-            left: 100%;
-        }
-
-        .menu-item:hover {
-            background: rgba(0, 255, 65, 0.2);
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .menu-item-header {
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-
-        .menu-item-description {
-            font-size: 11px;
-            opacity: 0.8;
-        }
-
-        /* Matrix rain background */
-        .matrix-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            opacity: 0.1;
-            z-index: -1;
-        }
-
-        .matrix-column {
-            position: absolute;
-            top: -100vh;
-            font-size: 14px;
-            line-height: 20px;
-            animation: matrix-fall linear infinite;
-            color: #00ff41;
-        }
-
-        @keyframes matrix-fall {
-            to {
-                transform: translateY(200vh);
-            }
-        }
-
-        /* Loading animation */
-        .loading {
-            display: inline-block;
-        }
-
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-
-        @keyframes dots {
-            0%, 20% { content: ''; }
-            40% { content: '.'; }
-            60% { content: '..'; }
-            80%, 100% { content: '...'; }
-        }
-
-        /* Glitch effect */
-        @keyframes glitch {
-            0%, 100% {
-                text-shadow: 
-                    0 0 10px rgba(0, 255, 65, 0.8),
-                    0 0 20px rgba(0, 255, 65, 0.6);
-            }
-            25% {
-                text-shadow: 
-                    -2px 0 #ff00ff,
-                    2px 0 #00ffff,
-                    0 0 10px rgba(0, 255, 65, 0.8);
-            }
-            50% {
-                text-shadow: 
-                    2px 0 #ff00ff,
-                    -2px 0 #00ffff,
-                    0 0 20px rgba(0, 255, 65, 0.6);
-            }
-        }
-
-        .glitch {
-            animation: glitch 3s infinite;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .terminal-container {
-                padding: 10px;
-            }
-            
-            .ascii-art {
-                font-size: 6px;
-            }
-            
-            .menu-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  @media(max-width:700px){.gallery-grid{grid-template-columns:repeat(2,1fr);gap:16px;}}
+  @media(max-width:450px){.gallery-grid{grid-template-columns:1fr;max-width:300px;}}
+</style>
 </head>
 <body>
-    <!-- Matrix rain background -->
-    <div class="matrix-bg" id="matrixBg"></div>
+<div class="wall">
+  <div class="gallery-title"><h1>The Curphey Collection</h1><div class="sub">Presented by Curphey Records · Est. MMIV</div></div>
+  <div class="gallery-grid">
 
-    <div class="terminal-container">
-        <div class="terminal">
-            <div class="terminal-header">
-                <div class="terminal-title">CURPHEY_SYSTEM_TERMINAL_v2.0.1</div>
-                <div class="terminal-buttons">
-                    <div class="terminal-button close"></div>
-                    <div class="terminal-button minimize"></div>
-                    <div class="terminal-button maximize"></div>
-                </div>
-            </div>
-            
-            <div class="terminal-body" id="terminalBody">
-                <!-- Terminal content will be dynamically generated here -->
-            </div>
+    <!-- MARK -->
+    <div class="frame frame-mark">
+      <div class="matte" id="markMatte">
+        <div class="glass"></div>
+        <canvas class="mark-glitch-canvas" id="markNoise"></canvas>
+        <div class="mask-channel mask-r" id="maskR"><img class="mask-img" src="images/mask.png" alt=""></div>
+        <div class="mask-channel mask-g" id="maskG"><img class="mask-img" src="images/mask.png" alt=""></div>
+        <div class="mask-channel mask-b" id="maskB"><img class="mask-img" src="images/mask.png" alt=""></div>
+        <div class="mark-tear" id="tear1"></div><div class="mark-tear" id="tear2"></div><div class="mark-tear" id="tear3"></div><div class="mark-tear" id="tear4"></div>
+        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label"><div class="disc-label-name">Mark</div><div class="disc-label-hole"></div></div></div></div>
+        <div class="bottom-row">
+          <div class="headshot"><img src="images/mark.jpg" alt="Mark"></div>
+          <div class="plaque"><div class="plaque-title">Presented to</div><div class="plaque-name">Mark Curphey</div><div class="plaque-detail">Hacker, Software Developer,<br>Cyclist &amp; Aspiring Sailor</div></div>
         </div>
+      </div>
     </div>
 
-    <script>
-        // Terminal content
-        const terminalBody = document.getElementById('terminalBody');
-        let lineIndex = 0;
+    <!-- CARA -->
+    <div class="frame frame-cara">
+      <div class="matte">
+        <div class="glass"></div>
+        <div class="flower-bed">
+          <div class="daisy-stem">
+            <div class="daisy-leaf right"></div>
+            <div class="daisy-head"><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="daisy-center"></div></div>
+          </div>
+          <div class="daisy-stem">
+            <div class="daisy-leaf right"></div>
+            <div class="daisy-leaf left"></div>
+            <div class="daisy-head daisy-pink"><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="daisy-center"></div></div>
+          </div>
+          <div class="daisy-stem">
+            <div class="daisy-leaf left"></div>
+            <div class="daisy-head daisy-blue"><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="daisy-center"></div></div>
+          </div>
+          <div class="daisy-stem">
+            <div class="daisy-leaf right"></div>
+            <div class="daisy-leaf left"></div>
+            <div class="daisy-head"><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="daisy-center"></div></div>
+          </div>
+        </div>
+        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label"><div class="disc-label-name">Cara</div><div class="disc-label-hole"></div></div></div></div>
+        <div class="bottom-row">
+          <div class="headshot"><img src="images/cara.jpg" alt="Cara"></div>
+          <div class="plaque"><div class="plaque-title">Presented to</div><div class="plaque-name">Cara Curphey</div><div class="plaque-detail">Businesswoman &amp; Head Gardener<br>For services to horticulture</div></div>
+        </div>
+      </div>
+    </div>
 
-        // ASCII art for title
-        const asciiArt = `
- ██████╗██╗   ██╗██████╗ ██████╗ ██╗  ██╗███████╗██╗   ██╗
-██╔════╝██║   ██║██╔══██╗██╔══██╗██║  ██║██╔════╝╚██╗ ██╔╝
-██║     ██║   ██║██████╔╝██████╔╝███████║█████╗   ╚████╔╝ 
-██║     ██║   ██║██╔══██╗██╔═══╝ ██╔══██║██╔══╝    ╚██╔╝  
-╚██████╗╚██████╔╝██║  ██║██║     ██║  ██║███████╗   ██║   
- ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝   ╚═╝   `;
+    <!-- JACK -->
+    <div class="frame frame-jack">
+      <div class="matte">
+        <div class="glass"></div>
+        <svg class="crack-svg"><line x1="58%" y1="0%" x2="52%" y2="18%" class="crack-line"/><line x1="52%" y1="18%" x2="55%" y2="30%" class="crack-line"/><line x1="55%" y1="30%" x2="48%" y2="45%" class="crack-line"/><line x1="48%" y1="45%" x2="52%" y2="55%" class="crack-line"/><line x1="52%" y1="18%" x2="68%" y2="28%" class="crack-line"/><line x1="68%" y1="28%" x2="78%" y2="35%" class="crack-line"/><line x1="55%" y1="30%" x2="38%" y2="35%" class="crack-line"/><line x1="38%" y1="35%" x2="28%" y2="42%" class="crack-line-thin"/><line x1="52%" y1="18%" x2="44%" y2="13%" class="crack-line-thin"/><line x1="52%" y1="18%" x2="60%" y2="11%" class="crack-line-thin"/><line x1="48%" y1="45%" x2="38%" y2="50%" class="crack-line-thin"/><line x1="48%" y1="45%" x2="56%" y2="53%" class="crack-line-thin"/></svg>
+        <div class="crack-impact" style="top:15%;left:49%;"></div>
+        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label"><div class="disc-label-name">Jack</div><div class="disc-label-hole"></div></div></div></div>
+        <div class="bottom-row">
+          <div class="headshot"><img src="images/jack.jpg" alt="Jack"></div>
+          <div class="plaque"><div class="plaque-title">Presented to</div><div class="plaque-name">Jack Curphey</div><div class="plaque-detail">Engineer, Mechanic<br>&amp; Hardcore Gamer</div></div>
+        </div>
+      </div>
+    </div>
 
-        // Terminal lines to display
-        const terminalLines = [
-            { type: 'command', text: '$ system --initialize', delay: 0 },
-            { type: 'output', text: 'Initializing CURPHEY family system...', delay: 500 },
-            { type: 'output loading', text: 'Loading core modules', delay: 700 },
-            { type: 'success', text: '✓ Core modules loaded successfully', delay: 2000 },
-            { type: 'output', text: '', delay: 100 },
-            { type: 'command', text: '$ family --status', delay: 300 },
-            { type: 'system', text: 'FAMILY_STATUS: ONLINE', delay: 500 },
-            { type: 'system', text: 'MEMBERS_DETECTED: 6', delay: 700 },
-            { type: 'system', text: 'SCANNING...', delay: 900 },
-            { type: 'output', text: '', delay: 100 },
-            { type: 'success', text: '► CARA    [STATUS: ACTIVE] [ROLE: HEAD_GARDENER]', delay: 1200 },
-            { type: 'success', text: '► MARK    [STATUS: ACTIVE] [ROLE: EVIL_HACKER_BIKE_RACER]', delay: 1400 },
-            { type: 'success', text: '► JACK    [STATUS: ACTIVE] [ROLE: MECHANIC_GAMER]', delay: 1600 },
-            { type: 'success', text: '► GABE    [STATUS: ACTIVE] [ROLE: BUSINESS_MAN]', delay: 1800 },
-            { type: 'success', text: '► HANA    [STATUS: ACTIVE] [ROLE: BARRISTER_IN_WAITING]', delay: 2000 },
-            { type: 'success', text: '► MARG    [STATUS: ACTIVE] [ROLE: LOYAL_CHIHUAHUA]', delay: 2200 },
-            { type: 'output', text: '', delay: 100 },
-            { type: 'command', text: '$ display --welcome', delay: 500 },
-            { type: 'ascii', text: asciiArt, delay: 700 },
-            { type: 'output', text: '', delay: 100 },
-            { type: 'system glitch', text: 'WELCOME TO THE CURPHEY FAMILY DIGITAL HUB', delay: 1000 },
-            { type: 'output', text: '═══════════════════════════════════════════', delay: 100 },
-            { type: 'output', text: '', delay: 100 }
-        ];
+    <!-- HANA -->
+    <div class="frame frame-hana">
+      <div class="matte">
+        <div class="glass"></div>
+        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label"><div class="disc-label-name">Hana</div><div class="disc-label-hole"></div></div></div></div>
+        <div class="bottom-row">
+          <div class="headshot"><img src="images/hana.jpg" alt="Hana"></div>
+          <div class="plaque"><div class="plaque-title">Presented to</div><div class="plaque-name">Hana Curphey</div><div class="plaque-detail">Barrister in Waiting<br>Frame alignment pending appeal</div></div>
+        </div>
+      </div>
+    </div>
 
-        // Type out text with animation
-        function typeText(element, text, callback) {
-            let i = 0;
-            const interval = setInterval(() => {
-                if (i < text.length) {
-                    element.textContent += text.charAt(i);
-                    i++;
-                } else {
-                    clearInterval(interval);
-                    if (callback) callback();
-                }
-            }, 20);
-        }
+    <!-- GABE -->
+    <div class="frame frame-gabe">
+      <div class="matte">
+        <div class="glass"></div>
+        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label"><div class="disc-label-name">Gabe</div><div class="disc-label-hole"></div></div></div></div>
+        <div class="bottom-row">
+          <div class="headshot"><img src="images/gabe.jpg" alt="Gabe"></div>
+          <div class="plaque"><div class="plaque-title">Presented to</div><div class="plaque-name">Gabe Curphey</div><div class="plaque-detail">Aspiring Businessman</div><div class="ticker-container"><div class="ticker-track" id="tickerTrack"></div></div></div>
+        </div>
+      </div>
+    </div>
 
-        // Add line to terminal
-        function addLine(lineData) {
-            const line = document.createElement('div');
-            line.className = 'terminal-line';
-            line.style.animationDelay = '0s';
+    <!-- MARG -->
+    <div class="frame frame-marg">
+      <div class="matte">
+        <div class="glass"></div>
+        <div class="paw-prints"><div class="paw paw-1">🐾</div><div class="paw paw-2">🐾</div><div class="paw paw-3">🐾</div><div class="paw paw-4">🐾</div><div class="paw paw-5">🐾</div></div>
+        <svg class="scratch-svg"><line x1="60%" y1="55%" x2="65%" y2="62%" class="scratch-line"/><line x1="62%" y1="56%" x2="67%" y2="60%" class="scratch-line"/><line x1="25%" y1="70%" x2="30%" y2="78%" class="scratch-line"/><line x1="27%" y1="71%" x2="31%" y2="76%" class="scratch-line"/></svg>
+        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label"><div class="disc-label-name" style="font-size:4px;">Marg</div><div class="disc-label-hole"></div></div></div></div>
+        <div class="bottom-row">
+          <div class="headshot"><img src="images/marg.jpg" alt="Marg"></div>
+          <div class="plaque"><div class="plaque-title">Presented to</div><div class="plaque-name">Marg</div><div class="plaque-detail">Loyal Chihuahua<br>Lifetime Achievement Award</div></div>
+        </div>
+      </div>
+    </div>
 
-            if (lineData.type === 'command') {
-                const prompt = document.createElement('span');
-                prompt.className = 'prompt';
-                prompt.textContent = 'curphey@family:~';
-                line.appendChild(prompt);
-
-                const command = document.createElement('span');
-                command.className = 'command';
-                line.appendChild(command);
-                terminalBody.appendChild(line);
-                
-                typeText(command, lineData.text);
-            } else if (lineData.type === 'ascii') {
-                const pre = document.createElement('pre');
-                pre.className = 'ascii-art glitch';
-                pre.textContent = lineData.text;
-                line.appendChild(pre);
-                terminalBody.appendChild(line);
-            } else {
-                let className = lineData.type.replace(' loading', '');
-                line.className = `terminal-line ${className}`;
-                
-                if (lineData.type.includes('loading')) {
-                    line.innerHTML = `<span class="output">${lineData.text}</span><span class="loading"></span>`;
-                } else if (lineData.type.includes('glitch')) {
-                    line.innerHTML = `<span class="${className}">${lineData.text}</span>`;
-                } else {
-                    line.textContent = lineData.text;
-                }
-                terminalBody.appendChild(line);
-            }
-
-            // Auto-scroll to bottom
-            terminalBody.scrollTop = terminalBody.scrollHeight;
-        }
-
-        // Display terminal lines sequentially
-        function displayLines() {
-            if (lineIndex < terminalLines.length) {
-                setTimeout(() => {
-                    addLine(terminalLines[lineIndex]);
-                    lineIndex++;
-                    displayLines();
-                }, terminalLines[lineIndex].delay);
-            } else {
-                // Add blinking cursor at the end
-                setTimeout(() => {
-                    const cursorLine = document.createElement('div');
-                    cursorLine.className = 'terminal-line';
-                    cursorLine.innerHTML = '<span class="prompt">curphey@family:~</span><span class="command">$</span><span class="cursor"></span>';
-                    terminalBody.appendChild(cursorLine);
-                    terminalBody.scrollTop = terminalBody.scrollHeight;
-                }, 500);
-            }
-        }
-
-        // Create matrix rain effect
-        function createMatrixRain() {
-            const matrixBg = document.getElementById('matrixBg');
-            const columns = Math.floor(window.innerWidth / 20);
-            
-            for (let i = 0; i < columns; i++) {
-                const column = document.createElement('div');
-                column.className = 'matrix-column';
-                column.style.left = i * 20 + 'px';
-                column.style.animationDuration = Math.random() * 15 + 10 + 's';
-                column.style.animationDelay = Math.random() * 10 + 's';
-                
-                // Random characters
-                let text = '';
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*()_+-=[]{}|;:,.<>?';
-                for (let j = 0; j < 100; j++) {
-                    text += chars.charAt(Math.floor(Math.random() * chars.length)) + '\n';
-                }
-                column.textContent = text;
-                matrixBg.appendChild(column);
-            }
-        }
-
-        // Handle menu clicks
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.menu-item')) {
-                e.preventDefault();
-                const item = e.target.closest('.menu-item');
-                const href = item.getAttribute('href');
-                
-                // Add click feedback
-                const clickLine = document.createElement('div');
-                clickLine.className = 'terminal-line command';
-                clickLine.innerHTML = `<span class="prompt">curphey@family:~</span><span class="command">$ navigate ${href}</span>`;
-                terminalBody.appendChild(clickLine);
-                
-                setTimeout(() => {
-                    const responseLine = document.createElement('div');
-                    responseLine.className = 'terminal-line success';
-                    responseLine.textContent = `Accessing ${href.substring(1).toUpperCase()} module...`;
-                    terminalBody.appendChild(responseLine);
-                    terminalBody.scrollTop = terminalBody.scrollHeight;
-                }, 300);
-            }
-        });
-
-        // Initialize
-        window.addEventListener('load', () => {
-            createMatrixRain();
-            setTimeout(displayLines, 500);
-        });
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            const matrixBg = document.getElementById('matrixBg');
-            matrixBg.innerHTML = '';
-            createMatrixRain();
-        });
-    </script>
+  </div>
+</div>
+<script>
+// MARK GLITCH
+(function(){var canvas=document.getElementById('markNoise'),matte=document.getElementById('markMatte'),maskR=document.getElementById('maskR'),maskG=document.getElementById('maskG'),maskB=document.getElementById('maskB'),tears=[document.getElementById('tear1'),document.getElementById('tear2'),document.getElementById('tear3'),document.getElementById('tear4')];function sizeCanvas(){canvas.width=matte.offsetWidth;canvas.height=matte.offsetHeight;}sizeCanvas();window.addEventListener('resize',sizeCanvas);var ctx=canvas.getContext('2d'),glitching=false,glitchEnd=0;function drawNoise(){var w=canvas.width,h=canvas.height,imgData=ctx.createImageData(w,h),d=imgData.data;for(var i=0;i<d.length;i+=4){var v=Math.random()*255;d[i]=v;d[i+1]=v;d[i+2]=v;d[i+3]=50;}ctx.putImageData(imgData,0,0);}function fireTear(t){var y=Math.random()*100,h=2+Math.random()*8,o=(Math.random()-0.5)*12;t.style.top=y+'%';t.style.height=h+'px';t.style.opacity='1';t.style.transform='translateX('+o+'px)';t.style.background='rgba(129,244,22,'+(0.05+Math.random()*0.08)+')';setTimeout(function(){t.style.opacity='0';t.style.height='0';},40+Math.random()*60);}function triggerGlitch(){glitching=true;glitchEnd=Date.now()+200+Math.random()*600;canvas.style.opacity='1';var sx=3+Math.random()*5,sy=(Math.random()-0.5)*4;maskR.style.opacity='0.7';maskG.style.opacity='0.7';maskB.style.opacity='0.7';maskR.style.transform='translate('+(-sx)+'px,'+(-sy)+'px)';maskG.style.transform='translate(0,0)';maskB.style.transform='translate('+sx+'px,'+sy+'px)';var d=0;tears.forEach(function(t){setTimeout(function(){fireTear(t);},d);d+=30+Math.random()*40;});}function hideGlitch(){glitching=false;canvas.style.opacity='0';maskR.style.opacity='0';maskG.style.opacity='0';maskB.style.opacity='0';}var lastN=0;function loop(ts){if(glitching){if(ts-lastN>66){drawNoise();lastN=ts;}if(Math.random()>0.5){var jx=2+Math.random()*6,jy=(Math.random()-0.5)*5;maskR.style.transform='translate('+(-jx)+'px,'+(-jy)+'px)';maskB.style.transform='translate('+jx+'px,'+jy+'px)';}if(Math.random()>0.65)fireTear(tears[Math.floor(Math.random()*tears.length)]);if(Date.now()>glitchEnd)hideGlitch();}else{if(Math.random()>0.997)triggerGlitch();}requestAnimationFrame(loop);}setTimeout(triggerGlitch,2000);requestAnimationFrame(loop);})();
+// GABE TICKER
+(function(){var items=[{t:'CURPH \u25b242.0',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'FAM \u25b2100.0',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'GABE \u25b2999.9',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'SLEEP \u25bc2.1',c:'ticker-down'},{t:'\u2502',c:'ticker-sep'},{t:'HUSTLE \u25b288.5',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'CHILL \u25bc0.3',c:'ticker-down'},{t:'\u2502',c:'ticker-sep'},{t:'DEALS \u25b277.7',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'HAIR \u25b210/10',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'}];var track=document.getElementById('tickerTrack');for(var c=0;c<4;c++){items.forEach(function(item){var span=document.createElement('span');span.className='ticker-item '+item.c;span.textContent=item.t;track.appendChild(span);});}var pos=0;function scroll(){pos-=0.3;if(Math.abs(pos)>=track.scrollWidth/2)pos=0;track.style.transform='translateX('+pos+'px)';requestAnimationFrame(scroll);}requestAnimationFrame(scroll);})();
+// HOVER EXPAND
+(function(){var frames=document.querySelectorAll('.frame');var timers={};frames.forEach(function(frame,i){frame.setAttribute('data-pos',i);frame.addEventListener('mouseenter',function(){var idx=i;timers[idx]=setTimeout(function(){frames.forEach(function(f){f.classList.remove('expanded');});frame.classList.add('expanded');},1000);});frame.addEventListener('mouseleave',function(){clearTimeout(timers[i]);frame.classList.remove('expanded');});});})();
+</script>
 </body>
 </html>
