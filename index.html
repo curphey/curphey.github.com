@@ -9,9 +9,63 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #000; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; }
   .wall { position: relative; z-index: 1; padding: 30px 16px; max-width: 1050px; width: 100%; }
-  .gallery-title { text-align: center; margin-bottom: 36px; }
-  .gallery-title h1 { font-family: 'Playfair Display', serif; font-size: 13px; letter-spacing: 8px; color: #d4af37; text-transform: uppercase; text-shadow: 0 0 30px rgba(212,175,55,0.12); }
-  .gallery-title .sub { font-size: 8px; letter-spacing: 4px; color: #2a2a2a; margin-top: 5px; }
+  .gallery-title { text-align: center; margin-bottom: 40px; }
+
+  .label-logo {
+    display: inline-block;
+    border: 2px solid #d4af37;
+    padding: 18px 40px 14px;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .label-logo::before, .label-logo::after {
+    content: '';
+    position: absolute;
+    left: 6px; right: 6px;
+    height: 1px;
+    background: rgba(212,175,55,0.3);
+  }
+  .label-logo::before { top: 5px; }
+  .label-logo::after { bottom: 5px; }
+  .label-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 11px;
+    letter-spacing: 10px;
+    color: #d4af37;
+    text-transform: uppercase;
+    display: block;
+  }
+  .label-tagline {
+    font-size: 6px;
+    letter-spacing: 4px;
+    color: rgba(212,175,55,0.4);
+    text-transform: uppercase;
+    margin-top: 4px;
+    display: block;
+  }
+
+  .label-divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent);
+    margin: 10px auto;
+  }
+
+  .gallery-title h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    letter-spacing: 8px;
+    color: #d4af37;
+    text-transform: uppercase;
+    text-shadow: 0 0 30px rgba(212,175,55,0.12);
+    margin-bottom: 6px;
+  }
+  .gallery-title .sub {
+    font-size: 7px;
+    letter-spacing: 3px;
+    color: #333;
+    margin-top: 4px;
+  }
   .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 960px; margin: 0 auto; }
 
   .frame {
@@ -144,7 +198,16 @@
 </head>
 <body>
 <div class="wall">
-  <div class="gallery-title"><h1>The Curphey Collection</h1><div class="sub">Atlantic Chaos Records · London · Brighton · Seattle · Mill Valley · Brighton · The World's Oceans · Est. MMIV</div><div class="sub" style="margin-top:3px;font-style:italic;color:#333;font-size:7px;letter-spacing:3px;">"No sleep til the B-side"</div></div>
+  <div class="gallery-title">
+    <div class="label-logo">
+      <span class="label-name">Atlantic Chaos</span>
+      <span class="label-tagline">Records · Est. MMIV</span>
+    </div>
+    <div class="label-divider"></div>
+    <h1>The Curphey Collection</h1>
+    <div class="sub">London · Brighton · Seattle · Mill Valley · Brighton · The World's Oceans</div>
+    <div class="sub" style="margin-top:5px;font-style:italic;color:#444;font-size:7px;letter-spacing:3px;">"No sleep til the B-side"</div>
+  </div>
   <div class="gallery-grid">
 
     <!-- MARK -->
