@@ -192,11 +192,70 @@
   .scratch-svg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;}
   .scratch-line{stroke:rgba(255,255,255,0.05);stroke-width:0.3;fill:none;stroke-linecap:round;}
 
+  /* DIFFERENT GOLD SHADES PER DISC */
+  .frame-mark .disc-metal { background: conic-gradient(from 30deg, #b8922a, #d0a830, #b8902a, #a8822a, #b8922a, #d4aa30, #b8922a, #a8822a, #b8922a, #d0a830, #b8922a, #a8822a, #b8922a, #d4aa30, #b8922a); filter: brightness(0.9) saturate(0.85); }
+  .frame-cara .disc-metal { background: conic-gradient(from 60deg, #d4b842, #ecd050, #d4b842, #c4a838, #d4b842, #f0d858, #d4b842, #c4a838, #d4b842, #ecd050, #d4b842, #c4a838, #d4b842, #f0d858, #d4b842); filter: brightness(1.05); }
+  .frame-jack .disc-metal { background: conic-gradient(from 10deg, #c09828, #d8b038, #c09828, #a88820, #c09828, #d8b038, #c09828, #a88820, #c09828, #d8b038, #c09828, #a88820, #c09828, #d8b038, #c09828); filter: brightness(0.85) saturate(0.8); }
+  .frame-hana .disc-metal { filter: brightness(1.0) saturate(0.95); }
+  .frame-gabe .disc-metal { background: conic-gradient(from 45deg, #d4af37, #ecc94e, #d4af37, #c4a030, #d4af37, #f0d060, #d4af37, #c4a030, #d4af37, #ecc94e, #d4af37, #c4a030, #d4af37, #f0d060, #d4af37); filter: brightness(1.08) saturate(1.1); }
+  .frame-marg .disc-metal { filter: brightness(1.1) saturate(1.15); }
+
+  /* WALKING SHADOW */
+  .gallery-shadow {
+    position: fixed;
+    bottom: 0;
+    left: -200px;
+    width: 120px;
+    height: 100vh;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(0,0,0,0.15) 30%,
+      rgba(0,0,0,0.25) 50%,
+      rgba(0,0,0,0.15) 70%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+  }
+
+  /* SECURITY CAMERA */
+  .security-cam {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 60;
+    pointer-events: none;
+  }
+  .cam-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #cc0000;
+    box-shadow: 0 0 4px rgba(204,0,0,0.6);
+    animation: camBlink 2s ease-in-out infinite;
+  }
+  @keyframes camBlink {
+    0%,40% { opacity: 1; }
+    50% { opacity: 0.2; }
+    60%,100% { opacity: 1; }
+  }
+  .cam-label {
+    font-size: 6px;
+    letter-spacing: 2px;
+    color: rgba(204,0,0,0.4);
+    text-transform: uppercase;
+    margin-top: 3px;
+    font-family: 'Inter', sans-serif;
+  }
+
   @media(max-width:700px){.gallery-grid{grid-template-columns:repeat(2,1fr);gap:16px;}}
   @media(max-width:450px){.gallery-grid{grid-template-columns:1fr;max-width:300px;}}
 </style>
 </head>
 <body>
+<div class="gallery-shadow" id="galleryShadow"></div>
+<div class="security-cam" id="secCam"><div class="cam-dot"></div><div class="cam-label">REC</div></div>
 <div class="wall">
   <div class="gallery-title">
     <div class="label-logo">
@@ -319,6 +378,36 @@
 (function(){var items=[{t:'CURPH \u25b242.0',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'FAM \u25b2100.0',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'GABE \u25b2999.9',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'SLEEP \u25bc2.1',c:'ticker-down'},{t:'\u2502',c:'ticker-sep'},{t:'HUSTLE \u25b288.5',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'CHILL \u25bc0.3',c:'ticker-down'},{t:'\u2502',c:'ticker-sep'},{t:'DEALS \u25b277.7',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'HAIR \u25b210/10',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'}];var track=document.getElementById('tickerTrack');for(var c=0;c<4;c++){items.forEach(function(item){var span=document.createElement('span');span.className='ticker-item '+item.c;span.textContent=item.t;track.appendChild(span);});}var pos=0;function scroll(){pos-=0.3;if(Math.abs(pos)>=track.scrollWidth/2)pos=0;track.style.transform='translateX('+pos+'px)';requestAnimationFrame(scroll);}requestAnimationFrame(scroll);})();
 // HOVER EXPAND
 (function(){var frames=document.querySelectorAll('.frame');var timers={};frames.forEach(function(frame,i){frame.setAttribute('data-pos',i);frame.addEventListener('mouseenter',function(){var idx=i;timers[idx]=setTimeout(function(){frames.forEach(function(f){f.classList.remove('expanded');});frame.classList.add('expanded');},1000);});frame.addEventListener('mouseleave',function(){clearTimeout(timers[i]);frame.classList.remove('expanded');});});})();
+// WALKING SHADOW — someone passes by the gallery every 30-60s
+(function(){
+  var shadow = document.getElementById('galleryShadow');
+  function walkBy() {
+    shadow.style.left = '-200px';
+    shadow.style.opacity = '1';
+    shadow.style.transition = 'left 4s ease-in-out, opacity 0.5s';
+    shadow.style.left = (window.innerWidth + 200) + 'px';
+    setTimeout(function(){ shadow.style.opacity = '0'; }, 3500);
+    setTimeout(function(){
+      shadow.style.transition = 'none';
+      shadow.style.left = '-200px';
+      scheduleWalk();
+    }, 5000);
+  }
+  function scheduleWalk() {
+    setTimeout(walkBy, 30000 + Math.random() * 30000);
+  }
+  setTimeout(walkBy, 8000);
+  scheduleWalk();
+})();
+// SECURITY CAMERA — red dot follows cursor subtly
+(function(){
+  var cam = document.getElementById('secCam');
+  document.addEventListener('mousemove', function(e) {
+    var x = (e.clientX / window.innerWidth - 0.5) * 6;
+    var y = (e.clientY / window.innerHeight - 0.5) * 4;
+    cam.style.transform = 'translate(' + (-x) + 'px,' + y + 'px)';
+  });
+})();
 </script>
 </body>
 </html>
