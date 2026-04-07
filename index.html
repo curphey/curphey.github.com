@@ -219,42 +219,113 @@
     opacity: 0;
   }
 
-  /* SECURITY CAMERA */
-  .security-cam {
+  /* SECURITY OVERLAY — triggered after 30s of activity */
+  .sec-overlay {
     position: fixed;
-    top: 16px;
-    right: 20px;
-    z-index: 60;
+    top: 0; left: 0; right: 0; bottom: 0;
     pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 1.5s ease-in;
   }
-  .cam-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #cc0000;
-    box-shadow: 0 0 4px rgba(204,0,0,0.6);
-    animation: camBlink 2s ease-in-out infinite;
+  .sec-overlay.active { opacity: 1; }
+
+  /* Scanlines */
+  .sec-scanlines {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0px, rgba(0,0,0,0.12) 1px, transparent 1px, transparent 3px);
+    z-index: 1;
   }
-  @keyframes camBlink {
-    0%,40% { opacity: 1; }
-    50% { opacity: 0.2; }
-    60%,100% { opacity: 1; }
+
+  /* Vignette */
+  .sec-vignette {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 100%);
+    z-index: 2;
   }
-  .cam-label {
-    font-size: 6px;
-    letter-spacing: 2px;
-    color: rgba(204,0,0,0.4);
-    text-transform: uppercase;
-    margin-top: 3px;
-    font-family: 'Inter', sans-serif;
+
+  /* Corner brackets */
+  .sec-corner { position: absolute; width: 20px; height: 20px; border-color: rgba(255,255,255,0.1); border-style: solid; border-width: 0; z-index: 3; }
+  .sec-corner.tl { top: 15px; left: 15px; border-top-width: 1px; border-left-width: 1px; }
+  .sec-corner.tr { top: 15px; right: 15px; border-top-width: 1px; border-right-width: 1px; }
+  .sec-corner.bl { bottom: 15px; left: 15px; border-bottom-width: 1px; border-left-width: 1px; }
+  .sec-corner.br { bottom: 15px; right: 15px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  /* REC indicator */
+  .sec-rec {
+    position: absolute;
+    top: 18px; left: 20px;
+    display: flex; align-items: center; gap: 6px;
+    z-index: 4;
+    font-family: 'Courier New', monospace;
   }
+  @keyframes secBlink { 0%,45%{opacity:1;}50%,55%{opacity:0;}60%,100%{opacity:1;} }
+  .sec-rec-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    box-shadow: 0 0 6px rgba(204,0,0,0.8);
+    animation: secBlink 1.5s ease-in-out infinite;
+  }
+  /* Day mode: red */
+  .sec-overlay.day .sec-rec-dot { background: #cc0000; }
+  .sec-overlay.day .sec-rec-text { color: #cc0000; font-size: 10px; letter-spacing: 2px; font-weight: bold; }
+  .sec-overlay.day .sec-cam-id { color: rgba(255,255,255,0.2); }
+  .sec-overlay.day .sec-timestamp { color: rgba(255,255,255,0.25); }
+
+  /* Night mode: green */
+  .sec-overlay.night .sec-rec-dot { background: #00ff41; box-shadow: 0 0 6px rgba(0,255,65,0.8); }
+  .sec-overlay.night .sec-rec-text { color: rgba(0,255,65,0.7); font-size: 10px; letter-spacing: 2px; font-weight: bold; }
+  .sec-overlay.night .sec-cam-id { color: rgba(0,255,65,0.2); }
+  .sec-overlay.night .sec-timestamp { color: rgba(0,255,65,0.25); }
+  .sec-overlay.night .sec-corner { border-color: rgba(0,255,65,0.08); }
+  .sec-overlay.night .sec-vignette { background: radial-gradient(ellipse at center, rgba(0,30,0,0.05) 0%, rgba(0,15,0,0.25) 60%, rgba(0,0,0,0.5) 100%); }
+  .sec-overlay.night .sec-scanlines { background: repeating-linear-gradient(0deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 2px); }
+
+  .sec-cam-id {
+    position: absolute;
+    top: 18px; right: 20px;
+    font-size: 8px; letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
+    z-index: 4;
+  }
+  .sec-timestamp {
+    position: absolute;
+    bottom: 18px; left: 20px;
+    font-size: 9px; letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
+    z-index: 4;
+  }
+  .sec-crosshair {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 40px; height: 40px;
+    z-index: 3;
+  }
+  .sec-crosshair::before, .sec-crosshair::after {
+    content: ''; position: absolute;
+  }
+  .sec-overlay.day .sec-crosshair::before { width:1px; height:100%; left:50%; background:rgba(255,255,255,0.06); }
+  .sec-overlay.day .sec-crosshair::after { height:1px; width:100%; top:50%; background:rgba(255,255,255,0.06); }
+  .sec-overlay.night .sec-crosshair { width:50px; height:50px; border:1px solid rgba(0,255,65,0.06); border-radius:50%; }
+  .sec-overlay.night .sec-crosshair::before { width:1px; height:60px; left:50%; top:-5px; background:rgba(0,255,65,0.04); }
+  .sec-overlay.night .sec-crosshair::after { height:1px; width:60px; top:50%; left:-5px; background:rgba(0,255,65,0.04); }
 
   @media(max-width:700px){.gallery-grid{grid-template-columns:repeat(2,1fr);gap:16px;}}
   @media(max-width:450px){.gallery-grid{grid-template-columns:1fr;max-width:300px;}}
 </style>
 </head>
 <body>
-<div class="security-cam" id="secCam"><div class="cam-dot"></div><div class="cam-label">REC</div></div>
+<div class="sec-overlay" id="secOverlay">
+  <div class="sec-scanlines"></div>
+  <div class="sec-vignette"></div>
+  <div class="sec-corner tl"></div><div class="sec-corner tr"></div><div class="sec-corner bl"></div><div class="sec-corner br"></div>
+  <div class="sec-rec"><div class="sec-rec-dot"></div><div class="sec-rec-text">REC</div></div>
+  <div class="sec-cam-id" id="secCamId">CAM 01 · GALLERY A</div>
+  <div class="sec-crosshair"></div>
+  <div class="sec-timestamp" id="secTimestamp"></div>
+</div>
 <div class="wall">
   <div class="gallery-title">
     <div class="label-logo">
@@ -375,14 +446,54 @@
 (function(){var items=[{t:'CURPH \u25b242.0',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'FAM \u25b2100.0',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'GABE \u25b2999.9',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'SLEEP \u25bc2.1',c:'ticker-down'},{t:'\u2502',c:'ticker-sep'},{t:'HUSTLE \u25b288.5',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'CHILL \u25bc0.3',c:'ticker-down'},{t:'\u2502',c:'ticker-sep'},{t:'DEALS \u25b277.7',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'HAIR \u25b210/10',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'}];var track=document.getElementById('tickerTrack');for(var c=0;c<4;c++){items.forEach(function(item){var span=document.createElement('span');span.className='ticker-item '+item.c;span.textContent=item.t;track.appendChild(span);});}var pos=0;function scroll(){pos-=0.3;if(Math.abs(pos)>=track.scrollWidth/2)pos=0;track.style.transform='translateX('+pos+'px)';requestAnimationFrame(scroll);}requestAnimationFrame(scroll);})();
 // HOVER EXPAND
 (function(){var frames=document.querySelectorAll('.frame');var timers={};frames.forEach(function(frame,i){frame.setAttribute('data-pos',i);frame.addEventListener('mouseenter',function(){var idx=i;timers[idx]=setTimeout(function(){frames.forEach(function(f){f.classList.remove('expanded');});frame.classList.add('expanded');},1000);});frame.addEventListener('mouseleave',function(){clearTimeout(timers[i]);frame.classList.remove('expanded');});});})();
-// SECURITY CAMERA — red dot follows cursor subtly
+// SECURITY SYSTEM — triggers after 30s of active clicking
 (function(){
-  var cam = document.getElementById('secCam');
-  document.addEventListener('mousemove', function(e) {
-    var x = (e.clientX / window.innerWidth - 0.5) * 6;
-    var y = (e.clientY / window.innerHeight - 0.5) * 4;
-    cam.style.transform = 'translate(' + (-x) + 'px,' + y + 'px)';
+  var overlay = document.getElementById('secOverlay');
+  var tsEl = document.getElementById('secTimestamp');
+  var camEl = document.getElementById('secCamId');
+  var clickCount = 0;
+  var firstClick = 0;
+  var triggered = false;
+
+  document.addEventListener('click', function() {
+    if (triggered) return;
+    if (clickCount === 0) firstClick = Date.now();
+    clickCount++;
+    if (Date.now() - firstClick > 30000 && clickCount > 3) {
+      triggerSecurity();
+    }
   });
+
+  // Also track mousemove activity
+  var moveCount = 0;
+  document.addEventListener('mousemove', function() {
+    if (triggered) return;
+    moveCount++;
+    if (firstClick > 0 && Date.now() - firstClick > 30000 && moveCount > 200) {
+      triggerSecurity();
+    }
+  });
+
+  function triggerSecurity() {
+    triggered = true;
+    var hour = new Date().getHours();
+    var isNight = hour >= 20 || hour < 7;
+    overlay.classList.add(isNight ? 'night' : 'day');
+    camEl.textContent = isNight ? 'NV-CAM \u00b7 GALLERY' : 'CAM 01 \u00b7 GALLERY A';
+    overlay.classList.add('active');
+    updateTimestamp();
+    setInterval(updateTimestamp, 1000);
+  }
+
+  function updateTimestamp() {
+    var now = new Date();
+    tsEl.textContent = now.getFullYear() + '-' +
+      String(now.getMonth()+1).padStart(2,'0') + '-' +
+      String(now.getDate()).padStart(2,'0') + ' ' +
+      String(now.getHours()).padStart(2,'0') + ':' +
+      String(now.getMinutes()).padStart(2,'0') + ':' +
+      String(now.getSeconds()).padStart(2,'0');
+  }
 })();
 </script>
 </body>
