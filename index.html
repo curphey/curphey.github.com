@@ -225,37 +225,22 @@
   /* Blue daisy variant */
   .daisy-blue .petal { background:#7eb8e0; }
 
-  /* JACK RETRO GAME */
-  .retro-game{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:9;overflow:hidden;}
-  .retro-chase{position:absolute;top:45%;left:0;display:flex;align-items:center;gap:6px;animation:chaseRun 8s linear infinite;opacity:0.7;}
-  @keyframes chaseRun{0%{transform:translateX(-40px);}100%{transform:translateX(220px);}}
+  /* JACK PLAY BUTTON */
+  .frame-jack .disc-label { transition: all 0.3s ease; cursor: default; }
+  .frame-jack.expanded .disc-label { background: radial-gradient(circle, #cc0000, #880000); border-color: #ff2222; cursor: pointer; box-shadow: 0 0 12px rgba(255,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2); animation: btnPulse 1.5s ease-in-out infinite; }
+  .frame-jack.expanded .disc-label-name { color: #fff; font-size: 6px; letter-spacing: 2px; }
+  .frame-jack.expanded .disc-label-hole { display: none; }
+  @keyframes btnPulse { 0%,100%{ box-shadow: 0 0 12px rgba(255,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2); } 50%{ box-shadow: 0 0 20px rgba(255,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.2); } }
 
-  /* Pac-Man */
-  .pacman{width:10px;height:10px;border-radius:50%;background:#ffe000;position:relative;animation:chomp 0.3s steps(2) infinite;}
-  @keyframes chomp{0%{clip-path:polygon(100% 0%,50% 50%,100% 100%,0% 100%,0% 0%);}50%{clip-path:polygon(100% 15%,50% 50%,100% 85%,0% 100%,0% 0%);}100%{clip-path:polygon(100% 0%,50% 50%,100% 100%,0% 100%,0% 0%);}}
-
-  /* Dots */
-  .pac-dots{display:flex;align-items:center;gap:5px;position:absolute;top:45%;right:10px;opacity:0.5;}
-  .pac-dot{width:2px;height:2px;border-radius:50%;background:#ffe000;animation:dotEat 8s linear infinite;}
-  .pac-dot:nth-child(1){animation-delay:0s;} .pac-dot:nth-child(2){animation-delay:0.3s;} .pac-dot:nth-child(3){animation-delay:0.6s;}
-  .pac-dot:nth-child(4){animation-delay:0.9s;} .pac-dot:nth-child(5){animation-delay:1.2s;} .pac-dot:nth-child(6){animation-delay:1.5s;}
-  @keyframes dotEat{0%,80%{opacity:0.5;}85%{opacity:0;}100%{opacity:0.5;}}
-
-  /* Ghost - pixel art via box-shadow */
-  .ghost{width:2px;height:2px;position:relative;margin-left:2px;color:transparent;animation:ghostFloat 0.6s ease-in-out infinite alternate;}
-  .ghost-red{box-shadow:
-    2px 0 0 #ff3333, 4px 0 0 #ff3333, 6px 0 0 #ff3333,
-    0px 2px 0 #ff3333, 2px 2px 0 #ff3333, 4px 2px 0 #ff3333, 6px 2px 0 #ff3333, 8px 2px 0 #ff3333,
-    0px 4px 0 #ff3333, 2px 4px 0 #fff, 4px 4px 0 #ff3333, 6px 4px 0 #fff, 8px 4px 0 #ff3333,
-    0px 6px 0 #ff3333, 2px 6px 0 #ff3333, 4px 6px 0 #ff3333, 6px 6px 0 #ff3333, 8px 6px 0 #ff3333,
-    0px 8px 0 #ff3333, 2px 8px 0 transparent, 4px 8px 0 #ff3333, 6px 8px 0 transparent, 8px 8px 0 #ff3333;}
-  .ghost-cyan{box-shadow:
-    2px 0 0 #00e5ff, 4px 0 0 #00e5ff, 6px 0 0 #00e5ff,
-    0px 2px 0 #00e5ff, 2px 2px 0 #00e5ff, 4px 2px 0 #00e5ff, 6px 2px 0 #00e5ff, 8px 2px 0 #00e5ff,
-    0px 4px 0 #00e5ff, 2px 4px 0 #fff, 4px 4px 0 #00e5ff, 6px 4px 0 #fff, 8px 4px 0 #00e5ff,
-    0px 6px 0 #00e5ff, 2px 6px 0 #00e5ff, 4px 6px 0 #00e5ff, 6px 6px 0 #00e5ff, 8px 6px 0 #00e5ff,
-    0px 8px 0 #00e5ff, 2px 8px 0 transparent, 4px 8px 0 #00e5ff, 6px 8px 0 transparent, 8px 8px 0 #00e5ff;}
-  @keyframes ghostFloat{0%{transform:translateY(0);}100%{transform:translateY(-1px);}}
+  /* SPACE INVADERS MODAL */
+  .si-modal { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.92); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; }
+  .si-modal.active { display:flex; }
+  .si-wrap { position:relative; background:#0a0a0a; border:2px solid #00ff41; border-radius:8px; overflow:hidden; box-shadow: 0 0 40px rgba(0,255,65,0.15), 0 0 80px rgba(0,255,65,0.05); }
+  .si-canvas { display:block; image-rendering:pixelated; }
+  .si-scanlines { position:absolute; top:0;left:0;right:0;bottom:0; background:repeating-linear-gradient(0deg,rgba(0,0,0,0.12) 0px,rgba(0,0,0,0.12) 1px,transparent 1px,transparent 3px); pointer-events:none; }
+  .si-glow { position:absolute; top:0;left:0;right:0;bottom:0; box-shadow:inset 0 0 60px rgba(0,255,65,0.06); pointer-events:none; border-radius:6px; }
+  .si-close { position:absolute; top:-32px; right:0; background:none; border:none; color:#666; font-size:20px; cursor:pointer; font-family:monospace; padding:4px 8px; }
+  .si-close:hover { color:#fff; }
 
   /* GABE TICKER */
   .ticker-container{overflow:hidden;width:100%;height:12px;margin-top:3px;border-top:1px solid rgba(0,0,0,0.08);padding-top:2px;padding-bottom:2px;position:relative;}
@@ -477,15 +462,7 @@
     <div class="frame frame-jack">
       <div class="matte">
         <div class="glass"></div>
-        <div class="retro-game">
-          <div class="retro-chase">
-            <div class="pacman"></div>
-            <div class="ghost ghost-red"></div>
-            <div class="ghost ghost-cyan"></div>
-          </div>
-          <div class="pac-dots"><div class="pac-dot"></div><div class="pac-dot"></div><div class="pac-dot"></div><div class="pac-dot"></div><div class="pac-dot"></div><div class="pac-dot"></div></div>
-        </div>
-        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label"><div class="disc-label-name">Jack</div><div class="disc-label-hole"></div></div></div></div>
+        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label" id="jackPlayBtn"><div class="disc-label-name">Jack</div><div class="disc-label-hole"></div></div></div></div>
         <div class="bottom-row">
           <div class="headshot"><img src="images/jack.jpg" alt="Jack"></div>
           <div class="plaque"><div class="plaque-title">Presented to</div><div class="plaque-name">Jack Curphey</div><div class="plaque-detail">Engineer, Mechanic<br>&amp; Hardcore Gamer</div></div>
@@ -533,6 +510,17 @@
 
   </div>
 </div>
+
+<!-- SPACE INVADERS MODAL -->
+<div class="si-modal" id="siModal">
+  <div class="si-wrap">
+    <button class="si-close" id="siClose">✕</button>
+    <canvas class="si-canvas" id="siCanvas" style="width:420px;height:520px;"></canvas>
+    <div class="si-scanlines"></div>
+    <div class="si-glow"></div>
+  </div>
+</div>
+
 <script>
 // MARK GLITCH
 (function(){var canvas=document.getElementById('markNoise'),matte=document.getElementById('markMatte'),maskR=document.getElementById('maskR'),maskG=document.getElementById('maskG'),maskB=document.getElementById('maskB'),tears=[document.getElementById('tear1'),document.getElementById('tear2'),document.getElementById('tear3'),document.getElementById('tear4')];function sizeCanvas(){canvas.width=matte.offsetWidth;canvas.height=matte.offsetHeight;}sizeCanvas();window.addEventListener('resize',sizeCanvas);var ctx=canvas.getContext('2d'),glitching=false,glitchEnd=0;function drawNoise(){var w=canvas.width,h=canvas.height,imgData=ctx.createImageData(w,h),d=imgData.data;for(var i=0;i<d.length;i+=4){var v=Math.random()*255;d[i]=v;d[i+1]=v;d[i+2]=v;d[i+3]=50;}ctx.putImageData(imgData,0,0);}function fireTear(t){var y=Math.random()*100,h=2+Math.random()*8,o=(Math.random()-0.5)*12;t.style.top=y+'%';t.style.height=h+'px';t.style.opacity='1';t.style.transform='translateX('+o+'px)';t.style.background='rgba(129,244,22,'+(0.05+Math.random()*0.08)+')';setTimeout(function(){t.style.opacity='0';t.style.height='0';},40+Math.random()*60);}function triggerGlitch(){glitching=true;glitchEnd=Date.now()+200+Math.random()*600;canvas.style.opacity='1';var sx=3+Math.random()*5,sy=(Math.random()-0.5)*4;maskR.style.opacity='0.7';maskG.style.opacity='0.7';maskB.style.opacity='0.7';maskR.style.transform='translate('+(-sx)+'px,'+(-sy)+'px)';maskG.style.transform='translate(0,0)';maskB.style.transform='translate('+sx+'px,'+sy+'px)';var d=0;tears.forEach(function(t){setTimeout(function(){fireTear(t);},d);d+=30+Math.random()*40;});}function hideGlitch(){glitching=false;canvas.style.opacity='0';maskR.style.opacity='0';maskG.style.opacity='0';maskB.style.opacity='0';}var lastN=0;function loop(ts){if(glitching){if(ts-lastN>66){drawNoise();lastN=ts;}if(Math.random()>0.5){var jx=2+Math.random()*6,jy=(Math.random()-0.5)*5;maskR.style.transform='translate('+(-jx)+'px,'+(-jy)+'px)';maskB.style.transform='translate('+jx+'px,'+jy+'px)';}if(Math.random()>0.65)fireTear(tears[Math.floor(Math.random()*tears.length)]);if(Date.now()>glitchEnd)hideGlitch();}else{if(Math.random()>0.997)triggerGlitch();}requestAnimationFrame(loop);}setTimeout(triggerGlitch,2000);requestAnimationFrame(loop);})();
@@ -551,6 +539,8 @@
   var expandedSet = new Set();
   var secTriggered = false;
 
+  var frameLinks = { 0: 'https://crashoverride.com', 1: 'https://albion-consulting.com', 3: 'https://hanacurphey.com' };
+
   frames.forEach(function(frame, i) {
     frame.setAttribute('data-pos', i);
     frame.addEventListener('mouseenter', function() {
@@ -567,6 +557,13 @@
       clearTimeout(timers[i]);
       frame.classList.remove('expanded');
     });
+    if (frameLinks[i]) {
+      frame.addEventListener('click', function() {
+        if (frame.classList.contains('expanded')) {
+          window.open(frameLinks[i], '_blank');
+        }
+      });
+    }
   });
 
   var overlay = document.getElementById('secOverlay');
@@ -593,6 +590,329 @@
       String(now.getMinutes()).padStart(2,'0') + ':' +
       String(now.getSeconds()).padStart(2,'0');
   }
+})();
+
+// JACK SPACE INVADERS
+(function(){
+  var jackFrame = document.querySelector('.frame-jack');
+  var jackBtn = document.getElementById('jackPlayBtn');
+  var jackLabel = jackBtn.querySelector('.disc-label-name');
+  var modal = document.getElementById('siModal');
+  var canvas = document.getElementById('siCanvas');
+  var ctx = canvas.getContext('2d');
+  var gameRunning = false;
+  var animId = null;
+
+  // Show PLAY when expanded
+  var obs = new MutationObserver(function() {
+    if (jackFrame.classList.contains('expanded')) {
+      jackLabel.textContent = '▶ PLAY';
+    } else {
+      jackLabel.textContent = 'Jack';
+    }
+  });
+  obs.observe(jackFrame, { attributes: true, attributeFilter: ['class'] });
+
+  // Click play button
+  jackBtn.addEventListener('click', function(e) {
+    if (!jackFrame.classList.contains('expanded')) return;
+    e.stopPropagation();
+    openGame();
+  });
+
+  document.getElementById('siClose').addEventListener('click', closeGame);
+
+  function openGame() {
+    modal.classList.add('active');
+    startGame();
+  }
+
+  function closeGame() {
+    modal.classList.remove('active');
+    gameRunning = false;
+    if (animId) cancelAnimationFrame(animId);
+    jackFrame.classList.remove('expanded');
+  }
+
+  // ── GAME ENGINE ──
+  var W = 420, H = 520;
+  canvas.width = W;
+  canvas.height = H;
+
+  var player, aliens, playerBullets, alienBullets, score, gameOver, gameWon, showingHint, hintTimer;
+  var keys = {};
+
+  // Pixel sprite definitions
+  var SPRITES = {
+    invader1: [
+      [0,0,1,0,0,0,0,0,1,0,0],
+      [0,0,0,1,0,0,0,1,0,0,0],
+      [0,0,1,1,1,1,1,1,1,0,0],
+      [0,1,1,0,1,1,1,0,1,1,0],
+      [1,1,1,1,1,1,1,1,1,1,1],
+      [1,0,1,1,1,1,1,1,1,0,1],
+      [1,0,1,0,0,0,0,0,1,0,1],
+      [0,0,0,1,1,0,1,1,0,0,0]
+    ],
+    invader2: [
+      [0,0,0,1,1,0,0,0],
+      [0,0,1,1,1,1,0,0],
+      [0,1,1,1,1,1,1,0],
+      [1,1,0,1,1,0,1,1],
+      [1,1,1,1,1,1,1,1],
+      [0,0,1,0,0,1,0,0],
+      [0,1,0,1,1,0,1,0],
+      [1,0,1,0,0,1,0,1]
+    ],
+    ship: [
+      [0,0,0,0,0,1,0,0,0,0,0],
+      [0,0,0,0,1,1,1,0,0,0,0],
+      [0,0,0,0,1,1,1,0,0,0,0],
+      [0,1,1,1,1,1,1,1,1,1,0],
+      [1,1,1,1,1,1,1,1,1,1,1],
+      [1,1,1,1,1,1,1,1,1,1,1]
+    ]
+  };
+
+  function drawSprite(sprite, x, y, s, color) {
+    ctx.fillStyle = color;
+    for (var r = 0; r < sprite.length; r++)
+      for (var c = 0; c < sprite[r].length; c++)
+        if (sprite[r][c]) ctx.fillRect(x + c * s, y + r * s, s, s);
+  }
+
+  function initGame() {
+    score = 0;
+    gameOver = false;
+    gameWon = false;
+    showingHint = true;
+    hintTimer = 120; // ~2 seconds at 60fps
+    player = { x: W / 2 - 16, y: H - 50, w: 33, h: 18, speed: 4 };
+    playerBullets = [];
+    alienBullets = [];
+    aliens = [];
+    var colors = ['#00ff41', '#33ff77', '#00ccff'];
+    for (var row = 0; row < 3; row++) {
+      for (var col = 0; col < 8; col++) {
+        aliens.push({
+          x: 40 + col * 44,
+          y: 60 + row * 40,
+          w: row === 0 ? 24 : 33,
+          h: 24,
+          row: row,
+          alive: true,
+          color: colors[row],
+          sprite: row === 0 ? SPRITES.invader2 : SPRITES.invader1
+        });
+      }
+    }
+    aliens.dir = 1;
+    aliens.speed = 1;
+    aliens.moveTimer = 0;
+    aliens.moveInterval = 45;
+    aliens.shootTimer = 0;
+  }
+
+  function startGame() {
+    gameRunning = true;
+    initGame();
+    loop();
+  }
+
+  function loop() {
+    if (!gameRunning) return;
+    update();
+    draw();
+    animId = requestAnimationFrame(loop);
+  }
+
+  function update() {
+    if (showingHint) {
+      hintTimer--;
+      if (hintTimer <= 0) showingHint = false;
+      return;
+    }
+    if (gameOver || gameWon) return;
+
+    // Player movement
+    if (keys['ArrowLeft'] && player.x > 4) player.x -= player.speed;
+    if (keys['ArrowRight'] && player.x < W - player.w - 4) player.x += player.speed;
+
+    // Player bullets
+    for (var i = playerBullets.length - 1; i >= 0; i--) {
+      playerBullets[i].y -= 6;
+      if (playerBullets[i].y < 0) playerBullets.splice(i, 1);
+    }
+
+    // Alien bullets
+    for (var i = alienBullets.length - 1; i >= 0; i--) {
+      alienBullets[i].y += 3;
+      if (alienBullets[i].y > H) { alienBullets.splice(i, 1); continue; }
+      // Hit player?
+      if (alienBullets[i].x > player.x && alienBullets[i].x < player.x + player.w &&
+          alienBullets[i].y > player.y && alienBullets[i].y < player.y + player.h) {
+        gameOver = true;
+        return;
+      }
+    }
+
+    // Alien movement
+    aliens.moveTimer++;
+    if (aliens.moveTimer >= aliens.moveInterval) {
+      aliens.moveTimer = 0;
+      var hitEdge = false;
+      for (var i = 0; i < aliens.length; i++) {
+        if (!aliens[i].alive) continue;
+        if ((aliens[i].x + aliens[i].w + 8 * aliens.dir > W - 10) || (aliens[i].x + 8 * aliens.dir < 10)) {
+          hitEdge = true;
+          break;
+        }
+      }
+      if (hitEdge) {
+        aliens.dir *= -1;
+        for (var i = 0; i < aliens.length; i++) {
+          if (aliens[i].alive) aliens[i].y += 16;
+        }
+        // Speed up slightly
+        if (aliens.moveInterval > 15) aliens.moveInterval -= 2;
+      } else {
+        for (var i = 0; i < aliens.length; i++) {
+          if (aliens[i].alive) aliens[i].x += 8 * aliens.dir;
+        }
+      }
+    }
+
+    // Alien shooting
+    aliens.shootTimer++;
+    if (aliens.shootTimer > 60) {
+      aliens.shootTimer = 0;
+      var living = aliens.filter(function(a) { return a.alive; });
+      if (living.length > 0) {
+        var shooter = living[Math.floor(Math.random() * living.length)];
+        alienBullets.push({ x: shooter.x + shooter.w / 2, y: shooter.y + shooter.h });
+      }
+    }
+
+    // Bullet-alien collision
+    for (var b = playerBullets.length - 1; b >= 0; b--) {
+      for (var a = 0; a < aliens.length; a++) {
+        if (!aliens[a].alive) continue;
+        if (playerBullets[b] &&
+            playerBullets[b].x > aliens[a].x && playerBullets[b].x < aliens[a].x + aliens[a].w &&
+            playerBullets[b].y > aliens[a].y && playerBullets[b].y < aliens[a].y + aliens[a].h) {
+          aliens[a].alive = false;
+          playerBullets.splice(b, 1);
+          score += (3 - aliens[a].row) * 10;
+          break;
+        }
+      }
+    }
+
+    // Check alien reached player
+    for (var i = 0; i < aliens.length; i++) {
+      if (aliens[i].alive && aliens[i].y + aliens[i].h >= player.y) {
+        gameOver = true;
+        return;
+      }
+    }
+
+    // Check win
+    if (aliens.filter(function(a) { return a.alive; }).length === 0) {
+      gameWon = true;
+    }
+  }
+
+  function draw() {
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, W, H);
+
+    if (showingHint) {
+      ctx.fillStyle = '#00ff41';
+      ctx.font = 'bold 16px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('SPACE INVADERS', W / 2, H / 2 - 50);
+      ctx.fillStyle = '#00ccff';
+      ctx.font = '12px monospace';
+      ctx.fillText('← → ARROW KEYS : MOVE', W / 2, H / 2);
+      ctx.fillText('SPACE : FIRE', W / 2, H / 2 + 24);
+      ctx.fillStyle = '#666';
+      ctx.font = '10px monospace';
+      ctx.fillText('ESC : QUIT', W / 2, H / 2 + 56);
+      ctx.textAlign = 'left';
+      return;
+    }
+
+    // Score
+    ctx.fillStyle = '#00ff41';
+    ctx.font = 'bold 14px monospace';
+    ctx.fillText('SCORE: ' + String(score).padStart(4, '0'), 12, 24);
+
+    // Ground line
+    ctx.fillStyle = '#00ff41';
+    ctx.fillRect(0, H - 20, W, 1);
+
+    // Aliens
+    for (var i = 0; i < aliens.length; i++) {
+      if (!aliens[i].alive) continue;
+      var s = aliens[i].row === 0 ? 3 : 3;
+      drawSprite(aliens[i].sprite, aliens[i].x, aliens[i].y, s, aliens[i].color);
+    }
+
+    // Player
+    drawSprite(SPRITES.ship, player.x, player.y, 3, '#00ccff');
+
+    // Player bullets
+    ctx.fillStyle = '#ffff00';
+    for (var i = 0; i < playerBullets.length; i++) {
+      ctx.fillRect(playerBullets[i].x, playerBullets[i].y, 2, 8);
+    }
+
+    // Alien bullets
+    ctx.fillStyle = '#ff4444';
+    for (var i = 0; i < alienBullets.length; i++) {
+      ctx.fillRect(alienBullets[i].x, alienBullets[i].y, 2, 8);
+    }
+
+    // Game over / win
+    if (gameOver || gameWon) {
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(0, H / 2 - 70, W, 140);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = gameWon ? '#00ff41' : '#ff4444';
+      ctx.font = 'bold 24px monospace';
+      ctx.fillText(gameWon ? 'WAVE CLEARED!' : 'GAME OVER', W / 2, H / 2 - 20);
+      ctx.fillStyle = '#fff';
+      ctx.font = '14px monospace';
+      ctx.fillText('SCORE: ' + score, W / 2, H / 2 + 12);
+      ctx.fillStyle = '#00ccff';
+      ctx.font = '12px monospace';
+      ctx.fillText('[ SPACE ] PLAY AGAIN', W / 2, H / 2 + 44);
+      ctx.fillStyle = '#666';
+      ctx.fillText('[ ESC ] CLOSE', W / 2, H / 2 + 64);
+      ctx.textAlign = 'left';
+    }
+  }
+
+  // Keyboard
+  document.addEventListener('keydown', function(e) {
+    if (!gameRunning) return;
+    keys[e.key] = true;
+    if (e.key === ' ' || e.key === 'Spacebar') {
+      e.preventDefault();
+      if (showingHint) { showingHint = false; return; }
+      if (gameOver || gameWon) { initGame(); return; }
+      if (playerBullets.length < 1) {
+        playerBullets.push({ x: player.x + player.w / 2 - 1, y: player.y - 4 });
+      }
+    }
+    if (e.key === 'Escape') {
+      closeGame();
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') e.preventDefault();
+  });
+  document.addEventListener('keyup', function(e) {
+    keys[e.key] = false;
+  });
 })();
 </script>
 </body>
