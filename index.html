@@ -272,6 +272,22 @@
   .frame-gabe .disc-metal { background: conic-gradient(from 45deg, #d4af37, #ecc94e, #d4af37, #c4a030, #d4af37, #f0d060, #d4af37, #c4a030, #d4af37, #ecc94e, #d4af37, #c4a030, #d4af37, #f0d060, #d4af37); filter: brightness(1.08) saturate(1.1); }
   .frame-marg .disc-metal { filter: brightness(1.1) saturate(1.15); }
 
+  /* MARG DOORBELL */
+  .frame-marg .disc-label { transition: all 0.3s ease; cursor: default; }
+  .frame-marg.expanded .disc-label { background: radial-gradient(circle, #f5e6c8, #c9a530); border-color: #d4af37; cursor: pointer; box-shadow: 0 0 8px rgba(212,175,55,0.5), inset 0 2px 4px rgba(0,0,0,0.3), inset 0 -1px 0 rgba(255,255,255,0.2); }
+  .frame-marg.expanded .disc-label-name { color: #3a2a0a; font-size: 4px; letter-spacing: 1.5px; }
+  .frame-marg.expanded .disc-label-hole { display: none; }
+  .frame-marg.expanded .disc-label:active { box-shadow: 0 0 4px rgba(212,175,55,0.3), inset 0 1px 6px rgba(0,0,0,0.5); transform: translate(-50%,-50%) scale(0.95); }
+
+  /* ANGRY MARG IN-FRAME */
+  .marg-angry { position:absolute; top:0; left:0; right:0; bottom:0; z-index:15; display:none; overflow:hidden; }
+  .marg-angry.active { display:block; }
+  .marg-angry img { width:100%; height:100%; object-fit:cover; object-position:center 15%; transform:scale(0); opacity:0; }
+  .marg-angry.active img { animation: margSlam 0.35s cubic-bezier(0.17,0.67,0.3,1.3) forwards; }
+  @keyframes margSlam { 0%{transform:scale(0) rotate(-5deg);opacity:0;} 55%{transform:scale(1.12) rotate(2deg);opacity:1;} 75%{transform:scale(0.97) rotate(-1deg);} 100%{transform:scale(1) rotate(0deg);opacity:1;} }
+  @keyframes frameShake { 0%,100%{transform:translate(0,0);} 12%{transform:translate(-3px,2px);} 25%{transform:translate(2px,-2px);} 37%{transform:translate(-2px,3px);} 50%{transform:translate(3px,-1px);} 62%{transform:translate(-1px,2px);} 75%{transform:translate(2px,-2px);} 87%{transform:translate(-1px,1px);} }
+  .frame-marg.shaking .matte { animation: frameShake 0.4s ease-in-out; }
+
   /* WALKING SHADOW */
   .gallery-shadow {
     position: fixed;
@@ -498,9 +514,10 @@
     <div class="frame frame-marg">
       <div class="matte">
         <div class="glass"></div>
+        <div class="marg-angry" id="margAngry"><img src="images/marg-angry.png" alt="Angry Marg"></div>
         <div class="paw-prints"><div class="paw paw-1">🐾</div><div class="paw paw-2">🐾</div><div class="paw paw-3">🐾</div><div class="paw paw-4">🐾</div><div class="paw paw-5">🐾</div></div>
         <svg class="scratch-svg"><line x1="60%" y1="55%" x2="65%" y2="62%" class="scratch-line"/><line x1="62%" y1="56%" x2="67%" y2="60%" class="scratch-line"/><line x1="25%" y1="70%" x2="30%" y2="78%" class="scratch-line"/><line x1="27%" y1="71%" x2="31%" y2="76%" class="scratch-line"/></svg>
-        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label"><div class="disc-label-name" style="font-size:4px;">Marg</div><div class="disc-label-hole"></div></div></div></div>
+        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label" id="margBellBtn"><div class="disc-label-name" style="font-size:4px;">Marg</div><div class="disc-label-hole"></div></div></div></div>
         <div class="bottom-row">
           <div class="headshot"><img src="images/marg.jpg" alt="Marg"></div>
           <div class="plaque"><div class="plaque-title">Presented to</div><div class="plaque-name">Marg</div><div class="plaque-detail">Loyal Chihuahua<br>Lifetime Achievement Award</div></div>
@@ -590,6 +607,43 @@
       String(now.getMinutes()).padStart(2,'0') + ':' +
       String(now.getSeconds()).padStart(2,'0');
   }
+})();
+
+// MARG DOORBELL
+(function(){
+  var margFrame = document.querySelector('.frame-marg');
+  var margBtn = document.getElementById('margBellBtn');
+  var margLabel = margBtn.querySelector('.disc-label-name');
+  var angryDiv = document.getElementById('margAngry');
+  var margShowing = false;
+
+  // Show RING when expanded
+  var obs = new MutationObserver(function() {
+    var expanded = margFrame.classList.contains('expanded');
+    margLabel.textContent = expanded ? '🔔 RING' : 'Marg';
+    margLabel.style.fontSize = expanded ? '5px' : '4px';
+    if (!expanded && margShowing) {
+      angryDiv.classList.remove('active');
+      margShowing = false;
+    }
+  });
+  obs.observe(margFrame, { attributes: true, attributeFilter: ['class'] });
+
+  margBtn.addEventListener('click', function(e) {
+    if (!margFrame.classList.contains('expanded') || margShowing) return;
+    e.stopPropagation();
+    margBtn.style.pointerEvents = 'none';
+    // Brief pause for tension
+    setTimeout(function() {
+      margShowing = true;
+      margFrame.classList.add('shaking');
+      angryDiv.classList.add('active');
+      setTimeout(function() {
+        margFrame.classList.remove('shaking');
+        margBtn.style.pointerEvents = '';
+      }, 400);
+    }, 350);
+  });
 })();
 
 // JACK SPACE INVADERS
