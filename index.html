@@ -254,7 +254,6 @@
 </style>
 </head>
 <body>
-<div class="gallery-shadow" id="galleryShadow"></div>
 <div class="security-cam" id="secCam"><div class="cam-dot"></div><div class="cam-label">REC</div></div>
 <div class="wall">
   <div class="gallery-title">
@@ -376,27 +375,6 @@
 (function(){var items=[{t:'CURPH \u25b242.0',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'FAM \u25b2100.0',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'GABE \u25b2999.9',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'SLEEP \u25bc2.1',c:'ticker-down'},{t:'\u2502',c:'ticker-sep'},{t:'HUSTLE \u25b288.5',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'CHILL \u25bc0.3',c:'ticker-down'},{t:'\u2502',c:'ticker-sep'},{t:'DEALS \u25b277.7',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'HAIR \u25b210/10',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'}];var track=document.getElementById('tickerTrack');for(var c=0;c<4;c++){items.forEach(function(item){var span=document.createElement('span');span.className='ticker-item '+item.c;span.textContent=item.t;track.appendChild(span);});}var pos=0;function scroll(){pos-=0.3;if(Math.abs(pos)>=track.scrollWidth/2)pos=0;track.style.transform='translateX('+pos+'px)';requestAnimationFrame(scroll);}requestAnimationFrame(scroll);})();
 // HOVER EXPAND
 (function(){var frames=document.querySelectorAll('.frame');var timers={};frames.forEach(function(frame,i){frame.setAttribute('data-pos',i);frame.addEventListener('mouseenter',function(){var idx=i;timers[idx]=setTimeout(function(){frames.forEach(function(f){f.classList.remove('expanded');});frame.classList.add('expanded');},1000);});frame.addEventListener('mouseleave',function(){clearTimeout(timers[i]);frame.classList.remove('expanded');});});})();
-// WALKING SHADOW — someone passes by the gallery every 30-60s
-(function(){
-  var shadow = document.getElementById('galleryShadow');
-  function walkBy() {
-    shadow.style.left = '-200px';
-    shadow.style.opacity = '1';
-    shadow.style.transition = 'left 4s ease-in-out, opacity 0.5s';
-    shadow.style.left = (window.innerWidth + 200) + 'px';
-    setTimeout(function(){ shadow.style.opacity = '0'; }, 3500);
-    setTimeout(function(){
-      shadow.style.transition = 'none';
-      shadow.style.left = '-200px';
-      scheduleWalk();
-    }, 5000);
-  }
-  function scheduleWalk() {
-    setTimeout(walkBy, 30000 + Math.random() * 30000);
-  }
-  setTimeout(walkBy, 8000);
-  scheduleWalk();
-})();
 // SECURITY CAMERA — red dot follows cursor subtly
 (function(){
   var cam = document.getElementById('secCam');
