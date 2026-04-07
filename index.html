@@ -7,7 +7,50 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400&display=swap');
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #000; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; }
+  body { background: #000; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; transition: background 2s ease; }
+
+  /* DAY MODE — warm natural light */
+  body.daytime {
+    background: #1a1816;
+  }
+  body.daytime .wall::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: 20%;
+    width: 60%;
+    height: 100%;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,240,210,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body.daytime .frame {
+    box-shadow: 10px 14px 30px rgba(0,0,0,0.5), -3px -3px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+  body.daytime .disc-streak {
+    background: linear-gradient(135deg, transparent 15%, rgba(255,245,220,0.12) 30%, rgba(255,245,220,0.25) 42%, rgba(255,255,240,0.3) 46%, rgba(255,245,220,0.25) 50%, rgba(255,245,220,0.12) 60%, transparent 75%);
+  }
+
+  /* NIGHT MODE — spotlights */
+  body.nighttime {
+    background: #050505;
+  }
+  body.nighttime .gallery-grid {
+    position: relative;
+  }
+  /* Individual spotlights per frame */
+  body.nighttime .frame {
+    box-shadow: 12px 16px 40px rgba(0,0,0,0.9), -4px -3px 15px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+  }
+  body.nighttime .frame::before {
+    background:
+      radial-gradient(ellipse at 50% -20%, rgba(255,240,200,0.04) 0%, transparent 60%),
+      repeating-linear-gradient(92deg, rgba(255,255,255,0.005) 0px, transparent 1px, transparent 8px, rgba(255,255,255,0.003) 9px);
+  }
+  body.nighttime .disc-streak {
+    background: linear-gradient(135deg, transparent 25%, rgba(255,250,230,0.06) 38%, rgba(255,250,230,0.14) 44%, rgba(255,255,240,0.18) 47%, rgba(255,250,230,0.14) 50%, rgba(255,250,230,0.06) 55%, transparent 68%);
+  }
+
   .wall { position: relative; z-index: 1; padding: 30px 16px; max-width: 1050px; width: 100%; }
   .gallery-title { text-align: center; margin-bottom: 40px; }
 
@@ -444,38 +487,43 @@
 (function(){var canvas=document.getElementById('markNoise'),matte=document.getElementById('markMatte'),maskR=document.getElementById('maskR'),maskG=document.getElementById('maskG'),maskB=document.getElementById('maskB'),tears=[document.getElementById('tear1'),document.getElementById('tear2'),document.getElementById('tear3'),document.getElementById('tear4')];function sizeCanvas(){canvas.width=matte.offsetWidth;canvas.height=matte.offsetHeight;}sizeCanvas();window.addEventListener('resize',sizeCanvas);var ctx=canvas.getContext('2d'),glitching=false,glitchEnd=0;function drawNoise(){var w=canvas.width,h=canvas.height,imgData=ctx.createImageData(w,h),d=imgData.data;for(var i=0;i<d.length;i+=4){var v=Math.random()*255;d[i]=v;d[i+1]=v;d[i+2]=v;d[i+3]=50;}ctx.putImageData(imgData,0,0);}function fireTear(t){var y=Math.random()*100,h=2+Math.random()*8,o=(Math.random()-0.5)*12;t.style.top=y+'%';t.style.height=h+'px';t.style.opacity='1';t.style.transform='translateX('+o+'px)';t.style.background='rgba(129,244,22,'+(0.05+Math.random()*0.08)+')';setTimeout(function(){t.style.opacity='0';t.style.height='0';},40+Math.random()*60);}function triggerGlitch(){glitching=true;glitchEnd=Date.now()+200+Math.random()*600;canvas.style.opacity='1';var sx=3+Math.random()*5,sy=(Math.random()-0.5)*4;maskR.style.opacity='0.7';maskG.style.opacity='0.7';maskB.style.opacity='0.7';maskR.style.transform='translate('+(-sx)+'px,'+(-sy)+'px)';maskG.style.transform='translate(0,0)';maskB.style.transform='translate('+sx+'px,'+sy+'px)';var d=0;tears.forEach(function(t){setTimeout(function(){fireTear(t);},d);d+=30+Math.random()*40;});}function hideGlitch(){glitching=false;canvas.style.opacity='0';maskR.style.opacity='0';maskG.style.opacity='0';maskB.style.opacity='0';}var lastN=0;function loop(ts){if(glitching){if(ts-lastN>66){drawNoise();lastN=ts;}if(Math.random()>0.5){var jx=2+Math.random()*6,jy=(Math.random()-0.5)*5;maskR.style.transform='translate('+(-jx)+'px,'+(-jy)+'px)';maskB.style.transform='translate('+jx+'px,'+jy+'px)';}if(Math.random()>0.65)fireTear(tears[Math.floor(Math.random()*tears.length)]);if(Date.now()>glitchEnd)hideGlitch();}else{if(Math.random()>0.997)triggerGlitch();}requestAnimationFrame(loop);}setTimeout(triggerGlitch,2000);requestAnimationFrame(loop);})();
 // GABE TICKER
 (function(){var items=[{t:'CURPH \u25b242.0',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'FAM \u25b2100.0',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'GABE \u25b2999.9',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'SLEEP \u25bc2.1',c:'ticker-down'},{t:'\u2502',c:'ticker-sep'},{t:'HUSTLE \u25b288.5',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'CHILL \u25bc0.3',c:'ticker-down'},{t:'\u2502',c:'ticker-sep'},{t:'DEALS \u25b277.7',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'},{t:'HAIR \u25b210/10',c:'ticker-up'},{t:'\u2502',c:'ticker-sep'}];var track=document.getElementById('tickerTrack');for(var c=0;c<4;c++){items.forEach(function(item){var span=document.createElement('span');span.className='ticker-item '+item.c;span.textContent=item.t;track.appendChild(span);});}var pos=0;function scroll(){pos-=0.3;if(Math.abs(pos)>=track.scrollWidth/2)pos=0;track.style.transform='translateX('+pos+'px)';requestAnimationFrame(scroll);}requestAnimationFrame(scroll);})();
-// HOVER EXPAND
-(function(){var frames=document.querySelectorAll('.frame');var timers={};frames.forEach(function(frame,i){frame.setAttribute('data-pos',i);frame.addEventListener('mouseenter',function(){var idx=i;timers[idx]=setTimeout(function(){frames.forEach(function(f){f.classList.remove('expanded');});frame.classList.add('expanded');},1000);});frame.addEventListener('mouseleave',function(){clearTimeout(timers[i]);frame.classList.remove('expanded');});});})();
-// SECURITY SYSTEM — triggers after 30s of active clicking
+// DAY/NIGHT MODE
 (function(){
+  var hour = new Date().getHours();
+  var isNight = hour >= 20 || hour < 7;
+  document.body.classList.add(isNight ? 'nighttime' : 'daytime');
+})();
+// HOVER EXPAND + SECURITY TRIGGER
+(function(){
+  var frames = document.querySelectorAll('.frame');
+  var timers = {};
+  var expandedSet = new Set();
+  var secTriggered = false;
+
+  frames.forEach(function(frame, i) {
+    frame.setAttribute('data-pos', i);
+    frame.addEventListener('mouseenter', function() {
+      timers[i] = setTimeout(function() {
+        frames.forEach(function(f) { f.classList.remove('expanded'); });
+        frame.classList.add('expanded');
+        expandedSet.add(i);
+        if (!secTriggered && expandedSet.size >= 6) {
+          triggerSecurity();
+        }
+      }, 1000);
+    });
+    frame.addEventListener('mouseleave', function() {
+      clearTimeout(timers[i]);
+      frame.classList.remove('expanded');
+    });
+  });
+
   var overlay = document.getElementById('secOverlay');
   var tsEl = document.getElementById('secTimestamp');
   var camEl = document.getElementById('secCamId');
-  var clickCount = 0;
-  var firstClick = 0;
-  var triggered = false;
-
-  document.addEventListener('click', function() {
-    if (triggered) return;
-    if (clickCount === 0) firstClick = Date.now();
-    clickCount++;
-    if (Date.now() - firstClick > 30000 && clickCount > 3) {
-      triggerSecurity();
-    }
-  });
-
-  // Also track mousemove activity
-  var moveCount = 0;
-  document.addEventListener('mousemove', function() {
-    if (triggered) return;
-    moveCount++;
-    if (firstClick > 0 && Date.now() - firstClick > 30000 && moveCount > 200) {
-      triggerSecurity();
-    }
-  });
 
   function triggerSecurity() {
-    triggered = true;
+    secTriggered = true;
     var hour = new Date().getHours();
     var isNight = hour >= 20 || hour < 7;
     overlay.classList.add(isNight ? 'night' : 'day');
