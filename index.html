@@ -179,12 +179,13 @@
   /* CARA FLOWERS — bigger daisies with petals, very slow growth */
   .flower-bed { position:absolute; bottom:0; left:5%; right:5%; height:40px; pointer-events:none; z-index:8; }
   .daisy-stem { position:absolute; bottom:0; width:1.5px; height:0; background:linear-gradient(to top,#2a5225,#4a8a3f); transform-origin:bottom center; }
-  .daisy-stem:nth-child(1){left:12%;--h:28px;animation:dg 12s ease-out 1s forwards, ds 5s ease-in-out 14s infinite;}
-  .daisy-stem:nth-child(2){left:35%;--h:35px;animation:dg 14s ease-out 2s forwards, ds 4.5s ease-in-out 16s infinite;}
-  .daisy-stem:nth-child(3){left:60%;--h:22px;animation:dg 11s ease-out 3s forwards, ds 5.5s ease-in-out 15s infinite;}
-  .daisy-stem:nth-child(4){left:82%;--h:30px;animation:dg 13s ease-out 1.5s forwards, ds 4s ease-in-out 15s infinite;}
+  .daisy-stem:nth-child(1){left:12%;--h:28px;animation:dg 12s ease-out 1s forwards, dbreeze 3.5s ease-in-out 13s infinite;}
+  .daisy-stem:nth-child(2){left:35%;--h:35px;animation:dg 14s ease-out 2s forwards, dbreeze2 4s ease-in-out 16s infinite;}
+  .daisy-stem:nth-child(3){left:60%;--h:22px;animation:dg 11s ease-out 3s forwards, dbreeze 3s ease-in-out 14s infinite;}
+  .daisy-stem:nth-child(4){left:82%;--h:30px;animation:dg 13s ease-out 1.5s forwards, dbreeze2 3.8s ease-in-out 14.5s infinite;}
   @keyframes dg{0%{height:0;}100%{height:var(--h);}}
-  @keyframes ds{0%,100%{transform:rotate(0deg);}50%{transform:rotate(1deg);}}
+  @keyframes dbreeze{0%,100%{transform:rotate(0deg);}20%{transform:rotate(-2.5deg);}50%{transform:rotate(3.5deg);}75%{transform:rotate(-1deg);}}
+  @keyframes dbreeze2{0%,100%{transform:rotate(0.5deg);}30%{transform:rotate(-3deg);}55%{transform:rotate(2.5deg);}80%{transform:rotate(-1.5deg);}}
 
   /* Daisy leaf */
   .daisy-leaf { position:absolute; width:6px; height:9px; background:#3d7a35; border-radius:0 70% 0 70%; opacity:0; }
@@ -200,11 +201,13 @@
 
   /* Daisy flower head with petals */
   .daisy-head { position:absolute; top:-8px; left:50%; transform:translateX(-50%) scale(0); width:16px; height:16px; opacity:0; }
-  .daisy-stem:nth-child(1) .daisy-head { animation: db 2s ease-out 10s forwards; }
-  .daisy-stem:nth-child(2) .daisy-head { animation: db 2s ease-out 13s forwards; }
-  .daisy-stem:nth-child(3) .daisy-head { animation: db 2s ease-out 11s forwards; }
-  .daisy-stem:nth-child(4) .daisy-head { animation: db 2s ease-out 12s forwards; }
+  .daisy-stem:nth-child(1) .daisy-head { animation: db 2s ease-out 10s forwards, dbob 2.8s ease-in-out 13s infinite; }
+  .daisy-stem:nth-child(2) .daisy-head { animation: db 2s ease-out 13s forwards, dbob2 3.2s ease-in-out 16s infinite; }
+  .daisy-stem:nth-child(3) .daisy-head { animation: db 2s ease-out 11s forwards, dbob 2.5s ease-in-out 14s infinite; }
+  .daisy-stem:nth-child(4) .daisy-head { animation: db 2s ease-out 12s forwards, dbob2 3s ease-in-out 14.5s infinite; }
   @keyframes db{0%{opacity:0;transform:translateX(-50%) scale(0);}60%{opacity:1;transform:translateX(-50%) scale(1.1);}100%{opacity:1;transform:translateX(-50%) scale(1);}}
+  @keyframes dbob{0%,100%{transform:translateX(-50%) scale(1) rotate(0deg);}40%{transform:translateX(-50%) scale(1) rotate(-3deg);}70%{transform:translateX(-50%) scale(1) rotate(2deg);}}
+  @keyframes dbob2{0%,100%{transform:translateX(-50%) scale(1) rotate(0.5deg);}35%{transform:translateX(-50%) scale(1) rotate(3deg);}65%{transform:translateX(-50%) scale(1) rotate(-2.5deg);}}
 
   .petal { position:absolute; width:4px; height:7px; background:#f0ead6; border-radius:50%; top:50%; left:50%; transform-origin:center bottom; }
   .petal:nth-child(1){transform:translate(-50%,-100%) rotate(0deg);}
