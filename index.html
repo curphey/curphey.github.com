@@ -6,13 +6,13 @@
 <title>The Curphey Collection — Transatlantic Chaos Records</title>
 <meta name="description" content="The Curphey family presented as a gallery wall of framed gold disc awards. Six records, six stories. Transatlantic Chaos Records — London, Brighton, Seattle, Mill Valley.">
 <meta property="og:title" content="The Curphey Collection">
-<meta property="og:description" content="A gallery wall of framed gold disc awards. Six records, six stories. No sleep til the B-side.">
+<meta property="og:description" content="A gallery wall of framed gold disc awards. Six records, six stories.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://curphey.com">
 <meta property="og:image" content="https://curphey.com/images/mark.jpg">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="The Curphey Collection">
-<meta name="twitter:description" content="Transatlantic Chaos Records — London, Brighton, Seattle, Mill Valley. No sleep til the B-side.">
+<meta name="twitter:description" content="Transatlantic Chaos Records — London, Brighton, Seattle, Mill Valley.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="DENY">
@@ -179,13 +179,13 @@
   /* CARA FLOWERS — bigger daisies with petals, very slow growth */
   .flower-bed { position:absolute; bottom:0; left:5%; right:5%; height:40px; pointer-events:none; z-index:8; }
   .daisy-stem { position:absolute; bottom:0; width:1.5px; height:0; background:linear-gradient(to top,#2a5225,#4a8a3f); transform-origin:bottom center; }
-  .daisy-stem:nth-child(1){left:12%;--h:28px;animation:dg 12s ease-out 1s forwards, dbreeze 3.5s ease-in-out 13s infinite;}
-  .daisy-stem:nth-child(2){left:35%;--h:35px;animation:dg 14s ease-out 2s forwards, dbreeze2 4s ease-in-out 16s infinite;}
-  .daisy-stem:nth-child(3){left:60%;--h:22px;animation:dg 11s ease-out 3s forwards, dbreeze 3s ease-in-out 14s infinite;}
-  .daisy-stem:nth-child(4){left:82%;--h:30px;animation:dg 13s ease-out 1.5s forwards, dbreeze2 3.8s ease-in-out 14.5s infinite;}
+  .daisy-stem:nth-child(1){left:12%;--h:28px;animation:dg 12s ease-out 1s forwards, dbreeze 2.8s ease-in-out 13s infinite;}
+  .daisy-stem:nth-child(2){left:35%;--h:35px;animation:dg 14s ease-out 2s forwards, dbreeze2 3.2s ease-in-out 16s infinite;}
+  .daisy-stem:nth-child(3){left:60%;--h:22px;animation:dg 11s ease-out 3s forwards, dbreeze 2.4s ease-in-out 14s infinite;}
+  .daisy-stem:nth-child(4){left:82%;--h:30px;animation:dg 13s ease-out 1.5s forwards, dbreeze2 3s ease-in-out 14.5s infinite;}
   @keyframes dg{0%{height:0;}100%{height:var(--h);}}
-  @keyframes dbreeze{0%,100%{transform:rotate(0deg);}20%{transform:rotate(-2.5deg);}50%{transform:rotate(3.5deg);}75%{transform:rotate(-1deg);}}
-  @keyframes dbreeze2{0%,100%{transform:rotate(0.5deg);}30%{transform:rotate(-3deg);}55%{transform:rotate(2.5deg);}80%{transform:rotate(-1.5deg);}}
+  @keyframes dbreeze{0%,100%{transform:rotate(0deg);}15%{transform:rotate(-6deg);}40%{transform:rotate(8deg);}60%{transform:rotate(-4deg);}80%{transform:rotate(5deg);}}
+  @keyframes dbreeze2{0%,100%{transform:rotate(1deg);}20%{transform:rotate(-7deg);}45%{transform:rotate(6deg);}65%{transform:rotate(-5deg);}85%{transform:rotate(3deg);}}
 
   /* Daisy leaf */
   .daisy-leaf { position:absolute; width:6px; height:9px; background:#3d7a35; border-radius:0 70% 0 70%; opacity:0; }
@@ -206,10 +206,10 @@
   .daisy-stem:nth-child(3) .daisy-head { animation: db 2s ease-out 11s forwards, dbob 2.5s ease-in-out 14s infinite; }
   .daisy-stem:nth-child(4) .daisy-head { animation: db 2s ease-out 12s forwards, dbob2 3s ease-in-out 14.5s infinite; }
   @keyframes db{0%{opacity:0;transform:translateX(-50%) scale(0);}60%{opacity:1;transform:translateX(-50%) scale(1.1);}100%{opacity:1;transform:translateX(-50%) scale(1);}}
-  @keyframes dbob{0%,100%{transform:translateX(-50%) scale(1) rotate(0deg);}40%{transform:translateX(-50%) scale(1) rotate(-3deg);}70%{transform:translateX(-50%) scale(1) rotate(2deg);}}
-  @keyframes dbob2{0%,100%{transform:translateX(-50%) scale(1) rotate(0.5deg);}35%{transform:translateX(-50%) scale(1) rotate(3deg);}65%{transform:translateX(-50%) scale(1) rotate(-2.5deg);}}
+  @keyframes dbob{0%,100%{transform:translateX(-50%) scale(1) rotate(0deg);}25%{transform:translateX(-50%) scale(1) rotate(-6deg);}50%{transform:translateX(-50%) scale(1) rotate(5deg);}75%{transform:translateX(-50%) scale(1) rotate(-3deg);}}
+  @keyframes dbob2{0%,100%{transform:translateX(-50%) scale(1) rotate(1deg);}30%{transform:translateX(-50%) scale(1) rotate(7deg);}55%{transform:translateX(-50%) scale(1) rotate(-5deg);}80%{transform:translateX(-50%) scale(1) rotate(3deg);}}
 
-  .petal { position:absolute; width:4px; height:7px; background:#f0ead6; border-radius:50%; top:50%; left:50%; transform-origin:center bottom; }
+  .petal { position:absolute; width:4px; height:7px; background:#fffdf0; border-radius:50%; top:50%; left:50%; transform-origin:center bottom; }
   .petal:nth-child(1){transform:translate(-50%,-100%) rotate(0deg);}
   .petal:nth-child(2){transform:translate(-50%,-100%) rotate(45deg);}
   .petal:nth-child(3){transform:translate(-50%,-100%) rotate(90deg);}
@@ -221,15 +221,41 @@
   .daisy-center { position:absolute; width:5px; height:5px; border-radius:50%; background:radial-gradient(circle,#f5d060,#daa520); top:50%; left:50%; transform:translate(-50%,-50%); z-index:1; }
 
   /* Pink daisy variant */
-  .daisy-pink .petal { background:#e8a0b0; }
+  .daisy-pink .petal { background:#f7829e; }
   /* Blue daisy variant */
-  .daisy-blue .petal { background:#a8c0d8; }
+  .daisy-blue .petal { background:#7eb8e0; }
 
-  /* JACK CRACKS */
-  .crack-svg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:11;pointer-events:none;}
-  .crack-line{stroke:rgba(255,255,255,0.3);stroke-width:0.8;fill:none;filter:drop-shadow(0 0 2px rgba(255,255,255,0.2));}
-  .crack-line-thin{stroke:rgba(255,255,255,0.18);stroke-width:0.5;fill:none;}
-  .crack-impact{position:absolute;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.15),rgba(255,255,255,0.05) 40%,transparent);z-index:12;pointer-events:none;}
+  /* JACK RETRO GAME */
+  .retro-game{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:9;overflow:hidden;}
+  .retro-chase{position:absolute;top:45%;left:0;display:flex;align-items:center;gap:6px;animation:chaseRun 8s linear infinite;opacity:0.7;}
+  @keyframes chaseRun{0%{transform:translateX(-40px);}100%{transform:translateX(220px);}}
+
+  /* Pac-Man */
+  .pacman{width:10px;height:10px;border-radius:50%;background:#ffe000;position:relative;animation:chomp 0.3s steps(2) infinite;}
+  @keyframes chomp{0%{clip-path:polygon(100% 0%,50% 50%,100% 100%,0% 100%,0% 0%);}50%{clip-path:polygon(100% 15%,50% 50%,100% 85%,0% 100%,0% 0%);}100%{clip-path:polygon(100% 0%,50% 50%,100% 100%,0% 100%,0% 0%);}}
+
+  /* Dots */
+  .pac-dots{display:flex;align-items:center;gap:5px;position:absolute;top:45%;right:10px;opacity:0.5;}
+  .pac-dot{width:2px;height:2px;border-radius:50%;background:#ffe000;animation:dotEat 8s linear infinite;}
+  .pac-dot:nth-child(1){animation-delay:0s;} .pac-dot:nth-child(2){animation-delay:0.3s;} .pac-dot:nth-child(3){animation-delay:0.6s;}
+  .pac-dot:nth-child(4){animation-delay:0.9s;} .pac-dot:nth-child(5){animation-delay:1.2s;} .pac-dot:nth-child(6){animation-delay:1.5s;}
+  @keyframes dotEat{0%,80%{opacity:0.5;}85%{opacity:0;}100%{opacity:0.5;}}
+
+  /* Ghost - pixel art via box-shadow */
+  .ghost{width:2px;height:2px;position:relative;margin-left:2px;color:transparent;animation:ghostFloat 0.6s ease-in-out infinite alternate;}
+  .ghost-red{box-shadow:
+    2px 0 0 #ff3333, 4px 0 0 #ff3333, 6px 0 0 #ff3333,
+    0px 2px 0 #ff3333, 2px 2px 0 #ff3333, 4px 2px 0 #ff3333, 6px 2px 0 #ff3333, 8px 2px 0 #ff3333,
+    0px 4px 0 #ff3333, 2px 4px 0 #fff, 4px 4px 0 #ff3333, 6px 4px 0 #fff, 8px 4px 0 #ff3333,
+    0px 6px 0 #ff3333, 2px 6px 0 #ff3333, 4px 6px 0 #ff3333, 6px 6px 0 #ff3333, 8px 6px 0 #ff3333,
+    0px 8px 0 #ff3333, 2px 8px 0 transparent, 4px 8px 0 #ff3333, 6px 8px 0 transparent, 8px 8px 0 #ff3333;}
+  .ghost-cyan{box-shadow:
+    2px 0 0 #00e5ff, 4px 0 0 #00e5ff, 6px 0 0 #00e5ff,
+    0px 2px 0 #00e5ff, 2px 2px 0 #00e5ff, 4px 2px 0 #00e5ff, 6px 2px 0 #00e5ff, 8px 2px 0 #00e5ff,
+    0px 4px 0 #00e5ff, 2px 4px 0 #fff, 4px 4px 0 #00e5ff, 6px 4px 0 #fff, 8px 4px 0 #00e5ff,
+    0px 6px 0 #00e5ff, 2px 6px 0 #00e5ff, 4px 6px 0 #00e5ff, 6px 6px 0 #00e5ff, 8px 6px 0 #00e5ff,
+    0px 8px 0 #00e5ff, 2px 8px 0 transparent, 4px 8px 0 #00e5ff, 6px 8px 0 transparent, 8px 8px 0 #00e5ff;}
+  @keyframes ghostFloat{0%{transform:translateY(0);}100%{transform:translateY(-1px);}}
 
   /* GABE TICKER */
   .ticker-container{overflow:hidden;width:100%;height:12px;margin-top:3px;border-top:1px solid rgba(0,0,0,0.08);padding-top:2px;padding-bottom:2px;position:relative;}
@@ -395,7 +421,6 @@
     </div>
     <div class="label-divider"></div>
     <div class="sub">London · Brighton · Seattle · Mill Valley · Brighton · The World's Oceans</div>
-    <div class="sub" style="margin-top:5px;font-style:italic;color:rgba(212,175,55,0.35);font-size:7px;letter-spacing:3px;">"No sleep til the B-side"</div>
   </div>
   <div class="gallery-grid">
 
@@ -452,6 +477,14 @@
     <div class="frame frame-jack">
       <div class="matte">
         <div class="glass"></div>
+        <div class="retro-game">
+          <div class="retro-chase">
+            <div class="pacman"></div>
+            <div class="ghost ghost-red"></div>
+            <div class="ghost ghost-cyan"></div>
+          </div>
+          <div class="pac-dots"><div class="pac-dot"></div><div class="pac-dot"></div><div class="pac-dot"></div><div class="pac-dot"></div><div class="pac-dot"></div><div class="pac-dot"></div></div>
+        </div>
         <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label"><div class="disc-label-name">Jack</div><div class="disc-label-hole"></div></div></div></div>
         <div class="bottom-row">
           <div class="headshot"><img src="images/jack.jpg" alt="Jack"></div>
