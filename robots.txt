@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+User-agent: GPTBot
+Disallow: /images/
+
+User-agent: ChatGPT-User
+Disallow: /images/
+
+User-agent: Google-Extended
+Disallow: /images/
+
+User-agent: CCBot
+Disallow: /images/
+
+User-agent: anthropic-ai
+Disallow: /images/
+
+User-agent: ClaudeBot
+Disallow: /images/
+
+User-agent: Bytespider
+Disallow: /images/
+
+Sitemap: https://curphey.com/sitemap.xml
