@@ -4,7 +4,7 @@
 
 This is a personal family website for the Curphey family. It is styled as a music industry gold disc presentation wall, published by the fictional "Transatlantic Chaos Records" label.
 
-The site features six family members — Mark, Cara, Jack, Hana, Gabe, and Marg (a chihuahua) — each with their own framed gold record and unique animations. The family has lived in London, Brighton, Seattle, and Mill Valley.
+The site features six family members — Mark, Cara, Jack, Gabe, Marg (a chihuahua), and one anonymous "[REDACTED] Curphey" (the shyest family member, identity withheld at subject's request) — each with their own framed gold record and unique animations. The family has lived in London, Brighton, Seattle, and Mill Valley.
 
 ## Contact
 - Site: https://curphey.com

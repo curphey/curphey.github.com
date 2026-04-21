@@ -248,9 +248,15 @@
   .ticker-item{font-size:5.5px;font-weight:bold;letter-spacing:0.3px;padding:0 4px;flex-shrink:0;}
   .ticker-up{color:rgba(0,100,0,0.7);} .ticker-down{color:rgba(160,0,0,0.6);} .ticker-sep{color:rgba(0,0,0,0.15);}
 
-  /* HANA WOBBLE */
-  @keyframes tiltWobble{0%,70%{transform:rotate(0deg);}73%{transform:rotate(1.5deg);}76%{transform:rotate(-1deg);}79%{transform:rotate(0.7deg);}82%{transform:rotate(-0.4deg);}85%{transform:rotate(0.2deg);}88%,100%{transform:rotate(0deg);}}
-  .frame-hana .matte{animation:tiltWobble 7s ease-in-out infinite;transform-origin:top center;}
+  /* REDACTED PEEKING EYES */
+  .headshot-hiding { background: radial-gradient(ellipse at 50% 110%, #2a2420 0%, #100a06 55%, #050302 100%); position: relative; }
+  .hiding-eyes { position: absolute; left: 0; right: 0; bottom: 12px; display: flex; justify-content: center; gap: 7px; animation: peekHide 11s ease-in-out infinite; }
+  .eye { width: 13px; height: 9px; background: #f0e3c8; border-radius: 50%/60%; position: relative; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.6), inset 0 -1px 1px rgba(0,0,0,0.25); animation: eyeBlink 4.3s ease-in-out infinite; }
+  .eye.eye-r { animation-delay: 0.07s; }
+  .pupil { position: absolute; left: 50%; top: 55%; width: 4px; height: 4px; background: #0c0602; border-radius: 50%; transform: translate(-50%, -50%); animation: eyeDart 5.7s ease-in-out infinite; }
+  @keyframes eyeBlink { 0%, 92%, 96%, 100% { transform: scaleY(1); } 94% { transform: scaleY(0.08); } }
+  @keyframes eyeDart { 0%, 28%, 60%, 100% { margin-left: 0; } 33%, 55% { margin-left: -3px; } 68%, 85% { margin-left: 3px; } }
+  @keyframes peekHide { 0%, 82%, 100% { transform: translateY(0); opacity: 1; } 88%, 94% { transform: translateY(14px); opacity: 0.6; } }
 
   /* MARG PAW PRINTS */
   .paw-prints{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:9;}
@@ -268,7 +274,8 @@
   .frame-mark .disc-metal { background: conic-gradient(from 30deg, #b8922a, #d0a830, #b8902a, #a8822a, #b8922a, #d4aa30, #b8922a, #a8822a, #b8922a, #d0a830, #b8922a, #a8822a, #b8922a, #d4aa30, #b8922a); filter: brightness(0.9) saturate(0.85); }
   .frame-cara .disc-metal { background: conic-gradient(from 60deg, #d4b842, #ecd050, #d4b842, #c4a838, #d4b842, #f0d858, #d4b842, #c4a838, #d4b842, #ecd050, #d4b842, #c4a838, #d4b842, #f0d858, #d4b842); filter: brightness(1.05); }
   .frame-jack .disc-metal { background: conic-gradient(from 10deg, #c09828, #d8b038, #c09828, #a88820, #c09828, #d8b038, #c09828, #a88820, #c09828, #d8b038, #c09828, #a88820, #c09828, #d8b038, #c09828); filter: brightness(0.85) saturate(0.8); }
-  .frame-hana .disc-metal { filter: brightness(1.0) saturate(0.95); }
+  .frame-redacted .disc-metal { filter: brightness(0.95) saturate(0.9) contrast(0.95); }
+  .frame-redacted .disc-label-name { color: #0a0a0a; font-size: 7px; letter-spacing: 0; text-shadow: 0 0 1px rgba(0,0,0,0.9); }
   .frame-gabe .disc-metal { background: conic-gradient(from 45deg, #d4af37, #ecc94e, #d4af37, #c4a030, #d4af37, #f0d060, #d4af37, #c4a030, #d4af37, #ecc94e, #d4af37, #c4a030, #d4af37, #f0d060, #d4af37); filter: brightness(1.08) saturate(1.1); }
   .frame-marg .disc-metal { filter: brightness(1.1) saturate(1.15); }
 
@@ -486,14 +493,19 @@
       </div>
     </div>
 
-    <!-- HANA -->
-    <div class="frame frame-hana">
+    <!-- REDACTED (our shyest Curphey) -->
+    <div class="frame frame-redacted">
       <div class="matte">
         <div class="glass"></div>
-        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label"><div class="disc-label-name">Hana</div><div class="disc-label-hole"></div></div></div></div>
+        <div class="disc-area"><div class="disc"><div class="disc-metal"></div><div class="disc-grooves"></div><div class="disc-streak"></div><div class="disc-glow"></div><div class="disc-rim"></div><div class="disc-label"><div class="disc-label-name">████</div><div class="disc-label-hole"></div></div></div></div>
         <div class="bottom-row">
-          <div class="headshot"><img src="images/hana.jpg" alt="Hana"></div>
-          <div class="plaque"><div class="plaque-title">Presented to</div><div class="plaque-name">Hana Curphey</div><div class="plaque-detail">Barrister in Waiting<br>Frame alignment pending appeal</div></div>
+          <div class="headshot headshot-hiding" aria-label="Subject declined to be photographed">
+            <div class="hiding-eyes">
+              <div class="eye"><div class="pupil"></div></div>
+              <div class="eye eye-r"><div class="pupil"></div></div>
+            </div>
+          </div>
+          <div class="plaque"><div class="plaque-title">Presented to</div><div class="plaque-name">[REDACTED] Curphey</div><div class="plaque-detail">Identity withheld at subject's request.<br>Whereabouts unknown.</div></div>
         </div>
       </div>
     </div>
@@ -556,7 +568,7 @@
   var expandedSet = new Set();
   var secTriggered = false;
 
-  var frameLinks = { 0: 'https://crashoverride.com', 1: 'https://albion-consulting.com', 3: 'https://hanacurphey.com' };
+  var frameLinks = { 0: 'https://crashoverride.com', 1: 'https://albion-consulting.com' };
 
   frames.forEach(function(frame, i) {
     frame.setAttribute('data-pos', i);
