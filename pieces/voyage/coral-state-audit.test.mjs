@@ -1,0 +1,7 @@
+import assert from 'node:assert/strict';
+import {CoralPuzzle,reefNodes} from './coral-puzzle.mjs';
+const key=s=>JSON.stringify([s.at,s.modes,[...s.prisms].sort(),s.fitted,s.chart,s.won]);const clone=s=>{const n=new CoralPuzzle();Object.assign(n,s);n.modes=[...s.modes];n.fitted=[...s.fitted];n.prisms=new Set(s.prisms);return n;};const start=new CoralPuzzle(),states=[start],index=new Map([[key(start),0]]),incoming=[[]];
+for(let i=0;i<states.length;i++){const s=states[i];if(s.won)continue;const next=[];for(const to of Object.keys(reefNodes)){if(to!==s.at&&s.path(to)){const n=clone(s);n.arrive(to);next.push(n);}}const n=clone(s);if(n.act().ok)next.push(n);for(const state of next){const k=key(state);if(!index.has(k)){index.set(k,states.length);states.push(state);incoming.push([]);}incoming[index.get(k)].push(i);}}
+const winners=states.flatMap((s,i)=>s.won?[i]:[]),canWin=new Set(winners);for(let i=0;i<winners.length;i++)for(const prev of incoming[winners[i]])if(!canWin.has(prev)){canWin.add(prev);winners.push(prev);}console.log({states:states.length,solvable:canWin.size,trapped:states.length-canWin.size});for(let i=0;i<states.length;i++)if(!canWin.has(i))console.log(key(states[i]));
+
+assert.equal(canWin.size,states.length,'Every reachable state must have a way to finish');for(const state of states)assert(!state.hint().includes('Restart this island'),'Hints must find a solution from every reachable state');console.log('All reachable states have a completion route and a valid next-step hint.');
