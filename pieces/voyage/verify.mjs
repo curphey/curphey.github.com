@@ -26,7 +26,7 @@ async function open(options = {}, query = '?chapter=founders') {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ...options }), page = await context.newPage();
   page.on('pageerror', e => errors.push(e.message)); page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('request', r => { if (!r.url().startsWith('http://127.0.0.1')) errors.push(`external request ${r.url()}`); });
-  if (LITE) query += (query ? '&' : '?') + 'lite';
+  if (LITE) query += (query ? '&' : '?') + 'lite&thin=40';
   await page.goto(url + query, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage && document.querySelector('#loading').classList.contains('done'), null, { timeout: 120000 }); await page.waitForTimeout(1500);
   await page.evaluate(() => { window.__voyage.speed = 14; });
   return page;
@@ -247,7 +247,7 @@ checks.eggs = async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } }), page = await context.newPage(); // one context, so finds add up
   page.on('pageerror', e => errors.push(e.message));
   for (const [n, id] of ids.entries()) {
-    await page.goto(`${url}?chapter=${id}${LITE ? '&lite' : ''}`, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage && document.querySelector('#loading').classList.contains('done'), null, { timeout: 120000 }); await page.waitForTimeout(1200);
+    await page.goto(`${url}?chapter=${id}${LITE ? '&lite&thin=40' : ''}`, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage && document.querySelector('#loading').classList.contains('done'), null, { timeout: 120000 }); await page.waitForTimeout(1200);
     const marg = await page.evaluate(() => window.__voyage.margAt()); await page.mouse.click(...marg); await page.waitForTimeout(300);
     assert.match(await page.textContent('#status'), /Marg/, `${id}: Marg can be found and tapped`);
     const at = await page.evaluate(() => window.__voyage.eggAt()); await page.mouse.click(...at); await page.waitForTimeout(300);
@@ -289,7 +289,7 @@ checks.offline = async () => {
 checks.diag = async () => {
   const context = await browser.newContext({ viewport: { width: 800, height: 500 } }), page = await context.newPage(), t0 = Date.now(), at = () => `${((Date.now() - t0) / 1000).toFixed(1)}s`;
   page.on('console', m => console.log(`     [${at()}] console ${m.type()}: ${m.text().slice(0, 300)}`)); page.on('pageerror', e => console.log(`     [${at()}] page error: ${e.message}`));
-  await page.goto(`${url}?chapter=founders${LITE ? '&lite' : ''}`, { waitUntil: 'commit', timeout: 60000 }); console.log(`     [${at()}] committed`);
+  await page.goto(`${url}?chapter=founders${LITE ? '&lite&thin=40' : ''}`, { waitUntil: 'commit', timeout: 60000 }); console.log(`     [${at()}] committed`);
   for (let i = 0; i < 24; i++) {
     const s = await Promise.race([page.evaluate(() => ({ ready: !!window.__voyage, done: document.querySelector('#loading')?.classList.contains('done'), frames: window.__frames ?? null, q: window.__voyage?.quality })), new Promise(r => setTimeout(() => r('page did not answer within 4s'), 4000))]);
     console.log(`     [${at()}] ${JSON.stringify(s)}`); await new Promise(r => setTimeout(r, 5000));

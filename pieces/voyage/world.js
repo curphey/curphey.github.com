@@ -35,6 +35,9 @@ Object.assign(sun.shadow.camera, { left: -shadowSize, right: shadowSize, top: sh
 sun.shadow.camera.updateProjectionMatrix(); scene.add(sun, sun.target, fill);
 const water = view.water === false ? null : createWater(view.water); if (water) scene.add(water.mesh);
 const lite = params.has('lite');
+// ?thin=N draws only every Nth frame while the game itself runs at full speed: for testing on machines with no
+// graphics card, where drawing is the slow part.
+const thin = Math.max(1, Number(params.get('thin')) || 1);
 const pipeline = createPipeline(renderer, { lite }), sky = createSkyEnvironment(renderer);
 const save = createSave((() => { try { return window.localStorage; } catch { return null; } })() ?? { getItem() { return null; }, setItem() {} });
 const sound = createSound({ AudioContextCtor: window.AudioContext ?? window.webkitAudioContext, scale: data.scale, timbre: data.timbre, ambience: data.ambience ?? 'sea' });
@@ -425,7 +428,7 @@ function startPassage() {
   if (travel || !nextChapter) return;
   travel = { kind: 'leave', t: 0 }; $('#passage').textContent = data.passage ?? ''; document.querySelector('main').classList.add('travelling');
 }
-function leave() { const q = new URLSearchParams({ chapter: nextChapter.id, arrive: '1', mist: hazeNext.getHexString() }); if (auto) q.set('auto', '1'); if (lite) q.set('lite', '1'); location.search = `?${q}`; }
+function leave() { const q = new URLSearchParams({ chapter: nextChapter.id, arrive: '1', mist: hazeNext.getHexString() }); if (auto) q.set('auto', '1'); if (lite) q.set('lite', '1'); if (thin > 1) q.set('thin', String(thin)); location.search = `?${q}`; }
 function updatePassage(dt) {
   if (!travel || travel.left) return;
   travel.t += dt; const still = reduced.matches, p = travel.kind === 'leave' ? leaving(travel.t, still) : arriving(travel.t, still);
@@ -482,6 +485,7 @@ function frame(now) {
   if (!still) for (const b of birds) { const u = b.userData, a = time * u.speed + u.phase; b.position.set(flock.x + Math.cos(a) * u.r, u.h + Math.sin(a * 2.3) * 0.5, flock.z + Math.sin(a) * u.r); b.rotation.y = -a; const flap = Math.sin(time * 9 + u.phase) * 0.12, p = b.geometry.attributes.position; p.setY(1, flap); p.setY(5, flap); p.needsUpdate = true; }
   if (water) water.uniforms.time.value = still ? 0 : time;
   pipeline.uniforms.focus.value = DIST - lead.clone().sub(focus).dot(TOWARD) * 0.3;
+  if (frameCount % thin) return;
   if (water && quality > 0 && (quality === 2 || frameCount % 2 === 0)) water.renderReflection(renderer, scene, camera);
   pipeline.render(scene, camera, still ? 0 : time);
   if (wantCard) takeCard();
