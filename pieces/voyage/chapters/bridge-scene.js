@@ -147,7 +147,7 @@ export function createBridgeScene(kit, data) {
   const whale = new T.Group(); whale.userData.dynamic = true; whale.position.set(-1.4, SEA, 12.2); whale.rotation.y = Math.PI / 4; whale.visible = false; group.add(whale);
   const hide = M('#3b454c', { roughness: 0.45, side: T.DoubleSide }), hump = add(new T.SphereGeometry(1, 16, 10), hide, 0, -0.4, 0, whale); hump.scale.set(0.8, 0.27, 0.3);
   const fluke = add(new T.ShapeGeometry(new T.Shape([[-0.06, 0], [0.06, 0], [0.05, 0.42], [0.52, 0.8], [0.2, 0.7], [0, 0.6], [-0.2, 0.7], [-0.52, 0.8], [-0.05, 0.42]].map(([x, y]) => new T.Vector2(x, y)))), hide, 0.7, -1.2, 0, whale);
-  const blowMat = M('#f6f8f6', { transparent: true, opacity: 0, depthWrite: false, emissive: '#9c9c9c', emissiveIntensity: 0.4 }), blow = add(new T.SphereGeometry(0.22, 12, 8), blowMat, -0.55, 0.3, 0, whale); blowMat.onBeforeCompile = soft; blow.castShadow = blow.receiveShadow = false;
+  const blowMat = M('#f6f8f6', { transparent: true, opacity: 0, depthWrite: false, emissive: '#9c9c9c', emissiveIntensity: 0.4 }), blow = add(new T.SphereGeometry(0.16, 12, 8), blowMat, -0.55, 0.3, 0, whale); blowMat.onBeforeCompile = soft; blow.castShadow = blow.receiveShadow = false;
   const rippleMat = new T.MeshBasicMaterial({ color: '#f6f8f6', transparent: true, opacity: 0, depthWrite: false }), ripple = add(new T.RingGeometry(0.34, 0.42, 28), rippleMat, 0.7, 0.03, 0, whale); ripple.rotation.x = -Math.PI / 2; ripple.castShadow = ripple.receiveShadow = false;
 
   for (const [id, n] of Object.entries(data.nodes)) if (n.pos) { const h = add(new T.BoxGeometry(1, 0.06, 1), ghost(), n.pos[0], n.pos[1] + 0.03, n.pos[2], group); h.castShadow = h.receiveShadow = false; h.userData.near = [id]; hits.push(h); }
@@ -175,9 +175,9 @@ export function createBridgeScene(kit, data) {
     // The whale, most of a minute apart: three seconds of blow and back, then the tail up and under, then a ripple.
     { const u = still ? -1 : (time + 31) % 41; whale.visible = u >= 0 && u < 12; if (whale.visible) {
         const up = u < 4.5 ? Math.sin(u / 4.5 * Math.PI) : 0; hump.position.set(-0.6 + u * 0.14, -0.42 + up * 0.3, 0);
-        const puff = u > 0.7 && u < 2.9 ? (u - 0.7) / 2.2 : 0; blowMat.opacity = puff ? 0.9 * Math.sin(puff * Math.PI) : 0; blow.scale.set(0.6 + puff * 0.8, 0.8 + puff * 1.6, 0.6 + puff * 0.8); blow.position.set(hump.position.x - 0.35, 0.15 + puff * 0.55, 0);
+        const puff = u > 0.7 && u < 2.9 ? (u - 0.7) / 2.2 : 0; blowMat.opacity = puff ? 0.6 * Math.sin(puff * Math.PI) : 0; blow.scale.set(0.6 + puff * 0.8, 0.8 + puff * 1.6, 0.6 + puff * 0.8); blow.position.set(hump.position.x - 0.35, 0.15 + puff * 0.55, 0);
         const lift = u > 4 && u < 9 ? Math.sin((u - 4) / 5 * Math.PI) : 0; fluke.position.y = -1.2 + lift * 1.25; fluke.rotation.z = 0.5 - (u - 4) / 5 * 0.9;
-        const ring = u > 8 ? (u - 8) / 4 : 0; rippleMat.opacity = ring ? 0.4 * (1 - ring) : 0; ripple.scale.setScalar(1 + ring * 3.2); } }
+        const ring = u > 8 ? (u - 8) / 4 : 0; rippleMat.opacity = ring ? 0.4 * (1 - ring) : 0; ripple.scale.setScalar(1 + ring * 2); } }
     const h = model.pressed(plateNode) ? 1 : 0; held = still ? h : held + (h - held) * 0.12; plate.position.y = 0.02 - held * 0.03;
     for (const b of barriers) { const o = model.pressed(b.plateAt) ? 1 : 0; b.t = still ? o : b.t + (o - b.t) * 0.12; b.group.rotation.x = b.t * Math.PI / 2 * 0.95; }
   }
