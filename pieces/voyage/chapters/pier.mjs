@@ -47,6 +47,7 @@ export const pier = {
     { a: 'skelter', b: 'skelterTop', kind: 'solid', hidden: true }
   ],
   items: { key: 'lookout' },
+  motes: '#ff9db0',
   egg: [10.6, 1.42, -8], marg: [4.5, 0, -1.4],
   goal: { node: 'plaza', all: true },
   text: {

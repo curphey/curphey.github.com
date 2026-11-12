@@ -43,6 +43,7 @@ function build({ id, number, word, palette, travellers, liftPlate, five = false,
   goal: { node: 'marin', all: true },
     text: {
       start, won,
+      marg: 'Marg. Mill Valley is where she joined the family, and she yaps once to say so.', // Mark: Marg came in San Francisco, not Seattle
       'turned:derrick': 'The derrick swings round, high above the strait.',
       carried: 'The derrick carries you round, high above the strait.',
       'turned:fog': 'The horn sounds, long and low, and the fog begins to move.',
