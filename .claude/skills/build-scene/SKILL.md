@@ -43,8 +43,9 @@ On a machine with a graphics card, `npm run check:gpu` must report at least 30 f
 
 ## 5. Hand over
 
-Branch, commit, open a pull request. The `checks` workflow must pass; it publishes on merge to `master`, so do not push
-to `master`. In the pull request say: what was built, the solution length, what differs from the photos, and anything
+Branch, commit, open a pull request. The `checks` workflow runs the unit tests and publishes on merge to `master`, so
+do not push to `master`. It cannot run the browser checks (no graphics card there), so run `VERIFY_GPU=1 npm run check`
+yourself and paste its output into the pull request. In the pull request say: what was built, the solution length, what differs from the photos, and anything
 not verified. Update `tasks.md` in the spec store.
 
 ## Decisions that stay with Mark
