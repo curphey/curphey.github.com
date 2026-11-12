@@ -338,7 +338,7 @@ let begun = false; function started() { lastInput = performance.now(); hinting =
 function updateLead(dt) {
   if (!begun || lead <= 0) return;
   leadT += dt; lead = reduced.matches ? 0 : 1 - ease(leadT / 1.6); if (lead < 0.001) lead = 0; setHome();
-  if (!travel && !finale && !winCam) { focus.copy(home); aim(); }
+  if (!travel && !finale && !winCam) { if (creep) setZoom(1 + creep * lead); focus.copy(home); aim(); }
 }
 
 // ---- pointer ----------------------------------------------------------------
@@ -547,8 +547,11 @@ canvas.addEventListener('pointerdown', () => { if (travel?.kind === 'leave' && t
 // ---- arrival: the camera eases in from a little further out ---------------------
 // On a first load the scene also clears out of mist of its own colour, as it does after a passage.
 let intro = reduced.matches || lite || params.has('arrive') ? null : { from: 0 }; if (intro) pipeline.uniforms.veil.value = 1;
+// While the title waits, the camera creeps in by a couple of per cent: enough that the picture is never quite still.
+let creep = 0, creepFrom = 0; const creeping = !reduced.matches && !lite;
 function updateIntro(now) {
-  if (!intro) return; if (finale || winCam) { pipeline.uniforms.veil.value = 0; intro = null; return; }
+  if (!intro) { if (creeping && !begun && !travel && userZoom === 1) { creepFrom ||= now; creep = 0.02 * Math.min(1, (now - creepFrom) / 40000); setZoom(1 + creep); } return; }
+  if (finale || winCam) { pipeline.uniforms.veil.value = 0; intro = null; return; }
   intro.from ||= now; const k = Math.min(1, (now - intro.from) / 2600), e = 1 - Math.pow(1 - k, 3);
   setZoom(1.12 - 0.12 * e); pipeline.uniforms.veil.value = 1 - ease(k * 1.25); if (k >= 1) intro = null;
 }
