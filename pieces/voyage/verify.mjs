@@ -147,6 +147,12 @@ checks.passage = async () => {
   await still.evaluate(() => window.__voyage.solve()); await still.click('#next');
   await still.waitForURL(/chapter=pier/, { timeout: 30000 }); await still.waitForFunction(() => window.__voyage && window.__voyage.travelling === null, null, { timeout: 60000 }); await still.context().close();
 };
+checks.ride = async () => {
+  const page = await open({}, '?chapter=trinidad');
+  await tap(page, 'plank1'); assert.equal((await state(page)).at, 'plank1'); assert.match(await page.textContent('#status'), /under your feet/, 'the game says how to turn what you stand on');
+  const before = (await state(page)).mechs.channel, here = await page.evaluate(() => window.__voyage.screenOf('plank1')); await page.mouse.click(...here); await idle(page);
+  assert.notEqual((await state(page)).mechs.channel, before, 'tapping the plank you stand on turns it'); assert.equal((await state(page)).at, 'plank1'); await page.context().close();
+};
 checks.trinidad = async () => {
   for (const [name, viewport, extra] of [['trinidad-desktop', { width: 1440, height: 900 }, {}], ['trinidad-phone', { width: 390, height: 844 }, { hasTouch: true, isMobile: true, deviceScaleFactor: 2 }]]) {
     const page = await open({ viewport, ...extra }, '?chapter=trinidad'), pts = await page.evaluate(() => window.__voyage.frame);

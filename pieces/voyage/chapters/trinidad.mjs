@@ -55,7 +55,7 @@ export const trinidad = {
   egg: [7.6, -0.25, -0.9], marg: [-12.1, 0.82, -2.95],
   goal: { node: 'boat', needs: ['oars', 'rope'] },
   text: {
-    start: 'Dawn. The lagoon is flat calm, and somewhere a pan is ringing.',
+    start: 'Dawn on the lagoon. Tap a plank to walk to it, and tap a lever to work it.',
     won: 'Cara pushes off. The island grows small behind her.',
     turned: 'The pan rings as it turns, and another answers it.',
     carried: 'The pan rings as it carries you round, and another answers it.',

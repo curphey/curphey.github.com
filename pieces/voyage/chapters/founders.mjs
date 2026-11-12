@@ -38,7 +38,7 @@ export const founders = {
   goal: { node: 'belfry', needs: ['book'] },
   word: 'two', next: 'pier', passage: 'Years pass. Then a train south, to the sea.', goalText: 'Get Mark to the clock tower, with the book from the library.',
   text: {
-    start: 'Morning in the quad. Across the roofs, a clock is waiting.',
+    start: 'Morning in the quad. Tap a path to walk it, and tap a lever to work it.',
     won: 'The bells ring out across the quad.',
     turned: 'Stone grinds, and the view rearranges itself.',
     carried: 'The bridge carries you round with it.',

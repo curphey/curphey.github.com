@@ -170,6 +170,7 @@ function updateWalk(dt) {
       const to = walk.to, had = walk.had; walk = null; model.arrive(to);
       const gained = [...model.items].find(i => !had.has(i)), locked = Object.entries(data.items ?? {}).some(([i, s]) => s.at === to && !model.items.has(i));
       if (model.won) finish(); else say(gained ? `item:${gained}` : data.text[`at:${to}`] ? `at:${to}` : locked ? `locked:${to}` : to === data.goal.node && data.text['goal-empty'] ? 'goal-empty' : 'arrived');
+      if (!model.won && rideable()) $('#status').textContent += ' Tap it under your feet to swing it round.';
       syncMenu();
     }
   }
@@ -181,6 +182,8 @@ function switchTo(id) {
   if (id) model.select(id); else model.switch(); $('#status').textContent = `Now moving ${people[model.active].name}.`; started(); syncMenu(); return true;
 }
 let finale = null;
+// Is the active traveller standing on something they can turn from where they are?
+function rideable() { const arm = data.nodes[model.at].arm; return !!arm && model.riding(arm) && model.canTurn(arm) && !data.mechs[arm].track; }
 function finish() {
   say('arrived'); sound.chord();
   // The last chapter: cast off, let her sail, and only then show the card.
@@ -249,6 +252,8 @@ function release(e) {
   if (d.hit.data.lever && model.at === d.hit.data.near[0]) { turn(d.hit.data.lever, 1); return; }
   const near = d.hit.data.near?.filter(n => data.nodes[n]); if (!near?.length) return;
   const best = [...near].sort((a, b) => { const pa = screenOf(live(a)), pb = screenOf(live(b)); return Math.hypot(pa[0] - e.clientX, pa[1] - e.clientY) - Math.hypot(pb[0] - e.clientX, pb[1] - e.clientY); })[0];
+  // Standing on something that turns: a tap on it, under your own feet, turns it.
+  const m = d.hit.data.mech; if (best === model.at && m && model.riding(m) && model.canTurn(m)) { turn(m, 1); return; }
   go(best);
 }
 canvas.addEventListener('pointerup', release); canvas.addEventListener('pointercancel', release);
