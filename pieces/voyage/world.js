@@ -249,7 +249,8 @@ let winCam = null; const winAt = new T.Vector3();
 function updateWin(dt) {
   if (!winCam) return;
   winCam.t += dt; const k = ease(winCam.t / 5); camera.zoom = 1 + 0.09 * k; camera.updateProjectionMatrix();
-  focus.copy(home).lerp(winAt.copy(live(data.goal.node)), 0.3 * k); aim(); if (winCam.t > 5) winCam = null;
+  // The winners end up a little above the middle of the screen, clear of the card that rises from the bottom.
+  focus.copy(home).lerp(winAt.copy(live(data.goal.node)).addScaledVector(UP, -0.14 * (camera.top - camera.bottom)), 0.75 * k); aim(); if (winCam.t > 5) winCam = null;
 }
 // The end card. On the last scene it carries a postcard from every place played.
 function showFinish() {
