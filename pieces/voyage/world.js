@@ -128,7 +128,7 @@ function aim() {
   eye.copy(focus).add(pan); camera.position.copy(eye).addScaledVector(TOWARD, DIST); camera.up.set(0, 1, 0); camera.lookAt(eye); camera.updateMatrixWorld();
   sun.target.position.copy(focus); sun.position.copy(focus).addScaledVector(sun.userData.dir, 70); sun.target.updateMatrixWorld();
 }
-addEventListener('resize', resize);
+addEventListener('resize', () => { resize(); viewDirty = true; });
 // Quality: 2 is everything; 1 drops resolution and shadow detail; 0 also drops reflections, contact shading and
 // depth of field. It starts at 2 and steps down if the device cannot hold a steady frame rate. ?lite starts at 0.
 let quality = 2, slowFrames = 0, sampled = 0, frameCount = 0;
@@ -311,7 +311,7 @@ function updateParty(dt) {
   if (t > 4.5) { party = null; motes.material.opacity = 0; }
 }
 function restart() {
-  model.reset(); model.root = !!save.load().root; walk = null; drag = null; finale = null; party = null; winCam = null; document.querySelector('main').classList.remove('won', 'finale'); $('#card').hidden = true; if (water) water.uniforms.glitter.value = data.finale ? 0.35 : 0; focus.copy(home); motes.material.opacity = 0; $('#cards').hidden = true; $('#finish').classList.remove('wide'); setZoom(1); $('#finish').hidden = true; $('#menu').open = false;
+  model.reset(); model.root = !!save.load().root; walk = null; drag = null; finale = null; party = null; winCam = null; autoView = true; viewGoal = null; viewDirty = true; document.querySelector('main').classList.remove('won', 'finale'); $('#card').hidden = true; if (water) water.uniforms.glitter.value = data.finale ? 0.35 : 0; focus.copy(home); motes.material.opacity = 0; $('#cards').hidden = true; $('#finish').classList.remove('wide'); setZoom(1); $('#finish').hidden = true; $('#menu').open = false;
   for (const id of Object.keys(mechs)) { mechs[id].angle = mechs[id].target = angleOf(model.mechs[id]); mechs[id].moving = false; }
   placeWalkers(); for (const w of Object.values(walkers)) w.face(1, 1); view.update.wonAt = undefined; say('start'); syncMenu();
 }
@@ -329,6 +329,32 @@ function updateHint(dt, still) {
   hintRing.visible = !!hinting && !walk; if (!hinting) return;
   hinting.t += dt; const k = still ? 0.3 : (hinting.t % 1.3) / 1.3; hintRing.position.copy(hinting.at()); hintRing.quaternion.copy(camera.quaternion); hintRing.scale.setScalar((0.8 + k * 1.5) * Math.min(3, Math.max(1, 14 / (0.46 * canvas.clientHeight / (camera.top - camera.bottom) * camera.zoom)))); hintRing.material.opacity = 0.95 * (1 - k);
   if (hinting.t > 9) hinting = null;
+}
+// On a small screen the whole scene makes the travellers specks. Once play begins the view closes in on what the
+// active traveller can do now: where they stand, where they can walk and what they can work. It moves only when
+// something they need would otherwise be out of view. Pinching makes the view the player's own for the scene.
+let autoView = true, viewGoal = null, viewDirty = true, viewMoving = false; const VIEW_MAX = 21; // pixels to a unit, at most
+function planView() {
+  viewDirty = false; const r = canvas.getBoundingClientRect(), W = camera.right - camera.left, H = camera.top - camera.bottom, ppu = r.height / H;
+  if (ppu * 1.12 >= VIEW_MAX) { viewGoal = null; return; }
+  const pts = [live(model.at)], spot = new T.Vector3(); for (const id of reachable) pts.push(live(id));
+  for (const u of useMarks) { const d = u.hit.userData; if (d.lever ? d.near[0] === model.at && model.canTurn(d.lever) : model.canTurn(d.mech)) pts.push(u.hit.getWorldPosition(spot).clone()); }
+  let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity; for (const p of pts) { const q = p.sub(home), u = q.dot(RIGHT), v = q.dot(UP); u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v + 1); }
+  // The goal strip above and the status line below are not places to put something the player must tap.
+  const top = Math.min(0.24, 150 / r.height), bottom = Math.min(0.22, 135 / r.height), z = Math.min(VIEW_MAX / ppu, W / (u1 - u0 + 4.5), H * (1 - top - bottom) / (v1 - v0 + 3));
+  if (z < 1.12) { viewGoal = null; return; }
+  const mu = W / 2 * (1 - 1 / z), mv = H / 2 * (1 - 1 / z), goal = { z, u: Math.min(mu, Math.max(-mu, (u0 + u1) / 2)), v: Math.min(mv, Math.max(-mv, (v0 + v1) / 2 + (bottom - top) / 2 * H / z)) };
+  // Stay put if the present view already shows all of it at much the same size.
+  const cu = pan.dot(RIGHT), cv = pan.dot(UP), hw = W / 2 / userZoom, hh = H / userZoom;
+  if (viewGoal && z / userZoom > 0.8 && z / userZoom < 1.25 && u0 > cu - hw + 1.2 && u1 < cu + hw - 1.2 && v1 < cv + hh * (0.5 - top) && v0 > cv - hh * (0.5 - bottom)) return;
+  viewGoal = goal;
+}
+function updateView(dt) {
+  if (!autoView || !begun || lead > 0 || travel || finale || winCam || model.won || pinch) { viewMoving = false; return; }
+  if (viewDirty && !walk) planView();
+  const g = viewGoal ?? { z: 1, u: 0, v: 0 }, k = reduced.matches ? 1 : Math.min(1, dt * 2.6), u = pan.dot(RIGHT), v = pan.dot(UP), dz = g.z - userZoom, du = g.u - u, dv = g.v - v;
+  if (Math.abs(dz) < 0.004 && Math.abs(du) < 0.02 && Math.abs(dv) < 0.02) { if (viewMoving) { userZoom = g.z; pan.copy(RIGHT).multiplyScalar(g.u).addScaledVector(UP, g.v); setZoom(baseZoom); aim(); } viewMoving = false; return; }
+  viewMoving = true; userZoom += dz * k; pan.copy(RIGHT).multiplyScalar(u + du * k).addScaledVector(UP, v + dv * k); setZoom(baseZoom); aim();
 }
 // A nudge for anyone who has not moved for a while: once per scene, and never over other text that matters.
 let lastInput = performance.now(), nudged = false;
@@ -375,7 +401,7 @@ canvas.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch') return; fingers.set(e.pointerId, [e.clientX, e.clientY]);
   if (fingers.size === 2 && !travel && !finale) {
     if (drag?.active) { const m = mechs[drag.id]; m.dragging = false; m.target = nearest(angleOf(model.mechs[drag.id]), m.angle); m.moving = true; sound.grind(0); }
-    drag = null; pinch = { ...spread(), z: userZoom }; started();
+    drag = null; pinch = { ...spread(), z: userZoom }; autoView = false; started();
   }
 });
 canvas.addEventListener('pointermove', e => {
@@ -383,7 +409,7 @@ canvas.addEventListener('pointermove', e => {
   if (pinch && fingers.size === 2) { const now = spread(); look(pinch.z * now.d / pinch.d, now.x, now.y, now.x - pinch.x, now.y - pinch.y); pinch.x = now.x; pinch.y = now.y; pinch.z = userZoom; pinch.d = now.d; }
 });
 for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type, e => { fingers.delete(e.pointerId); if (!fingers.size) setTimeout(() => { pinch = null; }, 0); });
-canvas.addEventListener('wheel', e => { e.preventDefault(); if (travel || finale) return; look(userZoom * Math.exp(-e.deltaY * (e.ctrlKey ? 0.012 : 0.0018)), e.clientX, e.clientY); }, { passive: false });
+canvas.addEventListener('wheel', e => { e.preventDefault(); if (travel || finale) return; autoView = false; look(userZoom * Math.exp(-e.deltaY * (e.ctrlKey ? 0.012 : 0.0018)), e.clientX, e.clientY); }, { passive: false });
 canvas.addEventListener('pointerdown', e => {
   if (pinch || fingers.size > 1) return;
   if (travel) return; if (terminal.isOpen) terminal.close();
@@ -490,7 +516,7 @@ for (const c of built) { const b = document.createElement('button'), card = save
 $('#switch').hidden = model.travellers.length < 2; $('#switch').onclick = () => { switchTo(); $('#menu').open = false; };
 // The tag that says who is moving is also the quickest way to change who it is.
 $('#who').disabled = model.travellers.length < 2; $('#who').onclick = () => switchTo(); $('#who').setAttribute('aria-label', model.travellers.length < 2 ? 'Who is moving' : 'Change who is moving');
-function syncMenu() { const busy = !!walk || model.won; reachable = busy ? new Set() : model.reach(); $('#who b').textContent = (people[model.active]?.name ?? '') + (model.root && model.active === 'one' ? ' · 007' : ''); $('#who i').style.background = people[model.active]?.coat ?? '#888';
+function syncMenu() { viewDirty = true; const busy = !!walk || model.won; reachable = busy ? new Set() : model.reach(); $('#who b').textContent = (people[model.active]?.name ?? '') + (model.root && model.active === 'one' ? ' · 007' : ''); $('#who i').style.background = people[model.active]?.coat ?? '#888';
   if (model.travellers.length > 1) $('#switch').textContent = `Switch to ${people[model.travellers[(model.travellers.indexOf(model.active) + 1) % model.travellers.length]].name}`; document.querySelectorAll('[data-go]').forEach(b => b.disabled = busy || b.dataset.go === model.at); document.querySelectorAll('[data-turn]').forEach(b => b.disabled = busy || !model.canTurn(b.dataset.turn)); $('#switch').disabled = busy; }
 // Hints. The search runs in a worker; the model keeps the plan, so following hints costs one search.
 let hintWorker = null, ticket = 0; const waiting = new Map();
@@ -585,7 +611,7 @@ function frame(now) {
     else m.angle += diff * Math.min(1, dt * (m.dragging ? 18 : 7));
     if (!data.mechs[id].track) view.mechs[id].group.rotation[data.mechs[id].axis ?? 'y'] = m.angle;
   }
-  updateSeams(dt / timeScale); updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now); updateLead(dt); updateWin(dt / timeScale); updateHint(dt / timeScale, still); if (!auto && !model.won) nudge(now);
+  updateSeams(dt / timeScale); updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now); updateLead(dt); updateWin(dt / timeScale); updateHint(dt / timeScale, still); updateView(dt); if (!auto && !model.won) nudge(now);
   if (finale) { // pull back and follow her out
     finale.t += dt; const k = still ? 1 : Math.min(1, finale.t / 18), e = k * k * (3 - 2 * k), boat = live(Object.keys(data.nodes).find(n => data.nodes[n].arm === data.finale));
     setZoom(1 / (1 + 0.32 * e)); focus.copy(home).lerp(boat, 0.9 * e).addScaledVector(UP, -(canvas.clientWidth < canvas.clientHeight ? 0.2 : 0.1) * (camera.top - camera.bottom) / camera.zoom * e); aim();
@@ -614,7 +640,7 @@ window.__voyage = {
   screenOf: id => screenOf(live(id)), screenAt: p => screenOf(new T.Vector3(...p)), walkerOf: id => screenOf(walkers[id].group.position.clone().setY(walkers[id].group.position.y + 0.5)),
   get quality() { return quality; }, tapFor, whatAt: (x, y) => { const h = pick({ clientX: x, clientY: y }); return { intent: intentOf(h, x, y), data: h && Object.fromEntries(Object.entries(h.data).filter(([, v]) => typeof v !== 'object' || Array.isArray(v))) }; },
   leverOf: node => { const k = view.hits.find(h => h.userData.lever && h.userData.near[0] === node); return screenOf(k.getWorldPosition(new T.Vector3())); },
-  hubOf: id => screenOf(view.mechs[id].hub), flagAt: () => (view.flagPoint ? screenOf(view.flagPoint()) : null), eggAt: () => screenOf(cursor.group.position.clone().setY(cursor.group.position.y + 0.2)), margAt: () => screenOf(marg.group.position.clone().setY(marg.group.position.y + 0.25)), get busy() { return !!walk || Object.values(mechs).some(m => m.moving) || (begun && lead > 0); },
+  hubOf: id => screenOf(view.mechs[id].hub), flagAt: () => (view.flagPoint ? screenOf(view.flagPoint()) : null), eggAt: () => screenOf(cursor.group.position.clone().setY(cursor.group.position.y + 0.2)), margAt: () => screenOf(marg.group.position.clone().setY(marg.group.position.y + 0.25)), get busy() { return !!walk || Object.values(mechs).some(m => m.moving) || (begun && lead > 0) || viewMoving || (autoView && viewDirty && begun && !model.won); },
   frame: view.frame.map(p => screenOf(new T.Vector3(...p)))
 };
 if (params.has('auto')) setAuto(true);
