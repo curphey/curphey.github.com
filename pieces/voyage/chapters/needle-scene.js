@@ -53,7 +53,7 @@ export function createNeedleScene(kit, data) {
     const knob = add(new T.SphereGeometry(0.4, 12, 8), ghost(), -3, 10.4, 0, saucer); knob.castShadow = knob.receiveShadow = false; knob.userData = { mech: 'saucer', handle: true }; hits.push(knob); cyl(saucer, mats.brass, -3, 10, 10.5, 0, 0.03, { seg: 8 }); add(new T.SphereGeometry(0.08, 12, 10), mats.brass, -3, 10.55, 0, saucer); }
   mechs.saucer = { group: saucer, hub: new T.Vector3(0, 10, 0) };
   // The kiosk that works the lift, and the two levers on the mid ring.
-  box(group, mats.glass, [2.6, 0, 1.3], [3.5, 1.1, 1.7]); box(group, mats.white, [2.5, 1.1, 1.2], [3.6, 1.2, 1.8]); lever(2.5, 0, 0.75, 'lift', 'lobby', gold);
+  box(group, mats.glass, [3.1, 0, -1.7], [4.0, 1.1, -1.3]); box(group, mats.white, [3.0, 1.1, -1.8], [4.1, 1.2, -1.2]); lever(2.5, 0, 0.75, 'lift', 'lobby', gold);
   lever(2.2, 5, -0.38, 'saucer', 'ring', mats.white); const sluiceWheel = add(new T.TorusGeometry(0.16, 0.03, 8, 20), mats.blue, 2.35, 5.3, 0.4, group); sluiceWheel.userData.dynamic = true; cyl(group, mats.iron, 2.35, 5, 5.3, 0.4, 0.025, { seg: 6 });
   { const p = add(new T.CylinderGeometry(0.3, 0.3, 0.03, 28), mats.brass, 2, 5.016, 0, group); p.castShadow = false; }
   // ---- the pool, its pontoon, the island and the white arches ----
@@ -73,6 +73,16 @@ export function createNeedleScene(kit, data) {
   box(group, mats.stone, [-24, 2.3, -13.3], [24, 2.6, -12.7]); for (let x = -22; x <= 22; x += 4) box(group, mats.stone, [x - 0.2, 0, -13.2], [x + 0.2, 2.3, -12.8]);
   const train = new T.Group(); train.userData.dynamic = true; train.position.set(-6, 2.6, -13); group.add(train); box(train, mats.white, [-2.2, 0, -0.42], [2.2, 0.75, 0.42]); box(train, mats.red, [-2.2, 0.08, -0.44], [2.2, 0.22, 0.44]); box(train, mats.glass, [-2.0, 0.34, -0.44], [2.0, 0.62, 0.44]);
   for (const [x, z, s] of [[10.5, 9, 1.5], [14, 11.5, 1.8], [18, 9.5, 1.6], [20, 13, 2.0], [-9, 8, 1.6], [-13, 10.5, 1.9], [-17, 8, 1.7], [-20, 12, 2.1], [14, -15, 1.9], [18, -12.5, 1.6], [21, -17, 2.2], [-15, -12, 1.8], [-19, -15, 2.1], [-16.5, -19, 1.7], [-21, -5, 1.9], [-14.5, 3.5, 1.4], [16.5, 3, 1.3]]) fir(x, z, s);
+  // ---- life on the plaza: paving rings, puddles, cafe umbrellas, lamps and a garden of blown glass ----
+  for (const [r0, r1, m] of [[4.6, 4.9, mats.walk], [6.6, 6.8, gold], [8.6, 9.0, mats.walk]]) { const ring = add(new T.RingGeometry(r0, r1, 96), m, 0, 0.012, 0, group); ring.rotation.x = -Math.PI / 2; ring.castShadow = false; }
+  for (const [x, z, r] of [[5.5, 2.2, 0.9], [7.2, -1.5, 0.6], [3.2, 6.4, 1.1], [-1.5, 6.8, 0.7], [-5.5, 2.5, 1.0], [6.2, 5.6, 0.5], [9.5, 2.6, 0.8], [1.0, -6.5, 0.9], [-3.5, -4.2, 0.6], [-6.8, 5.6, 0.7]]) { const p = add(new T.CircleGeometry(r, 28), pond, x, 0.009, z, group); p.rotation.x = -Math.PI / 2; p.scale.y = 0.7; p.castShadow = false; }
+  for (const [x, z, m] of [[6.4, 3.6, mats.red], [7.6, 4.6, mats.yellow], [5.4, 5.0, mats.teal], [8.0, 0.6, mats.orange], [-2.6, 7.4, mats.blue]]) { cyl(group, mats.white, x, 0, 0.45, z, 0.32, { seg: 16 }); cyl(group, mats.iron, x, 0.45, 1.5, z, 0.025, { seg: 6 }); cone(group, m, x, 1.3, 1.75, z, 0.85, 10); }
+  for (const [x, z] of [[4.4, 4.4], [8.4, -3.2], [-2.2, 4.6], [1.2, 8.2], [-6.4, 0.8], [10.6, 5.6]]) { cyl(group, mats.iron, x, 0, 2.2, z, 0.035, { seg: 6 }); const bulb = add(new T.SphereGeometry(0.13, 12, 10), mats.glow, x, 2.3, z, group); bulb.castShadow = false; }
+  { const glassMat = c => new T.MeshStandardMaterial({ color: c, roughness: 0.08, metalness: 0.2, emissive: c, emissiveIntensity: 0.35 });
+    const cols = ['#e2452f', '#f08a2f', '#f2c744', '#d63a7a', '#3f8fd0'].map(glassMat);
+    for (let i = 0; i < 26; i++) { const a = i * 2.4, r = 0.3 + (i * 0.37 % 1) * 1.5, h = 0.9 + (i * 0.61 % 1) * 1.6, s = cone(group, cols[i % 5], -5.2 + Math.cos(a) * r, 0, h, 6.6 + Math.sin(a) * r * 0.8, 0.07, 6); s.rotation.set(Math.cos(a) * 0.3, 0, Math.sin(a) * 0.3); }
+    const globe = add(new T.SphereGeometry(0.42, 20, 14), cols[2], -5.2, 0.42, 6.6, group); }
+
   // ---- far off: downtown, the bay with a ferry, and the mountain ----
   for (let i = 0; i < 22; i++) { const x = 2 + (i * 37 % 34), z = -52 + (i * 13 % 16), h = 6 + (i * 53 % 13), w = 2.2 + (i % 3) * 0.6; const b = box(group, mats.city, [x, 0, z], [x + w, h, z + w]); b.castShadow = false; }
   box(group, wet, [-24, -1.6, -60], [60, 0, -24]).castShadow = false; box(group, wet, [24, -1.6, -24], [60, 0, 16]).castShadow = false;
