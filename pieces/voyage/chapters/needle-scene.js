@@ -109,7 +109,7 @@ export function createNeedleScene(kit, data) {
     const globe = add(new T.SphereGeometry(0.42, 20, 14), cols[2], -5.2, 0.42, 6.6, group); }
   // ---- lamps: a globe on a post, a pool of warm light on the wet paving, and its reflection drawn towards the eye ----
   const gp = [], gc = [], fan = (cx, cz, ux, uz, a, b, k) => { for (let i = 0; i < 18; i++) { gp.push(cx, 0.022, cz); gc.push(k, k * 0.6, k * 0.24); for (const t of [i * Math.PI / 9, (i + 1) * Math.PI / 9]) { gp.push(cx + Math.cos(t) * a * ux - Math.sin(t) * b * uz, 0.022, cz + Math.cos(t) * a * uz + Math.sin(t) * b * ux); gc.push(0, 0, 0); } } };
-  for (const [x, z] of [[4.4, 4.4], [8.4, -3.2], [-2.2, 4.6], [1.2, 8.2], [-6.4, 0.8], [10.6, 5.6], [-4.5, -4.5], [0.8, 12.6], [-9, -10], [3, -8.5]]) {
+  for (const [x, z] of [[4.4, 4.4], [8.4, -3.2], [-2.2, 4.6], [1.2, 8.2], [-6.4, 0.8], [10.6, 5.6], [-4.5, -4.5], [3.5, 12], [-9, -10], [3, -8.5]]) {
     cyl(group, mats.iron, x, 0, 0.12, z, 0.1, { seg: 10 }); cyl(group, mats.iron, x, 0, 2.2, z, 0.035, { seg: 6 }); add(new T.SphereGeometry(0.13, 12, 10), lamp, x, 2.3, z, group).castShadow = false;
     fan(x, z, 1, 0, 1.7, 1.7, 0.3); fan(x + 1.8, z + 1.8, S, S, 1.7, 0.26, 0.4);
   }
@@ -117,7 +117,7 @@ export function createNeedleScene(kit, data) {
   const glowGeo = new T.BufferGeometry(); glowGeo.setAttribute('position', new T.Float32BufferAttribute(gp, 3)); glowGeo.setAttribute('color', new T.Float32BufferAttribute(gc, 3));
   const glowMat = new T.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide }), glow = new T.Mesh(glowGeo, glowMat); glow.userData.dynamic = true; group.add(glow);
   // ---- the fountain: a steel dome in a bowl, a ring of jets that rise and fall in a slow wave, and something yellow afloat ----
-  const FX = -1.5, FZ = 10.6; cyl(group, mats.stone, FX, 0, 0.16, FZ, 1.75, { seg: 40 }); cyl(group, puddle, FX, 0.16, 0.2, FZ, 1.55, { seg: 40 }).castShadow = false;
+  const FX = -0.6, FZ = 10.2; cyl(group, mats.stone, FX, 0, 0.16, FZ, 1.75, { seg: 40 }); cyl(group, puddle, FX, 0.16, 0.2, FZ, 1.55, { seg: 40 }).castShadow = false;
   { const d = add(new T.SphereGeometry(0.55, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), mats.lead, FX, 0.2, FZ, group); d.scale.y = 0.75; }
   const JETS = 11, DROPS = 7, jetPos = new Float32Array(JETS * DROPS * 3), jetGeo = new T.BufferGeometry(); jetGeo.setAttribute('position', new T.BufferAttribute(jetPos, 3));
   const jets = new T.Points(jetGeo, new T.PointsMaterial({ color: '#f4f8fa', size: 1.7, transparent: true, opacity: 0.8, depthWrite: false })); jets.userData.dynamic = true; jets.frustumCulled = false; group.add(jets);
@@ -131,7 +131,7 @@ export function createNeedleScene(kit, data) {
   spray(0);
   const duck = new T.Group(); group.add(duck); { const b = add(new T.SphereGeometry(0.13, 12, 8), mats.yellow, 0, 0.06, 0, duck); b.scale.set(1.25, 0.8, 0.9); add(new T.SphereGeometry(0.08, 10, 8), mats.yellow, 0.12, 0.2, 0, duck); const beak = add(new T.ConeGeometry(0.035, 0.09, 8), mats.orange, 0.22, 0.19, 0, duck); beak.rotation.z = -Math.PI / 2; } bake(duck); duck.position.set(FX + 1.05, 0.2, FZ);
   // ---- people out in the rain, each under an umbrella; now and then one is shaken dry ----
-  const brollies = []; for (const [x, z, coat, top] of [[0.7, 10.3, mats.blue, '#c8402f'], [-3.0, 6.0, mats.iron, '#f0c348'], [7.4, -5.6, mats.lead, '#2aa39a']]) {
+  const brollies = []; for (const [x, z, coat, top] of [[1.6, 10.7, mats.blue, '#c8402f'], [-4.0, 9.3, mats.iron, '#f0c348'], [7.4, -5.6, mats.lead, '#2aa39a']]) {
     cyl(group, coat, x, 0, 0.5, z, 0.11, { rTop: 0.07, seg: 10 }); add(new T.SphereGeometry(0.075, 10, 8), mats.cream, x, 0.57, z, group); cyl(group, mats.iron, x + 0.08, 0.3, 0.86, z, 0.012, { seg: 5 });
     const c = add(new T.ConeGeometry(0.36, 0.15, 8, 1, true), new T.MeshStandardMaterial({ color: top, roughness: 0.6, side: T.DoubleSide }), x + 0.08, 0.9, z, group); c.userData.dynamic = true; brollies.push(c);
   }
