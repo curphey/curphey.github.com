@@ -27,6 +27,12 @@ const data = built.find(c => c.id === params.get('chapter')) ?? built[0], model 
 const scene = new T.Scene(), DIST = 70, TOWARD = new T.Vector3(1, 1, 1).normalize();
 const RIGHT = new T.Vector3(1, 0, -1).normalize(), UP = new T.Vector3(-1, 2, -1).normalize();
 const camera = new T.OrthographicCamera(-20, 20, 12, -12, 0.1, 300), focus = new T.Vector3();
+// While the title is up on a phone the scene sits lower, clear of the words; `lead` runs from 1 to 0 as play begins
+// and the camera glides to where it frames the puzzle. `home` is where the camera rests at this moment.
+const home = new T.Vector3(), baseFocus = new T.Vector3(); let lead = 1, leadT = 0, shiftV = 0;
+const setHome = () => home.copy(baseFocus).addScaledVector(UP, lead * shiftV);
+const ease = t => { t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); };
+if (!params.has('arrive')) $('#loading').style.background = palette.haze; // the scene will clear out of mist of this colour
 const sun = new T.DirectionalLight('#fff', 1), fill = new T.HemisphereLight('#fff', '#fff', 0.3);
 const kit = createKit(), view = scenes[data.id](kit, data); scene.add(view.group);
 const shadowSize = view.shadowSize ?? 30;
@@ -100,7 +106,8 @@ function resize() {
   const aspect = w / h, portrait = aspect < 0.8, padTop = portrait ? 0.2 : 0.07, padBottom = portrait ? 0.14 : 0.17, padSide = portrait ? 0.03 : 0.06;
   const spanU = (u1 - u0) / (1 - padSide * 2), spanV = (v1 - v0) / (1 - padTop - padBottom), height = Math.max(spanV, spanU / aspect), width = height * aspect;
   const cv = (v0 + v1) / 2 + (padTop - padBottom) / 2 * height;
-  focus.copy(RIGHT).multiplyScalar((u0 + u1) / 2).addScaledVector(UP, cv); baseFocus?.copy(focus);
+  shiftV = portrait ? Math.max(0, Math.min(0.16 * height, v0 - (cv - height / 2) - 0.05 * height)) : 0;
+  baseFocus.copy(RIGHT).multiplyScalar((u0 + u1) / 2).addScaledVector(UP, cv); setHome(); focus.copy(home);
   camera.left = -width / 2; camera.right = width / 2; camera.top = height / 2; camera.bottom = -height / 2; camera.updateProjectionMatrix();
   aim();
   pipeline.uniforms.hazeNear.value = DIST + 6; pipeline.uniforms.hazeFar.value = DIST + 55;
@@ -229,7 +236,7 @@ let finale = null;
 // Is the active traveller standing on something they can turn from where they are?
 function rideable() { const arm = data.nodes[model.at].arm; return !!arm && model.riding(arm) && model.canTurn(arm); }
 function finish() {
-  say('arrived'); sound.chord();
+  started(); say('arrived'); sound.chord(); document.querySelector('main').classList.add(data.finale ? 'finale' : 'won'); if (!data.finale && !reduced.matches) winCam = { t: 0 };
   // The last chapter: cast off, let her sail, and only then show the card.
   if (data.finale) { const id = data.finale; model.rotate(id, 1); mechs[id].target -= Math.PI / 2; mechs[id].moving = true; if (reduced.matches) mechs[id].angle = mechs[id].target; finale = { t: 0 }; }
   else showFinish();
@@ -237,9 +244,17 @@ function finish() {
   const s = save.load(); save.store({ furthest: Math.max(s.furthest, data.number + 1), done: [...new Set([...s.done, data.id])] });
   if (!reduced.matches) setTimeout(() => (nextChapter ? $('#next') : $('#again')).focus({ preventScroll: true }), 1500);
 }
+// The camera leans in a little on the place where the scene was won.
+let winCam = null; const winAt = new T.Vector3();
+function updateWin(dt) {
+  if (!winCam) return;
+  winCam.t += dt; const k = ease(winCam.t / 5); camera.zoom = 1 + 0.09 * k; camera.updateProjectionMatrix();
+  focus.copy(home).lerp(winAt.copy(live(data.goal.node)), 0.3 * k); aim(); if (winCam.t > 5) winCam = null;
+}
 // The end card. On the last scene it carries a postcard from every place played.
 function showFinish() {
-  const last = !nextChapter, cards = save.load().cards, have = built.filter(c => cards[c.id]);
+  const last = !nextChapter, cards = save.load().cards, have = built.filter(c => cards[c.id]), done = save.load().done;
+  $('#pips').replaceChildren(...built.map(c => { const i = document.createElement('i'); if (done.includes(c.id) || c === data) i.className = 'done'; if (c === data) i.classList.add('now'); return i; }));
   if (last && have.length) {
     const box = $('#cards'); box.replaceChildren();
     have.forEach((c, i) => { const f = document.createElement('figure'), img = document.createElement('img'), cap = document.createElement('figcaption'); img.src = cards[c.id]; img.alt = `A postcard from ${c.title}`; cap.textContent = c.title.replace(/,.*/, ''); f.style.animationDelay = `${0.25 + i * 0.22}s`; f.append(img, cap); box.append(f); });
@@ -252,13 +267,19 @@ let wantCard = false;
 function takeCard() {
   wantCard = false;
   try {
-    const c = document.createElement('canvas'); c.width = 320; c.height = 200; const g = c.getContext('2d'), w = canvas.width, h = canvas.height, sw = Math.min(w, h * 1.6), sh = sw / 1.6;
-    g.drawImage(canvas, (w - sw) / 2, (h - sh) / 2, sw, sh, 0, 0, 320, 200);
-    save.store({ cards: { ...save.load().cards, [data.id]: c.toDataURL('image/jpeg', 0.62) } });
+    // Framed on the scene itself rather than on the middle of the screen, so a tall phone gets the same picture.
+    const c = document.createElement('canvas'); c.width = 480; c.height = 300; const g = c.getContext('2d'), w = canvas.width, h = canvas.height, r = canvas.getBoundingClientRect(), k = w / r.width;
+    const pts = view.frame.map(p => screenOf(new T.Vector3(...p))), xs = pts.map(p => (p[0] - r.left) * k), ys = pts.map(p => (p[1] - r.top) * k);
+    const sw = Math.min(w, h * 1.6, Math.max((Math.max(...xs) - Math.min(...xs)) * 1.12, (Math.max(...ys) - Math.min(...ys)) * 1.12 * 1.6)), sh = sw / 1.6;
+    const sx = Math.min(w - sw, Math.max(0, (Math.max(...xs) + Math.min(...xs)) / 2 - sw / 2)), sy = Math.min(h - sh, Math.max(0, (Math.max(...ys) + Math.min(...ys)) / 2 - sh / 2));
+    g.drawImage(canvas, sx, sy, sw, sh, 0, 0, 480, 300);
+    const url = c.toDataURL('image/jpeg', 0.62); save.store({ cards: { ...save.load().cards, [data.id]: url } });
+    if (nextChapter) { $('#card img').src = url; $('#card figcaption').textContent = data.title.replace(/,.*/, ''); $('#card').hidden = false; }
   } catch { /* no postcard, no harm */ }
 }
 // Completion: a rise of golden motes from where the scene was won.
-const motes = new T.Points(new T.BufferGeometry(), new T.PointsMaterial({ color: data.motes ?? '#ffd978', size: 5, sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false, depthTest: false }));
+const moteMap = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(255,255,255,.75)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new T.CanvasTexture(c); })();
+const motes = new T.Points(new T.BufferGeometry(), new T.PointsMaterial({ color: data.motes ?? '#ffd978', map: moteMap, size: 16 * Math.min(devicePixelRatio, 2), sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: T.AdditiveBlending }));
 motes.geometry.setAttribute('position', new T.BufferAttribute(new Float32Array(90 * 3), 3)); motes.frustumCulled = false; motes.renderOrder = 8; scene.add(motes);
 let party = null;
 function celebrate() {
@@ -274,7 +295,7 @@ function updateParty(dt) {
   if (t > 4.5) { party = null; motes.material.opacity = 0; }
 }
 function restart() {
-  model.reset(); model.root = !!save.load().root; walk = null; drag = null; finale = null; party = null; motes.material.opacity = 0; $('#cards').hidden = true; $('#finish').classList.remove('wide'); camera.zoom = 1; camera.updateProjectionMatrix(); $('#finish').hidden = true; $('#menu').open = false;
+  model.reset(); model.root = !!save.load().root; walk = null; drag = null; finale = null; party = null; winCam = null; document.querySelector('main').classList.remove('won', 'finale'); $('#card').hidden = true; if (water) water.uniforms.glitter.value = data.finale ? 0.35 : 0; focus.copy(home); motes.material.opacity = 0; $('#cards').hidden = true; $('#finish').classList.remove('wide'); camera.zoom = 1; camera.updateProjectionMatrix(); $('#finish').hidden = true; $('#menu').open = false;
   for (const id of Object.keys(mechs)) { mechs[id].angle = mechs[id].target = angleOf(model.mechs[id]); mechs[id].moving = false; }
   placeWalkers(); for (const w of Object.values(walkers)) w.face(1, 1); view.update.wonAt = undefined; say('start'); syncMenu();
 }
@@ -282,6 +303,12 @@ function restart() {
 let lastInput = performance.now(), nudged = false;
 function nudge(now) { if (nudged || begun && model.won || travel || now - lastInput < 30000) return; nudged = true; $('#status').textContent = 'Stuck? The three dots, top right, have a hint.'; }
 let begun = false; function started() { lastInput = performance.now(); if (!begun) { begun = true; $('#title').classList.add('away'); document.querySelector('main').classList.add('playing'); } }
+// The camera settles from the title framing into the play framing once play has begun.
+function updateLead(dt) {
+  if (!begun || lead <= 0) return;
+  leadT += dt; lead = reduced.matches ? 0 : 1 - ease(leadT / 1.6); if (lead < 0.001) lead = 0; setHome();
+  if (!travel && !finale && !winCam) { focus.copy(home); aim(); }
+}
 
 // ---- pointer ----------------------------------------------------------------
 const ray = new T.Raycaster(), ndc = new T.Vector2(), plane = new T.Plane(), hitPoint = new T.Vector3(); let drag = null;
@@ -400,10 +427,10 @@ document.title = data.banner ?? `${data.title} — Curphey Family Web Site`;
 if (data.banner) { const b = document.createElement('span'); b.className = 'banner'; b.textContent = data.banner; $('#title').prepend(b); }
 document.querySelector('.title .eyebrow').textContent = `Scene ${data.word} · ${listNames(model.travellers)}`;
 document.querySelector('.title h1').textContent = data.title.replace("'", '’'); $('#subtitle').innerHTML = data.subtitle.join('<br>');
-document.querySelector('#goal b').textContent = data.goalText; canvas.setAttribute('aria-label', `${data.title}: ${data.subtitle.join(' ')} Goal: ${data.goalText} Every move can also be made from the menu.`); if (data.finish.eyebrow) document.querySelector('#finish .eyebrow').textContent = data.finish.eyebrow;
+document.querySelector('#goal b').textContent = data.goalText; document.querySelector('#goal span').prepend(Object.assign(document.createElement('i'), { textContent: `${data.title.replace(/,.*/, '')} · ` })); canvas.setAttribute('aria-label', `${data.title}: ${data.subtitle.join(' ')} Goal: ${data.goalText} Every move can also be made from the menu.`); if (data.finish.eyebrow) document.querySelector('#finish .eyebrow').textContent = data.finish.eyebrow;
 document.querySelector('#finish h2').textContent = data.finish.title; document.querySelector('#finish p').textContent = data.finish.body;
 const nextChapter = built.find(c => c.id === data.next);
-if (nextChapter) { $('#next').hidden = false; $('#next').onclick = () => startPassage(); }
+if (nextChapter) { $('#next').hidden = false; $('#next').textContent = `On to ${nextChapter.title.replace(/,.*/, '')}`; $('#next').onclick = () => startPassage(); }
 for (const [id, n] of Object.entries(data.nodes)) { const b = document.createElement('button'); b.textContent = cap(n.label); b.dataset.go = id; b.onclick = () => go(id); $('#walks').append(b); }
 for (const [id, m] of Object.entries(data.mechs)) for (const dir of [1, -1]) { const b = document.createElement('button'); b.textContent = `${cap(m.label)} ${dir > 0 ? '↻' : '↺'}`; b.setAttribute('aria-label', `Turn ${m.label} ${dir > 0 ? 'clockwise' : 'anticlockwise'}`); b.dataset.turn = id; b.onclick = () => turn(id, dir); $('#turns').append(b); }
 for (const c of built) { const b = document.createElement('button'), card = save.load().cards[c.id]; b.textContent = `${c.number} · ${c.title}`; if (card) { b.classList.add('carded'); b.style.backgroundImage = `linear-gradient(90deg, rgba(250,246,236,.95) 45%, rgba(250,246,236,.35)), url(${card})`; } b.disabled = c === data; b.onclick = () => { location.search = `?chapter=${c.id}`; }; $('#chapters').append(b); }
@@ -444,7 +471,7 @@ function updateAuto(dt) {
 }
 
 // ---- the passage to the next chapter ------------------------------------------
-const baseFocus = new T.Vector3(), hazeHere = new T.Color(palette.haze), hazeNext = new T.Color(nextChapter ? palettes[nextChapter.palette].haze : palette.haze), GLIDE = 14;
+const hazeHere = new T.Color(palette.haze), hazeNext = new T.Color(nextChapter ? palettes[nextChapter.palette].haze : palette.haze), GLIDE = 14;
 let travel = params.has('arrive') ? { kind: 'arrive', t: 0 } : null; if (travel) pipeline.uniforms.veil.value = 1;
 function startPassage() {
   if (travel || !nextChapter) return;
@@ -456,23 +483,25 @@ function updatePassage(dt) {
   travel.t += dt; const still = reduced.matches, p = travel.kind === 'leave' ? leaving(travel.t, still) : arriving(travel.t, still);
   pipeline.uniforms.veil.value = p.veil;
   // Glide on in the direction of travel while leaving; glide in from behind while arriving.
-  focus.copy(baseFocus).addScaledVector(RIGHT, (travel.kind === 'leave' ? p.glide : -p.glide) * GLIDE); aim();
+  focus.copy(home).addScaledVector(RIGHT, (travel.kind === 'leave' ? p.glide : -p.glide) * GLIDE); aim();
   if (travel.kind === 'leave') { pipeline.uniforms.haze.value.copy(hazeHere).lerp(hazeNext, p.mix); $('#passage').style.opacity = p.text; }
-  if (p.done) { const kind = travel.kind; if (kind === 'leave') { if (!travel.left) { travel.left = true; leave(); } /* once only: asking twice aborts the first */ } else { travel = null; pipeline.uniforms.veil.value = 0; focus.copy(baseFocus); aim(); } }
+  if (p.done) { const kind = travel.kind; if (kind === 'leave') { if (!travel.left) { travel.left = true; leave(); } /* once only: asking twice aborts the first */ } else { travel = null; pipeline.uniforms.veil.value = 0; focus.copy(home); aim(); } }
 }
 canvas.addEventListener('pointerdown', () => { if (travel?.kind === 'leave' && travel.t > 0.4 && !travel.left) { travel.left = true; leave(); } });
 
 // ---- arrival: the camera eases in from a little further out ---------------------
-let intro = reduced.matches || lite || params.has('arrive') ? null : { from: 0 };
+// On a first load the scene also clears out of mist of its own colour, as it does after a passage.
+let intro = reduced.matches || lite || params.has('arrive') ? null : { from: 0 }; if (intro) pipeline.uniforms.veil.value = 1;
 function updateIntro(now) {
-  if (!intro || finale) return;
-  intro.from ||= now; const k = Math.min(1, (now - intro.from) / 1400), e = 1 - Math.pow(1 - k, 3);
-  camera.zoom = 1.1 - 0.1 * e; camera.updateProjectionMatrix(); if (k >= 1) intro = null;
+  if (!intro) return; if (finale || winCam) { pipeline.uniforms.veil.value = 0; intro = null; return; }
+  intro.from ||= now; const k = Math.min(1, (now - intro.from) / 2600), e = 1 - Math.pow(1 - k, 3);
+  camera.zoom = 1.12 - 0.12 * e; camera.updateProjectionMatrix(); pipeline.uniforms.veil.value = 1 - ease(k * 1.25); if (k >= 1) intro = null;
 }
 // ---- the buttons under the title, before play starts ---------------------------
 { const s = save.load(), resume = built.find(c => c.number === Math.min(s.furthest, built.length));
   $('#starters').hidden = false; $('#with-sound').hidden = $('#sound').getAttribute('aria-pressed') === 'true' || !!s.sound;
-  $('#with-sound').onclick = () => { setSound(true); $('#with-sound').hidden = true; };
+  $('#with-sound').onclick = () => { setSound(true); $('#with-sound').hidden = true; started(); };
+  $('#begin').onclick = () => started();
   if (!params.has('chapter') && resume && resume.number > data.number) { $('#continue').hidden = false; $('#continue').textContent = `Continue at ${resume.title}`; $('#continue').onclick = () => { location.search = `?chapter=${resume.id}`; }; }
   $('#over').onclick = () => { location.search = `?chapter=${built[0].id}`; }; }
 
@@ -495,11 +524,12 @@ function frame(now) {
     else m.angle += diff * Math.min(1, dt * (m.dragging ? 18 : 7));
     if (!data.mechs[id].track) view.mechs[id].group.rotation[data.mechs[id].axis ?? 'y'] = m.angle;
   }
-  updateSeams(dt / timeScale); updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now); if (!auto && !model.won) nudge(now);
+  updateSeams(dt / timeScale); updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now); updateLead(dt); updateWin(dt / timeScale); if (!auto && !model.won) nudge(now);
   if (finale) { // pull back and follow her out
     finale.t += dt; const k = still ? 1 : Math.min(1, finale.t / 18), e = k * k * (3 - 2 * k), boat = live(Object.keys(data.nodes).find(n => data.nodes[n].arm === data.finale));
-    camera.zoom = 1 / (1 + 0.5 * e); camera.updateProjectionMatrix(); focus.copy(baseFocus).lerp(boat, 0.45 * e); aim();
-    if ((finale.t > 9 || still) && $('#finish').hidden) showFinish();
+    camera.zoom = 1 / (1 + 0.32 * e); camera.updateProjectionMatrix(); focus.copy(home).lerp(boat, 0.72 * e); aim();
+    if (water) water.uniforms.glitter.value = 0.35 + 0.65 * ease(finale.t / 8);
+    if ((finale.t > 12 || still) && $('#finish').hidden) showFinish();
   }
   for (const [id, w] of Object.entries(walkers)) w.update(dt, time, walk?.who === id, still);
   const lead = walkers[model.active].group.position; marker.position.set(lead.x, lead.y + 0.02, lead.z); marker.visible = model.travellers.length > 1 && walkers[model.active].group.visible && !walk?.points[0]?.slide; if (!still) marker.scale.setScalar(1 + Math.sin(time * 3) * 0.06);
@@ -513,6 +543,7 @@ function frame(now) {
   if (wantCard) takeCard();
 }
 
+if (water && data.finale) water.uniforms.glitterFrom.value.set(data.mechs[data.finale].track[0][0] - 6, data.mechs[data.finale].track[0][2] + 8);
 applyPalette(palette); resize(); if (lite) setQuality(0); restart();
 // A small handle for automated checks; not used by the game itself.
 window.__voyage = {
@@ -522,8 +553,8 @@ window.__voyage = {
   screenOf: id => screenOf(live(id)), screenAt: p => screenOf(new T.Vector3(...p)), walkerOf: id => screenOf(walkers[id].group.position.clone().setY(walkers[id].group.position.y + 0.5)),
   get quality() { return quality; }, tapFor, whatAt: (x, y) => { const h = pick({ clientX: x, clientY: y }); return { intent: intentOf(h, x, y), data: h && Object.fromEntries(Object.entries(h.data).filter(([, v]) => typeof v !== 'object' || Array.isArray(v))) }; },
   leverOf: node => { const k = view.hits.find(h => h.userData.lever && h.userData.near[0] === node); return screenOf(k.getWorldPosition(new T.Vector3())); },
-  hubOf: id => screenOf(view.mechs[id].hub), flagAt: () => (view.flagPoint ? screenOf(view.flagPoint()) : null), eggAt: () => screenOf(cursor.group.position.clone().setY(cursor.group.position.y + 0.2)), margAt: () => screenOf(marg.group.position.clone().setY(marg.group.position.y + 0.25)), get busy() { return !!walk || Object.values(mechs).some(m => m.moving); },
+  hubOf: id => screenOf(view.mechs[id].hub), flagAt: () => (view.flagPoint ? screenOf(view.flagPoint()) : null), eggAt: () => screenOf(cursor.group.position.clone().setY(cursor.group.position.y + 0.2)), margAt: () => screenOf(marg.group.position.clone().setY(marg.group.position.y + 0.25)), get busy() { return !!walk || Object.values(mechs).some(m => m.moving) || (begun && lead > 0); },
   frame: view.frame.map(p => screenOf(new T.Vector3(...p)))
 };
 if (params.has('auto')) setAuto(true);
-requestAnimationFrame(t => { frame(t); $('#loading').classList.add('done'); });
+requestAnimationFrame(t => { frame(t); $('#loading').classList.add('done'); document.querySelector('main').classList.add('ready'); });
