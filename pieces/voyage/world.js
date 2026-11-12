@@ -386,8 +386,9 @@ function tapFor(move, touch = false) {
   else if (want.type === 'walk') { around(live(want.to)); around(live(want.to), 0.8); }
   else { for (const h of view.hits) if ((h.userData.lever === want.id) || (h.userData.handle && h.userData.mech === want.id)) spots.push(h.getWorldPosition(new T.Vector3())); around(live(model.at)); }
   for (const p of spots) {
-    const [x, y] = screenOf(p); if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
-    if (same(intentOf(pick({ clientX: x, clientY: y }), x, y, touch))) return [x, y];
+    const [fx, fy] = screenOf(p), x = Math.round(fx), y = Math.round(fy); if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
+    // Whole pixels, and the same answer two pixels either side: a place a person could actually hit.
+    if ([[0, 0], [2, 0], [-2, 0], [0, 2], [0, -2]].every(([dx, dy]) => same(intentOf(pick({ clientX: x + dx, clientY: y + dy }), x + dx, y + dy, touch)))) return [x, y];
   }
   return null;
 }
@@ -407,6 +408,8 @@ for (const [id, n] of Object.entries(data.nodes)) { const b = document.createEle
 for (const [id, m] of Object.entries(data.mechs)) for (const dir of [1, -1]) { const b = document.createElement('button'); b.textContent = `${cap(m.label)} ${dir > 0 ? '↻' : '↺'}`; b.setAttribute('aria-label', `Turn ${m.label} ${dir > 0 ? 'clockwise' : 'anticlockwise'}`); b.dataset.turn = id; b.onclick = () => turn(id, dir); $('#turns').append(b); }
 for (const c of built) { const b = document.createElement('button'), card = save.load().cards[c.id]; b.textContent = `${c.number} · ${c.title}`; if (card) { b.classList.add('carded'); b.style.backgroundImage = `linear-gradient(90deg, rgba(250,246,236,.95) 45%, rgba(250,246,236,.35)), url(${card})`; } b.disabled = c === data; b.onclick = () => { location.search = `?chapter=${c.id}`; }; $('#chapters').append(b); }
 $('#switch').hidden = model.travellers.length < 2; $('#switch').onclick = () => { switchTo(); $('#menu').open = false; };
+// The tag that says who is moving is also the quickest way to change who it is.
+$('#who').disabled = model.travellers.length < 2; $('#who').onclick = () => switchTo(); $('#who').setAttribute('aria-label', model.travellers.length < 2 ? 'Who is moving' : 'Change who is moving');
 function syncMenu() { const busy = !!walk || model.won; reachable = busy ? new Set() : model.reach(); $('#who b').textContent = (people[model.active]?.name ?? '') + (model.root && model.active === 'one' ? ' · 007' : ''); $('#who i').style.background = people[model.active]?.coat ?? '#888';
   if (model.travellers.length > 1) $('#switch').textContent = `Switch to ${people[model.travellers[(model.travellers.indexOf(model.active) + 1) % model.travellers.length]].name}`; document.querySelectorAll('[data-go]').forEach(b => b.disabled = busy || b.dataset.go === model.at); document.querySelectorAll('[data-turn]').forEach(b => b.disabled = busy || !model.canTurn(b.dataset.turn)); $('#switch').disabled = busy; }
 // Hints. The search runs in a worker; the model keeps the plan, so following hints costs one search.

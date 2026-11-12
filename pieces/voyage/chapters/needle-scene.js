@@ -38,7 +38,9 @@ export function createNeedleScene(kit, data) {
   { const t = box(group, mats.walk, [1.5, -0.02, -0.5], [2.5, 0.004, 0.5]); t.userData.near = ['lobby']; hits.push(t); t.castShadow = false; }
   // The lift: a gold car on the outside of the core.
   const car = new T.Group(); car.userData.dynamic = true; group.add(car);
-  { const f = box(car, gold, [-0.45, -0.25, -0.45], [0.45, 0.004, 0.45]); f.userData.near = ['car']; hits.push(f); for (const [x, z] of [[-0.42, -0.42], [-0.42, 0.42]]) cyl(car, gold, x, 0, 1.25, z, 0.025, { seg: 6 }); box(car, gold, [-0.45, 1.25, -0.45], [-0.2, 1.3, 0.45]); box(car, mats.glass, [-0.46, 0.1, -0.43], [-0.44, 1.2, 0.43]); }
+  { const f = box(car, gold, [-0.45, -0.25, -0.45], [0.45, 0.004, 0.45]); f.userData.near = ['car']; hits.push(f); for (const [x, z] of [[-0.42, -0.42], [-0.42, 0.42]]) cyl(car, gold, x, 0, 1.25, z, 0.025, { seg: 6 }); box(car, gold, [-0.45, 1.25, -0.45], [-0.2, 1.3, 0.45]); box(car, mats.glass, [-0.46, 0.1, -0.43], [-0.44, 1.2, 0.43]);
+    // The whole cabin is the tap target, not just its floor.
+    const cabin = add(new T.BoxGeometry(1, 1.3, 1), ghost(), 0, 0.65, 0, car); cabin.castShadow = cabin.receiveShadow = false; cabin.userData.near = ['car']; hits.push(cabin); }
   box(group, mats.iron, [0.52, 0, -0.06], [0.58, 9.6, 0.06]); mechs.lift = { group: car, hub: new T.Vector3(1, 5, 0) };
   // The saucer: a turning deck, its underside, the halo, and the white roof on slim columns, with the spire above.
   const saucer = new T.Group(); saucer.userData.dynamic = true; group.add(saucer);
