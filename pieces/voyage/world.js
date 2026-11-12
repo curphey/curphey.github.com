@@ -243,7 +243,7 @@ function takeCard() {
   } catch { /* no postcard, no harm */ }
 }
 // Completion: a rise of golden motes from where the scene was won.
-const motes = new T.Points(new T.BufferGeometry(), new T.PointsMaterial({ color: '#ffd978', size: 5, sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false, depthTest: false }));
+const motes = new T.Points(new T.BufferGeometry(), new T.PointsMaterial({ color: data.motes ?? '#ffd978', size: 5, sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false, depthTest: false }));
 motes.geometry.setAttribute('position', new T.BufferAttribute(new Float32Array(90 * 3), 3)); motes.frustumCulled = false; motes.renderOrder = 8; scene.add(motes);
 let party = null;
 function celebrate() {
