@@ -10,13 +10,15 @@ export function createWater(level) {
   const uniforms = {
     tReflect: { value: target.texture }, textureMatrix: { value: textureMatrix }, time: { value: 0 },
     body: { value: new T.Color() }, skyTop: { value: new T.Color() }, skyLow: { value: new T.Color() },
-    sunDir: { value: new T.Vector3() }, sunColor: { value: new T.Color() }, toCamera: { value: new T.Vector3(1, 1, 1).normalize() }
+    sunDir: { value: new T.Vector3() }, sunColor: { value: new T.Color() }, toCamera: { value: new T.Vector3(1, 1, 1).normalize() },
+    // The sun's path: a widening lane of glints lying on the water from a point towards the sun. Off unless a scene asks.
+    glitter: { value: 0 }, glitterFrom: { value: new T.Vector2() }
   };
   const material = new T.ShaderMaterial({
     uniforms,
     vertexShader: `uniform mat4 textureMatrix;varying vec4 vProj;varying vec3 vWorld;
       void main(){vec4 w=modelMatrix*vec4(position,1.);vWorld=w.xyz;vProj=textureMatrix*w;gl_Position=projectionMatrix*viewMatrix*w;}`,
-    fragmentShader: `uniform sampler2D tReflect;uniform float time;uniform vec3 body,skyTop,skyLow,sunDir,sunColor,toCamera;varying vec4 vProj;varying vec3 vWorld;${NOISE}
+    fragmentShader: `uniform sampler2D tReflect;uniform float time,glitter;uniform vec2 glitterFrom;uniform vec3 body,skyTop,skyLow,sunDir,sunColor,toCamera;varying vec4 vProj;varying vec3 vWorld;${NOISE}
       float height(vec2 p){return .5*vnoise(p*.9+vec2(time*.11,time*.07))+.3*vnoise(p*2.3-vec2(time*.16,-time*.1))+.12*vnoise(p*6.1+time*.3);}
       void main(){
         vec2 p=vWorld.xz;float e=.12,h=height(p);
@@ -33,7 +35,10 @@ export function createWater(level) {
         vec3 reflected=mix(sky,mirror.rgb*.82,mirror.a);
         float fresnel=.42+.5*pow(1.-max(dot(n,toCamera),0.),3.);
         vec3 col=mix(body,reflected,fresnel);
-        col+=vec3(1.)*smoothstep(.985,1.,n.y)*0.;
+        if(glitter>0.){vec2 gd=normalize(sunDir.xz),q=p-glitterFrom;float along=dot(q,gd),across=dot(q,vec2(-gd.y,gd.x));
+          float lane=smoothstep(-4.,10.,along)*exp(-across*across/(10.+max(along,0.)*1.4));
+          float glint=pow(vnoise(p*5.+vec2(time*1.1,-time*.8))*vnoise(p*11.-vec2(time*1.6,time*.7)),2.)*22.;
+          col+=sunColor*lane*glitter*(.1+glint*.55);}
         gl_FragColor=vec4(col,1.);
       }`
   });

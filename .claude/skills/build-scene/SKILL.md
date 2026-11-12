@@ -37,15 +37,16 @@ on the list. Record what still differs from the real place.
 
 ## 4. Play it as a stranger would
 
-`SCENES=<id> npm run check -- taps` plays the scene with real taps only. If a move has no tap, the scene is not done:
+`SCENES=<id> VERIFY_GPU=1 npm run check -- taps taps-phone` plays the scene with real taps only, on a pointer and on a
+phone-sized touch screen. If a move has no tap, the scene is not done:
 add the lever, handle or tap target. Then add the scene to `playScene` in `verify.mjs`, and run `npm run check`.
 On a machine with a graphics card, `npm run check:gpu` must report at least 30 frames a second for the scene.
 
 ## 5. Hand over
 
-Branch, commit, open a pull request. The `checks` workflow runs the unit tests and publishes on merge to `master`, so
-do not push to `master`. It cannot run the browser checks (no graphics card there), so run `VERIFY_GPU=1 npm run check`
-yourself and paste its output into the pull request. In the pull request say: what was built, the solution length, what differs from the photos, and anything
+Branch, commit, open a pull request. The `checks` workflow runs the unit tests and plays every scene in a browser
+(in low detail, so it checks behaviour, not looks), and publishes on merge to `master`; do not push to `master`.
+Add the new scene to the `ids` list in `tapPlay` and to the offline list test will tell you about in `sw.js`. In the pull request say: what was built, the solution length, what differs from the photos, and anything
 not verified. Update `tasks.md` in the spec store.
 
 ## Decisions that stay with Mark

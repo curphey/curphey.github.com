@@ -41,6 +41,7 @@ export const sausalito = {
   text: {
     start: 'Evening light on the bay, and Mount Tam dark above the town. Five of them on the yacht club dock.',
     won: 'All five on the roof deck, with the sun going down behind the mountain.',
+    marg: 'Marg. Mill Valley is where she joined the family, and she yaps once to say so.', // Mark: Marg came in San Francisco, not Seattle
     'turned:pram': 'The little dinghy heels and goes.', 'turned:skiff': 'The bigger dinghy fills her sail and goes.',
     'turned:davit': 'The davit swings out over the water.',
     carried: 'The davit carries you round, high over the water.',

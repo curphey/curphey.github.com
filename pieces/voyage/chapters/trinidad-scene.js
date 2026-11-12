@@ -173,13 +173,16 @@ export function createTrinidadScene(kit, data) {
   pose(0, false);
   for (const [id, n] of Object.entries(data.nodes)) if (n.pos) { const h = add(new T.BoxGeometry(1, 0.06, 1), ghost(), n.pos[0], n.pos[1] + 0.03, n.pos[2], group); h.castShadow = h.receiveShadow = false; h.userData.near = [id]; hits.push(h); }
   mergeStatic(group, new Set(hits));
+  let wonAt = null; const away = new T.Vector3();
   function update(time, model, still, state) {
     oars.visible = !model.items.has('oars'); rope.visible = !model.items.has('rope');
     if (!still) { boat.position.y = Math.sin(time * 1.1) * 0.03; boat.rotation.x = Math.sin(time * 0.9) * 0.025; }
+    // Won: she pushes off, and the pirogue carries her out across the lagoon.
+    if (model.won) { wonAt ??= time; const k = still ? 1 : Math.min(1, (time - wonAt) / 14), e = k * k * (3 - 2 * k); away.set(-7 * e, 0, 15 * e); boat.position.x = 8 + away.x; boat.position.z = 13 + away.z; boat.rotation.y = -1.1 * Math.min(1, e * 4); } else { wonAt = null; away.set(0, 0, 0); boat.position.x = 8; boat.position.z = 13; boat.rotation.y = 0; }
     if (!still) { let ringing = false; for (const k in state) if (state[k].moving) ringing = true; pose(time, ringing); }
     mats.glow.emissiveIntensity = (model.won ? 7 : 1.2) + (still ? 0 : flash); beamMat.opacity = model.won ? 0.28 : 0.16;
     if (!still) for (const fl of flags) { const p = fl.geometry.attributes.position, w = fl.userData.w; for (let i = 0; i < p.count; i++) p.setZ(i, Math.sin(time * 4.5 + p.getX(i) * 6) * 0.06 * (p.getX(i) / w + 0.5)); p.needsUpdate = true; }
   }
   const frame = [[-13.2, 0, -1.2], [-13, 3.6, -6], [2.6, 2.4, -7], [10.2, 8, 4.5], [12.4, 0, 3.4], [10.6, 0, 13.6], [7.2, SEA, 14], [5, 4, 7.6], [-4, SEA, 3.6]];
-  return { group, hits, mechs, update, frame, water: SEA, birds: { x: 0, z: 2, h: 7.5, color: '#e3262c', count: 13 }, shadowSize: 32 };
+  return { group, hits, mechs, update, frame, afterWin: () => away, water: SEA, birds: { x: 0, z: 2, h: 7.5, color: '#e3262c', count: 13 }, shadowSize: 32 };
 }

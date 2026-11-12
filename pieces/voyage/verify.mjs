@@ -6,24 +6,29 @@ import { extname, join, dirname, normalize, basename } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 // Playwright comes from this repo's devDependencies (npm install); PLAYWRIGHT_MODULE can point at another copy.
-const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ? pathToFileURL(process.env.PLAYWRIGHT_MODULE).href : 'playwright')
+const playwright = await import(process.env.PLAYWRIGHT_MODULE ? pathToFileURL(process.env.PLAYWRIGHT_MODULE).href : 'playwright')
   .catch(() => { console.error('Playwright is not installed: run npm install in the repository root.'); process.exit(2); });
 // VERIFY_GPU=1 uses the machine's graphics card (full Chromium); otherwise a software renderer, as on CI.
 const GPU = !!process.env.VERIFY_GPU;
+// VERIFY_LITE=1 loads every scene in the game's low-detail mode, for machines without a graphics card.
+const LITE = !!process.env.VERIFY_LITE;
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..'), out = process.env.VERIFY_OUT;
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
 const server = http.createServer(async (req, res) => {
   let p = normalize(decodeURIComponent(new URL(req.url, 'http://x').pathname)); if (p.endsWith('/')) p += 'index.html';
   try { const body = await readFile(join(root, p)); res.writeHead(200, { 'content-type': types[extname(p)] ?? 'application/octet-stream' }); res.end(body); } catch { res.writeHead(404); res.end(); }
 }).listen(0, '127.0.0.1');
 await new Promise(r => server.once('listening', r));
 const url = `http://127.0.0.1:${server.address().port}/pieces/${basename(dirname(fileURLToPath(import.meta.url)))}/`;
-const browser = await chromium.launch(GPU ? { channel: 'chromium', args: ['--enable-gpu', '--ignore-gpu-blocklist', ...(process.platform === 'darwin' ? ['--use-angle=metal'] : [])] } : { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+// VERIFY_BROWSER=webkit or firefox runs the checks in that engine (WebKit is what Safari and every iPhone browser use).
+const ENGINE = process.env.VERIFY_BROWSER || 'chromium', chromium = playwright.chromium;
+const browser = ENGINE !== 'chromium' ? await playwright[ENGINE].launch() : await chromium.launch(GPU ? { channel: 'chromium', args: ['--enable-gpu', '--ignore-gpu-blocklist', ...(process.platform === 'darwin' ? ['--use-angle=metal'] : [])] } : { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const errors = [];
 async function open(options = {}, query = '?chapter=founders') {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ...options }), page = await context.newPage();
   page.on('pageerror', e => errors.push(e.message)); page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('request', r => { if (!r.url().startsWith('http://127.0.0.1')) errors.push(`external request ${r.url()}`); });
+  if (LITE) query += (query ? '&' : '?') + 'lite&thin=40';
   await page.goto(url + query, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage && document.querySelector('#loading').classList.contains('done'), null, { timeout: 120000 }); await page.waitForTimeout(1500);
   await page.evaluate(() => { window.__voyage.speed = 14; });
   return page;
@@ -137,7 +142,7 @@ checks.passage = async () => {
   assert.equal(await page.isVisible('#next'), true, 'the finish card offers the next chapter');
   await page.click('#next'); await page.waitForTimeout(300);
   assert.equal(await page.evaluate(() => window.__voyage.travelling), 'leave');
-  assert.match(await page.textContent('#passage'), /sea/);
+  assert.match(await page.textContent('#passage'), /sea/); assert.match(await page.textContent('#passage small'), /Scene three · Brighton/);
   await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('#passage')).opacity) > 0.9, null, { timeout: 90000, polling: 100 });
   await shot(page, 'passage');
   await page.waitForURL(/chapter=pier&arrive=1/, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage, null, { timeout: 120000 });
@@ -151,25 +156,33 @@ checks.passage = async () => {
 };
 // The first-time-player check. Every scene is played to the end with real taps and nothing else: the solver says
 // what to do, but each move has to be found as a place on screen where a tap does it. A move with no such place fails.
-checks.taps = async () => {
+const tapPlay = async phone => {
   const only = process.env.SCENES?.split(','), ids = ['trinidad', 'founders', 'pier', 'bridge', 'monterey', 'needle', 'return', 'departure'].filter(id => !only || only.includes(id));
   for (const id of ids) {
-    const page = await open({}, `?chapter=${id}`); let taps = 0;
+    const page = await open(phone ? { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 } : {}, `?chapter=${id}`); let taps = 0;
     for (let i = 0; i < 160; i++) {
       const s = await state(page); if (s.won) break;
       const move = await page.evaluate(() => { const v = window.__voyage, m = v.model.hint(); return m.who && m.who !== v.model.active ? { type: 'switch', who: m.who } : m; });
       const states = await page.evaluate(m => (m.type === 'turn' ? window.__voyage.model.data.mechs[m.id].states ?? 4 : 0), move);
       const times = move.type === 'turn' && move.dir < 0 ? states - 1 : 1; // a tap only turns one way, so go the long way round
       for (let k = 0; k < times; k++) {
-        const at = await page.evaluate(m => window.__voyage.tapFor(m), move);
+        const at = await page.evaluate(([m, touch]) => window.__voyage.tapFor(m, touch), [move, phone]);
+        if (!at && move.type === 'switch') { // too small or too huddled to pick out: the who-is-moving button cycles through everyone
+          for (let n = 0; n < 6 && await page.evaluate(() => window.__voyage.model.active) !== move.who; n++) { if (phone) await page.tap('#who'); else await page.click('#who'); taps++; await page.waitForTimeout(80); }
+          assert.equal(await page.evaluate(() => window.__voyage.model.active), move.who, `${id}: the who-is-moving button reaches ${move.who}`); continue;
+        }
+        if (process.env.VERIFY_TRACE) console.log(`     ${i}.${k} ${JSON.stringify(move)} at ${at && at.map(Math.round)} ${JSON.stringify(await page.evaluate(() => [window.__voyage.model.where, window.__voyage.model.mechs]))}`);
         assert.ok(at, `${id}: no tap makes the move ${JSON.stringify(move)} with ${JSON.stringify(await page.evaluate(() => window.__voyage.model.where))}`);
-        await page.mouse.click(...at); taps++; await page.waitForTimeout(120);
+        if (phone) await page.touchscreen.tap(...at); else await page.mouse.click(...at); taps++; await page.waitForTimeout(120);
         await idle(page).catch(async e => { throw new Error(`${id}: still busy after "${move.type} ${move.who ?? move.to ?? move.id}": ${JSON.stringify(await page.evaluate(() => ({ walking: window.__voyage.walking, mechs: Object.fromEntries(Object.entries(window.__voyage.mechs).map(([k, m]) => [k, [m.angle.toFixed(2), m.target.toFixed(2), m.moving, !!m.dragging]])) })))}`); });
       }
     }
-    assert.ok((await state(page)).won, `${id}: not finished by tapping alone`); console.log(`     ${id}: ${taps} taps`); await page.context().close();
+    assert.ok((await state(page)).won, `${id}: not finished by tapping alone`); console.log(`     ${id}: ${taps} taps${phone ? ' on a phone-sized touch screen' : ''}`); await page.context().close();
   }
 };
+checks.taps = () => tapPlay(false);
+// The same, on a phone-sized touch screen with finger taps.
+checks['taps-phone'] = () => tapPlay(true);
 checks.ride = async () => {
   const page = await open({}, '?chapter=trinidad');
   await tap(page, 'plank1'); assert.equal((await state(page)).at, 'plank1'); assert.match(await page.textContent('#status'), /under your feet/, 'the game says how to turn what you stand on');
@@ -241,7 +254,7 @@ checks.eggs = async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } }), page = await context.newPage(); // one context, so finds add up
   page.on('pageerror', e => errors.push(e.message));
   for (const [n, id] of ids.entries()) {
-    await page.goto(`${url}?chapter=${id}`, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage && document.querySelector('#loading').classList.contains('done'), null, { timeout: 120000 }); await page.waitForTimeout(1200);
+    await page.goto(`${url}?chapter=${id}${LITE ? '&lite&thin=40' : ''}`, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage && document.querySelector('#loading').classList.contains('done'), null, { timeout: 120000 }); await page.waitForTimeout(1200);
     const marg = await page.evaluate(() => window.__voyage.margAt()); await page.mouse.click(...marg); await page.waitForTimeout(300);
     assert.match(await page.textContent('#status'), /Marg/, `${id}: Marg can be found and tapped`);
     const at = await page.evaluate(() => window.__voyage.eggAt()); await page.mouse.click(...at); await page.waitForTimeout(300);
@@ -264,6 +277,33 @@ checks.eggs = async () => {
   }
   await context.close();
 };
+// Installed and offline: after one visit, every scene loads with the network switched off.
+checks.offline = async () => {
+  const site = url.replace(/pieces\/.*$/, ''), context = await browser.newContext({ viewport: { width: 1440, height: 900 } }), page = await context.newPage();
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto(`${site}?sw`, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage, null, { timeout: 120000 });
+  const manifest = await page.evaluate(async () => (await fetch(document.querySelector('link[rel=manifest]').href)).json()); assert.equal(manifest.display, 'standalone'); assert.ok(manifest.icons.length >= 3);
+  await page.evaluate(() => navigator.serviceWorker.ready); await page.waitForFunction(async () => (await (await caches.open('curphey-v1')).keys()).length > 40, null, { timeout: 60000 });
+  await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller, null, { timeout: 30000 }); // now under the worker's control
+  await context.setOffline(true);
+  for (const id of ['monterey', 'return']) { // scenes never visited in this browser
+    await page.goto(`${site}?chapter=${id}`, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage && document.querySelector('#loading').classList.contains('done'), null, { timeout: 120000 });
+    assert.equal(await page.evaluate(() => window.__voyage.model.data.id), id, `${id} loads offline`);
+  }
+  await shot(page, 'offline'); await context.close();
+};
+// For working out why a machine cannot run the game: loads one scene and reports what happens, second by second.
+checks.diag = async () => {
+  const context = await browser.newContext({ viewport: { width: 800, height: 500 } }), page = await context.newPage(), t0 = Date.now(), at = () => `${((Date.now() - t0) / 1000).toFixed(1)}s`;
+  page.on('console', m => console.log(`     [${at()}] console ${m.type()}: ${m.text().slice(0, 300)}`)); page.on('pageerror', e => console.log(`     [${at()}] page error: ${e.message}`));
+  await page.goto(`${url}?chapter=founders${LITE ? '&lite&thin=40' : ''}`, { waitUntil: 'commit', timeout: 60000 }); console.log(`     [${at()}] committed`);
+  for (let i = 0; i < 24; i++) {
+    const s = await Promise.race([page.evaluate(() => ({ ready: !!window.__voyage, done: document.querySelector('#loading')?.classList.contains('done'), frames: window.__frames ?? null, q: window.__voyage?.quality })), new Promise(r => setTimeout(() => r('page did not answer within 4s'), 4000))]);
+    console.log(`     [${at()}] ${JSON.stringify(s)}`); await new Promise(r => setTimeout(r, 5000));
+  }
+  const info = await Promise.race([page.evaluate(() => { const gl = document.createElement('canvas').getContext('webgl2'), ext = gl?.getExtension('WEBGL_debug_renderer_info'); return { webgl2: !!gl, renderer: ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : null, cores: navigator.hardwareConcurrency }; }), new Promise(r => setTimeout(() => r('no answer'), 8000))]);
+  console.log(`     ${JSON.stringify(info)}`); await context.close();
+};
 // Frame rate, scene by scene. Only meaningful, and only enforced, on a real graphics card (VERIFY_GPU=1).
 checks.perf = async () => {
   const slow = [];
@@ -277,7 +317,7 @@ checks.perf = async () => {
   }
   assert.equal(slow.length, 0, `below 30 frames a second: ${slow.join(', ')}`);
 };
-const wanted = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(checks).filter(c => c !== 'perf'); let failed = 0;
+const wanted = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(checks).filter(c => c !== 'perf' && c !== 'diag'); let failed = 0;
 for (const name of wanted) {
   try { await checks[name](); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); }
 }

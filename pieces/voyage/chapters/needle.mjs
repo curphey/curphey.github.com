@@ -33,6 +33,7 @@ export const needle = {
     { a: 'skyEnd', b: 'rim', kind: 'apparent', step: [1, 0, 0], when: { saucer: 2 }, only: 'child' }
   ],
   items: { sluice: 'ring' },
+  ambience: 'rain',
   egg: [3.05, 1.2, 1.5], marg: [4.6, 0, 2.4],
   goal: { node: 'crown', all: true },
   text: {

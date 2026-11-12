@@ -210,11 +210,11 @@ test('seven palettes; mixing returns the endpoints at 0 and 1', () => {
 
 test('saving round-trips and survives broken storage', () => {
   const map = new Map(), ok = createSave({ getItem: k => map.get(k) ?? null, setItem: (k, v) => map.set(k, v) });
-  assert.deepEqual(ok.load(), { furthest: 1, done: [], sound: false, eggs: [], root: false, matrix: false });
+  assert.deepEqual(ok.load(), { furthest: 1, done: [], sound: false, eggs: [], root: false, matrix: false, cards: {} });
   ok.store({ furthest: 4, sound: true });
   assert.equal(ok.load().furthest, 4); assert.equal(ok.load().sound, true);
   const broken = createSave({ getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); } });
-  assert.deepEqual(broken.load(), { furthest: 1, done: [], sound: false, eggs: [], root: false, matrix: false });
+  assert.deepEqual(broken.load(), { furthest: 1, done: [], sound: false, eggs: [], root: false, matrix: false, cards: {} });
   assert.equal(broken.store({ furthest: 3 }).furthest, 3);
 });
 
