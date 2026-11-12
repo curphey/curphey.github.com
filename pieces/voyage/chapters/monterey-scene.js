@@ -121,7 +121,7 @@ export function createMontereyScene(kit, data) {
   const lump = (seed, sx, sy, sz) => { const g = new T.IcosahedronGeometry(1, 1), p = g.attributes.position, uv = g.attributes.uv;
     for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), k = 1 + 0.2 * Math.sin(x * 3.1 + seed) * Math.cos(y * 2.7 + seed * 1.7) + 0.13 * Math.sin(z * 4.3 + seed * 2.3 + x * 2); p.setXYZ(i, x * k * sx, y * k * sy, z * k * sz); uv.setXY(i, x * k * sx / 2.5 + seed, (z * sz + y * sy) * k / 2.5); }
     g.computeVertexNormals(); return g; };
-  const ringGeo = new T.RingGeometry(0.8, 1.13, 30).rotateX(-Math.PI / 2); { const p = ringGeo.attributes.position; for (let i = 0; i < p.count; i++) { const k = 1 + 0.035 * Math.sin(Math.atan2(p.getZ(i), p.getX(i)) * 7); p.setXYZ(i, p.getX(i) * k, 0, p.getZ(i) * k); } }
+  const ringGeo = new T.RingGeometry(0.86, 1.07, 30).rotateX(-Math.PI / 2); { const p = ringGeo.attributes.position; for (let i = 0; i < p.count; i++) { const k = 1 + 0.035 * Math.sin(Math.atan2(p.getZ(i), p.getX(i)) * 7); p.setXYZ(i, p.getX(i) * k, 0, p.getZ(i) * k); } }
   const foam = [], rocks = [[10, 9.5, 1.3, 0.9], [3, 7.6, 1.6, 0.7], [-3.5, 7, 2.2, 0.6], [11.5, 4, 1.1, 1.1], [-8, 7.4, 1.8, 0.5], [7, 11.5, 1.0, 0.5], [10.5, -2, 2.4, 1.2]];
   rocks.forEach(([x, z, r, h], i) => { add(lump(i * 1.9 + 1, r, h + 0.25, r * 0.85), mats.rock, x, SEA - 0.25, z, group);
     for (const a of [i * 2.4 + 0.6, i * 2.4 + 2.9]) add(lump(i * 3.1 + a, r * 0.42, h * 0.5 + 0.2, r * 0.36), mats.rock, x + Math.cos(a) * r * 0.95, SEA - 0.15, z + Math.sin(a) * r * 0.8, group);
@@ -188,8 +188,8 @@ export function createMontereyScene(kit, data) {
     otters.forEach((o, i) => { const u = o.userData, s = (time + 7 + i * 5.3) % (13 + i * 4); o.position.y = SEA + 0.06 + Math.sin(time * 1.2 + i) * 0.03; o.rotation.y = u.a + Math.sin(time * 0.1 + i * 2) * 0.5; if (u.roll) u.roll.rotation.x = smooth(s / 1.8) * Math.PI * 2; });
     beds.forEach((b, i) => { b.rotation.y = Math.sin(time * 0.3 + i * 1.4) * 0.05; b.position.x = b.userData.x + Math.sin(time * 0.45 + i) * 0.06; });
     { const v = (time / 11 + 0.3) % 1; neck.rotation.z = 0.1 + pulse(v, 0.08, 0.55, 0.08) * 0.75; neck.rotation.y = Math.sin(time * 0.7) * 0.3 * pulse(v, 0.16, 0.5, 0.05); }
-    foam.forEach(f => { const u = f.userData, k = 0.5 + 0.5 * Math.sin(time * 0.8 + u.ph); if (u.r) f.scale.set(u.r * (1 + k * 0.1), 1, u.r * 0.85 * (1 + k * 0.1)); else f.scale.z = 0.5 + k * 1.1; });
-    foamA.opacity = 0.42 + 0.3 * Math.sin(time * 0.8 + 1.2); foamB.opacity = 0.42 + 0.3 * Math.sin(time * 0.8 + 2.9);
+    foam.forEach(f => { const u = f.userData, k = 0.5 + 0.5 * Math.sin(time * 0.8 + u.ph); if (u.r) f.scale.set(u.r * (1 + k * 0.07), 1, u.r * 0.85 * (1 + k * 0.07)); else f.scale.z = 0.4 + k * 0.8; });
+    foamA.opacity = 0.34 + 0.2 * Math.sin(time * 0.8 + 1.2); foamB.opacity = 0.34 + 0.2 * Math.sin(time * 0.8 + 2.9);
     for (const c of cars) { const u = c.userData, d = (time * Math.abs(u.sp) + u.off) % 70; c.position.x = u.sp > 0 ? -40 + d : 30 - d; }
   }
   life(0);
