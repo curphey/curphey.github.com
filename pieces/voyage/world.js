@@ -1,13 +1,7 @@
 import * as T from '../tower/vendor/three.js';
 import { Chapter } from './chapter.mjs';
 import { chapters } from './chapters/index.mjs';
-import { createFoundersScene } from './chapters/founders-scene.js';
-import { createPierScene } from './chapters/pier-scene.js';
-import { createTrinidadScene } from './chapters/trinidad-scene.js';
-import { createBridgeScene } from './chapters/bridge-scene.js';
-import { createNeedleScene } from './chapters/needle-scene.js';
-import { createMontereyScene } from './chapters/monterey-scene.js';
-import { createSausalitoScene } from './chapters/sausalito-scene.js';
+import { scenes } from './chapters/scenes.js';
 import { createKit } from './render/kit.js';
 import { createWater, createSkyEnvironment } from './render/water.js';
 import { createPipeline } from './render/pipeline.js';
@@ -20,8 +14,6 @@ import { leaving, arriving } from './passage.mjs';
 import { people, listNames } from './people.mjs';
 import { createCursor, createMarg } from './eggs.js';
 import { createTerminal } from './terminal.js';
-
-const scenes = { trinidad: createTrinidadScene, founders: createFoundersScene, pier: createPierScene, bridge: createBridgeScene, needle: createNeedleScene, monterey: createMontereyScene, return: createSausalitoScene, departure: createPierScene };
 const $ = s => document.querySelector(s), canvas = $('#view'), reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const params = new URLSearchParams(location.search);
 let renderer;
@@ -51,7 +43,7 @@ const ghost = () => new T.MeshBasicMaterial({ transparent: true, opacity: 0, dep
 const walkers = {}, walkerHits = [];
 for (const id of model.travellers) {
   const w = view.makeWalker?.(id) ?? createWalker(id); scene.add(w.group); walkers[id] = w;
-  const h = new T.Mesh(new T.SphereGeometry(0.55, 12, 8), ghost()); h.position.y = 0.5; h.userData.walker = id; w.group.add(h); walkerHits.push(h);
+  const h = new T.Mesh(new T.SphereGeometry(0.36, 12, 8), ghost()); h.position.y = 0.48; h.userData.walker = id; w.group.add(h); walkerHits.push(h); // snug, so the ground beside someone stays tappable
 }
 const marker = new T.Mesh(new T.TorusGeometry(0.3, 0.022, 8, 40), kit.mats.brass); marker.rotation.x = Math.PI / 2; marker.visible = model.travellers.length > 1; scene.add(marker);
 
@@ -136,7 +128,7 @@ function live(nodeId) {
 function placeWalkers() {
   // Travellers sharing a spot stand in a little cluster rather than inside one another.
   const at = {}; for (const id of model.travellers) if (walk?.who !== id) (at[model.where[id]] ??= []).push(id);
-  for (const [node, ids] of Object.entries(at)) ids.forEach((id, i) => { const p = live(node), n = ids.length; if (n > 1) { const a = i / n * Math.PI * 2 + 0.6, r = n > 2 ? 0.34 : 0.24; p.x += Math.cos(a) * r; p.z += Math.sin(a) * r; } walkers[id].group.position.copy(p); });
+  for (const [node, ids] of Object.entries(at)) ids.forEach((id, i) => { const p = live(node), n = ids.length; if (n > 1) { const a = i / n * Math.PI * 2 + 0.6, r = n > 3 ? 0.46 : n > 2 ? 0.38 : 0.24; p.x += Math.cos(a) * r; p.z += Math.sin(a) * r; } walkers[id].group.position.copy(p); });
 }
 function go(to) {
   if (walk || model.won || Object.values(mechs).some(m => m.moving) || drag?.active) return false;
@@ -170,7 +162,7 @@ function updateWalk(dt) {
       const to = walk.to, had = walk.had; walk = null; model.arrive(to);
       const gained = [...model.items].find(i => !had.has(i)), locked = Object.entries(data.items ?? {}).some(([i, s]) => s.at === to && !model.items.has(i));
       if (model.won) finish(); else say(gained ? `item:${gained}` : data.text[`at:${to}`] ? `at:${to}` : locked ? `locked:${to}` : to === data.goal.node && data.text['goal-empty'] ? 'goal-empty' : 'arrived');
-      if (!model.won && rideable()) $('#status').textContent += ' Tap it under your feet to swing it round.';
+      if (!model.won && rideable()) $('#status').textContent += data.mechs[data.nodes[model.at].arm].track ? ' Tap it under your feet to set off.' : ' Tap it under your feet to swing it round.';
       syncMenu();
     }
   }
@@ -183,7 +175,7 @@ function switchTo(id) {
 }
 let finale = null;
 // Is the active traveller standing on something they can turn from where they are?
-function rideable() { const arm = data.nodes[model.at].arm; return !!arm && model.riding(arm) && model.canTurn(arm) && !data.mechs[arm].track; }
+function rideable() { const arm = data.nodes[model.at].arm; return !!arm && model.riding(arm) && model.canTurn(arm); }
 function finish() {
   say('arrived'); sound.chord();
   // The last chapter: cast off, let her sail, and only then show the card.
@@ -206,7 +198,16 @@ function pick(e) {
   // The active traveller never blocks a tap: whatever is behind them (a lever, the deck) gets it instead.
   cast(e); const all = ray.intersectObjects([...eggHits, ...walkerHits, ...view.hits], false);
   if (view.tapSelf && all[0]?.object.userData.walker === model.active) return { data: { handle: true, mech: view.tapSelf }, point: all[0].point };
-  const hit = all.find(h => h.object.userData.walker !== model.active) ?? null;
+  let hit = all.find(h => h.object.userData.walker !== model.active) ?? null;
+  // In a huddle the tap targets overlap, so take whoever's body is nearest the tap rather than whoever is in front.
+  // A person is always selectable where you can see them, even standing against a lever or inside a doorway;
+  // only the hidden cursor and Marg take precedence.
+  const others = all.filter(h => h.object.userData.walker && h.object.userData.walker !== model.active);
+  if (others.length && !hit?.object.userData.egg && !hit?.object.userData.marg) {
+    const centre = h => screenOf(walkers[h.object.userData.walker].group.position.clone().setY(walkers[h.object.userData.walker].group.position.y + 0.45 * (people[h.object.userData.walker].size ?? 1)));
+    const gap = h => { const c = centre(h); return Math.hypot(c[0] - e.clientX, c[1] - e.clientY); };
+    hit = others.sort((a, b) => gap(a) - gap(b))[0];
+  }
   return hit ? { data: hit.object.userData, point: hit.point } : null;
 }
 function pointerAngle(e, id) {
@@ -244,17 +245,41 @@ function release(e) {
     return;
   }
   if (!d.hit || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 12) return;
-  if (d.hit.data.egg) { foundCursor(); return; }
-  if (d.hit.data.marg) { marg.yap(); sound.note(7); say('marg'); return; }
-  if (d.hit.data.yacht) { view.blackFlag?.(); say('flag'); return; }
-  if (d.hit.data.walker) { switchTo(d.hit.data.walker); return; }
-  if (d.hit.data.handle) { turn(d.hit.data.mech, 1); return; }
-  if (d.hit.data.lever && model.at === d.hit.data.near[0]) { turn(d.hit.data.lever, 1); return; }
-  const near = d.hit.data.near?.filter(n => data.nodes[n]); if (!near?.length) return;
-  const best = [...near].sort((a, b) => { const pa = screenOf(live(a)), pb = screenOf(live(b)); return Math.hypot(pa[0] - e.clientX, pa[1] - e.clientY) - Math.hypot(pb[0] - e.clientX, pb[1] - e.clientY); })[0];
+  act(intentOf(d.hit, e.clientX, e.clientY));
+}
+// What a tap on this spot means. The game and the tap-only check both go through here.
+function intentOf(hit, x, y) {
+  if (!hit) return null;
+  const h = hit.data;
+  if (h.egg) return { type: 'egg' }; if (h.marg) return { type: 'marg' }; if (h.yacht) return { type: 'flag' };
+  if (h.walker) return { type: 'select', who: h.walker };
+  if (h.handle) return { type: 'turn', id: h.mech };
+  if (h.lever && model.at === h.near[0]) return { type: 'turn', id: h.lever };
+  const near = h.near?.filter(n => data.nodes[n]); if (!near?.length) return null;
+  const best = [...near].sort((a, b) => { const pa = screenOf(live(a)), pb = screenOf(live(b)); return Math.hypot(pa[0] - x, pa[1] - y) - Math.hypot(pb[0] - x, pb[1] - y); })[0];
   // Standing on something that turns: a tap on it, under your own feet, turns it.
-  const m = d.hit.data.mech; if (best === model.at && m && model.riding(m) && model.canTurn(m)) { turn(m, 1); return; }
-  go(best);
+  if (best === model.at && h.mech && model.riding(h.mech) && model.canTurn(h.mech)) return { type: 'turn', id: h.mech };
+  return { type: 'walk', to: best };
+}
+function act(intent) {
+  if (!intent) return;
+  if (intent.type === 'egg') foundCursor(); else if (intent.type === 'marg') { marg.yap(); sound.note(7); say('marg'); }
+  else if (intent.type === 'flag') { view.blackFlag?.(); say('flag'); } else if (intent.type === 'select') switchTo(intent.who);
+  else if (intent.type === 'turn') turn(intent.id, 1); else go(intent.to);
+}
+// For the tap-only check: a screen point where a real tap would make this move, or null if there is none.
+function tapFor(move) {
+  const r = canvas.getBoundingClientRect(), want = move.type === 'switch' ? { type: 'select', who: move.who } : move.type === 'walk' ? { type: 'walk', to: move.to } : { type: 'turn', id: move.id };
+  const same = i => i && i.type === want.type && (i.who ?? i.to ?? i.id) === (want.who ?? want.to ?? want.id), spots = [];
+  const around = (p, reach = 0.4) => { for (const [dx, dz] of [[0, 0], [reach, 0], [-reach, 0], [0, reach], [0, -reach], [reach, reach], [-reach, -reach], [reach, -reach], [-reach, reach]]) spots.push(new T.Vector3(p.x + dx, p.y + 0.02, p.z + dz)); };
+  if (want.type === 'select') { const p = walkers[want.who].group.position; for (const dy of [0.45, 0.3, 0.7, 0.15, 0.9]) spots.push(new T.Vector3(p.x, p.y + dy * (people[want.who].size ?? 1), p.z)); }
+  else if (want.type === 'walk') { around(live(want.to)); around(live(want.to), 0.8); }
+  else { for (const h of view.hits) if ((h.userData.lever === want.id) || (h.userData.handle && h.userData.mech === want.id)) spots.push(h.getWorldPosition(new T.Vector3())); around(live(model.at)); }
+  for (const p of spots) {
+    const [x, y] = screenOf(p); if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
+    if (same(intentOf(pick({ clientX: x, clientY: y }), x, y))) return [x, y];
+  }
+  return null;
 }
 canvas.addEventListener('pointerup', release); canvas.addEventListener('pointercancel', release);
 
@@ -303,15 +328,15 @@ function startPassage() {
 }
 function leave() { const q = new URLSearchParams({ chapter: nextChapter.id, arrive: '1', mist: hazeNext.getHexString() }); if (auto) q.set('auto', '1'); location.search = `?${q}`; }
 function updatePassage(dt) {
-  if (!travel) return;
+  if (!travel || travel.left) return;
   travel.t += dt; const still = reduced.matches, p = travel.kind === 'leave' ? leaving(travel.t, still) : arriving(travel.t, still);
   pipeline.uniforms.veil.value = p.veil;
   // Glide on in the direction of travel while leaving; glide in from behind while arriving.
   focus.copy(baseFocus).addScaledVector(RIGHT, (travel.kind === 'leave' ? p.glide : -p.glide) * GLIDE); aim();
   if (travel.kind === 'leave') { pipeline.uniforms.haze.value.copy(hazeHere).lerp(hazeNext, p.mix); $('#passage').style.opacity = p.text; }
-  if (p.done) { const kind = travel.kind; if (kind === 'leave') { travel.t = -1e9; leave(); } else { travel = null; pipeline.uniforms.veil.value = 0; focus.copy(baseFocus); aim(); } }
+  if (p.done) { const kind = travel.kind; if (kind === 'leave') { if (!travel.left) { travel.left = true; leave(); } /* once only: asking twice aborts the first */ } else { travel = null; pipeline.uniforms.veil.value = 0; focus.copy(baseFocus); aim(); } }
 }
-canvas.addEventListener('pointerdown', () => { if (travel?.kind === 'leave' && travel.t > 0.4) leave(); });
+canvas.addEventListener('pointerdown', () => { if (travel?.kind === 'leave' && travel.t > 0.4 && !travel.left) { travel.left = true; leave(); } });
 
 // ---- frame ------------------------------------------------------------------
 let last = 0, time = 0, timeScale = 1;
@@ -348,6 +373,7 @@ window.__voyage = {
   // For automated checks only: play the solver's moves through at once and show the finish card.
   solve() { for (let i = 0; i < 200 && !model.won; i++) model.apply(model.hint()); for (const id of Object.keys(mechs)) mechs[id].angle = mechs[id].target = angleOf(model.mechs[id]); walk = null; finish(); },
   screenOf: id => screenOf(live(id)), screenAt: p => screenOf(new T.Vector3(...p)), walkerOf: id => screenOf(walkers[id].group.position.clone().setY(walkers[id].group.position.y + 0.5)),
+  tapFor, whatAt: (x, y) => { const h = pick({ clientX: x, clientY: y }); return { intent: intentOf(h, x, y), data: h && Object.fromEntries(Object.entries(h.data).filter(([, v]) => typeof v !== 'object' || Array.isArray(v))) }; },
   leverOf: node => { const k = view.hits.find(h => h.userData.lever && h.userData.near[0] === node); return screenOf(k.getWorldPosition(new T.Vector3())); },
   hubOf: id => screenOf(view.mechs[id].hub), flagAt: () => (view.flagPoint ? screenOf(view.flagPoint()) : null), eggAt: () => screenOf(cursor.group.position.clone().setY(cursor.group.position.y + 0.2)), margAt: () => screenOf(marg.group.position.clone().setY(marg.group.position.y + 0.25)), get busy() { return !!walk || Object.values(mechs).some(m => m.moving); },
   frame: view.frame.map(p => screenOf(new T.Vector3(...p)))

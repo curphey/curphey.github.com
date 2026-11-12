@@ -1,0 +1,13 @@
+{
+  "name": "curphey-family-site",
+  "private": true,
+  "description": "Checks for the family puzzle game. The site itself is static files with no build step.",
+  "scripts": {
+    "test": "node --test pieces/voyage/",
+    "check": "node pieces/voyage/verify.mjs",
+    "check:gpu": "VERIFY_GPU=1 node pieces/voyage/verify.mjs perf"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

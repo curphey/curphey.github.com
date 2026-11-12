@@ -70,7 +70,9 @@ export function createSausalitoScene(kit, data) {
   function dinghy(id, sailMat, size) {
     const g = new T.Group(); g.userData.dynamic = true; group.add(g);
     const hull = add(new T.SphereGeometry(1, 20, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mats.white, 0, 0.02, 0, g); hull.scale.set(0.95 * size, 0.42, 0.55 * size);
-    const f = box(g, mats.deck, [-0.6 * size, -0.12, -0.42 * size], [0.6 * size, 0.004, 0.42 * size]); f.userData.near = [id]; hits.push(f);
+    const f = box(g, mats.deck, [-0.6 * size, -0.12, -0.42 * size], [0.6 * size, 0.004, 0.42 * size]); f.userData = { near: [id], mech: id }; hits.push(f); // tap the boat you are in to sail it
+    // The boat bobs and lies against the dock, so give it a tap target that stands clear of the planks.
+    const tapBox = add(new T.BoxGeometry(1.3 * size, 0.34, 0.9 * size), ghost(), 0, 0.2, 0, g); tapBox.castShadow = tapBox.receiveShadow = false; tapBox.userData = { near: [id], mech: id }; hits.push(tapBox);
     cyl(g, mats.white, 0.35 * size, 0, 2.3 * size, 0, 0.022, { seg: 6 });
     const sg = new T.BufferGeometry(); sg.setAttribute('position', new T.Float32BufferAttribute([0.35 * size, 0.35, 0.02, 0.35 * size, 2.25 * size, 0.02, -0.75 * size, 0.42, 0.02], 3)); sg.setAttribute('uv', new T.Float32BufferAttribute([0, 0, 0, 1, 1, 0], 2)); sg.computeVertexNormals();
     const sail = add(sg, new T.MeshStandardMaterial({ color: sailMat, side: T.DoubleSide, roughness: 0.9 }), 0, 0, 0, g);
