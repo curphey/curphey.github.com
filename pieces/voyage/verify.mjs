@@ -140,7 +140,7 @@ checks.passage = async () => {
   assert.equal(await page.isVisible('#next'), true, 'the finish card offers the next chapter');
   await page.click('#next'); await page.waitForTimeout(300);
   assert.equal(await page.evaluate(() => window.__voyage.travelling), 'leave');
-  assert.match(await page.textContent('#passage'), /sea/);
+  assert.match(await page.textContent('#passage'), /sea/); assert.match(await page.textContent('#passage small'), /Scene three · Brighton/);
   await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('#passage')).opacity) > 0.9, null, { timeout: 90000, polling: 100 });
   await shot(page, 'passage');
   await page.waitForURL(/chapter=pier&arrive=1/, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage, null, { timeout: 120000 });

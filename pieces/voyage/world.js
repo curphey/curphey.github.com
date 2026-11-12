@@ -263,7 +263,10 @@ function restart() {
   for (const id of Object.keys(mechs)) { mechs[id].angle = mechs[id].target = angleOf(model.mechs[id]); mechs[id].moving = false; }
   placeWalkers(); for (const w of Object.values(walkers)) w.face(1, 1); view.update.wonAt = undefined; say('start'); syncMenu();
 }
-let begun = false; function started() { if (!begun) { begun = true; $('#title').classList.add('away'); document.querySelector('main').classList.add('playing'); } }
+// A nudge for anyone who has not moved for a while: once per scene, and never over other text that matters.
+let lastInput = performance.now(), nudged = false;
+function nudge(now) { if (nudged || begun && model.won || travel || now - lastInput < 30000) return; nudged = true; $('#status').textContent = 'Stuck? The three dots, top right, have a hint.'; }
+let begun = false; function started() { lastInput = performance.now(); if (!begun) { begun = true; $('#title').classList.add('away'); document.querySelector('main').classList.add('playing'); } }
 
 // ---- pointer ----------------------------------------------------------------
 const ray = new T.Raycaster(), ndc = new T.Vector2(), plane = new T.Plane(), hitPoint = new T.Vector3(); let drag = null;
@@ -387,7 +390,7 @@ const nextChapter = built.find(c => c.id === data.next);
 if (nextChapter) { $('#next').hidden = false; $('#next').onclick = () => startPassage(); }
 for (const [id, n] of Object.entries(data.nodes)) { const b = document.createElement('button'); b.textContent = cap(n.label); b.dataset.go = id; b.onclick = () => go(id); $('#walks').append(b); }
 for (const [id, m] of Object.entries(data.mechs)) for (const dir of [1, -1]) { const b = document.createElement('button'); b.textContent = `${cap(m.label)} ${dir > 0 ? '↻' : '↺'}`; b.setAttribute('aria-label', `Turn ${m.label} ${dir > 0 ? 'clockwise' : 'anticlockwise'}`); b.dataset.turn = id; b.onclick = () => turn(id, dir); $('#turns').append(b); }
-for (const c of built) { const b = document.createElement('button'); b.textContent = `${c.number} · ${c.title}`; b.disabled = c === data; b.onclick = () => { location.search = `?chapter=${c.id}`; }; $('#chapters').append(b); }
+for (const c of built) { const b = document.createElement('button'), card = save.load().cards[c.id]; b.textContent = `${c.number} · ${c.title}`; if (card) { b.classList.add('carded'); b.style.backgroundImage = `linear-gradient(90deg, rgba(250,246,236,.95) 45%, rgba(250,246,236,.35)), url(${card})`; } b.disabled = c === data; b.onclick = () => { location.search = `?chapter=${c.id}`; }; $('#chapters').append(b); }
 $('#switch').hidden = model.travellers.length < 2; $('#switch').onclick = () => { switchTo(); $('#menu').open = false; };
 function syncMenu() { const busy = !!walk || model.won; reachable = busy ? new Set() : model.reach(); $('#who b').textContent = (people[model.active]?.name ?? '') + (model.root && model.active === 'one' ? ' · 007' : ''); $('#who i').style.background = people[model.active]?.coat ?? '#888';
   if (model.travellers.length > 1) $('#switch').textContent = `Switch to ${people[model.travellers[(model.travellers.indexOf(model.active) + 1) % model.travellers.length]].name}`; document.querySelectorAll('[data-go]').forEach(b => b.disabled = busy || b.dataset.go === model.at); document.querySelectorAll('[data-turn]').forEach(b => b.disabled = busy || !model.canTurn(b.dataset.turn)); $('#switch').disabled = busy; }
@@ -427,7 +430,7 @@ const baseFocus = new T.Vector3(), hazeHere = new T.Color(palette.haze), hazeNex
 let travel = params.has('arrive') ? { kind: 'arrive', t: 0 } : null; if (travel) pipeline.uniforms.veil.value = 1;
 function startPassage() {
   if (travel || !nextChapter) return;
-  travel = { kind: 'leave', t: 0 }; $('#passage').textContent = data.passage ?? ''; document.querySelector('main').classList.add('travelling');
+  travel = { kind: 'leave', t: 0 }; $('#passage').replaceChildren(Object.assign(document.createElement('span'), { textContent: data.passage ?? '' }), Object.assign(document.createElement('small'), { textContent: `Scene ${nextChapter.word} · ${nextChapter.title}` })); document.querySelector('main').classList.add('travelling');
 }
 function leave() { const q = new URLSearchParams({ chapter: nextChapter.id, arrive: '1', mist: hazeNext.getHexString() }); if (auto) q.set('auto', '1'); if (lite) q.set('lite', '1'); if (thin > 1) q.set('thin', String(thin)); location.search = `?${q}`; }
 function updatePassage(dt) {
@@ -474,7 +477,7 @@ function frame(now) {
     else m.angle += diff * Math.min(1, dt * (m.dragging ? 18 : 7));
     if (!data.mechs[id].track) view.mechs[id].group.rotation[data.mechs[id].axis ?? 'y'] = m.angle;
   }
-  updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now);
+  updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now); if (!auto && !model.won) nudge(now);
   if (finale) { // pull back and follow her out
     finale.t += dt; const k = still ? 1 : Math.min(1, finale.t / 18), e = k * k * (3 - 2 * k), boat = live(Object.keys(data.nodes).find(n => data.nodes[n].arm === data.finale));
     camera.zoom = 1 / (1 + 0.5 * e); camera.updateProjectionMatrix(); focus.copy(baseFocus).lerp(boat, 0.45 * e); aim();
