@@ -270,6 +270,7 @@ const ray = new T.Raycaster(), ndc = new T.Vector2(), plane = new T.Plane(), hit
 function cast(e) { const r = canvas.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1); ray.setFromCamera(ndc, camera); }
 function pick(e) {
   // The active traveller never blocks a tap: whatever is behind them (a lever, the deck) gets it instead.
+  scene.updateMatrixWorld(); // positions are otherwise only brought up to date when a frame is drawn
   cast(e); const all = ray.intersectObjects([...eggHits, ...walkerHits, ...view.hits], false);
   if (view.tapSelf && all[0]?.object.userData.walker === model.active) return { data: { handle: true, mech: view.tapSelf }, point: all[0].point };
   let hit = all.find(h => h.object.userData.walker !== model.active) ?? null;
