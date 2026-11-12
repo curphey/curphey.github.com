@@ -152,7 +152,7 @@ export function createSausalitoScene(kit, data) {
   ball(paddler, BROWN, 0.5, 0.14, 0, 0.14, 0.1, 0.08); ball(paddler, BROWN, 0.6, 0.27, 0, 0.075); ball(paddler, DARK, 0.67, 0.26, 0, 0.025); for (const z of [-0.05, 0.05]) dab(paddler, new T.ConeGeometry(0.03, 0.08, 4), BROWN, 0.58, 0.36, z); rod(paddler, BROWN, 0.37, 0.16, 0.32, 0, 0.015).rotation.z = 0.5; bake(paddler);
   // Five pelicans in line astern, low over the water, passing down the bay every minute or so.
   const pelicans = prop(22, 1, -25, -Math.PI / 2);
-  for (let k = 0; k < 5; k++) { const x = -k * 0.95, y = (k % 2) * 0.12; ball(pelicans, BROWN, x, y, 0, 0.24, 0.075, 0.085); bar(pelicans, BROWN, [x - 0.1, y + 0.01, -0.55], [x + 0.1, y + 0.035, 0.55]); ball(pelicans, WHITE, x + 0.22, y + 0.05, 0, 0.06); dab(pelicans, new T.ConeGeometry(0.025, 0.26, 5), YELLOW, x + 0.4, y + 0.02, 0).rotation.z = -Math.PI / 2; }
+  for (let k = 0; k < 5; k++) { const x = -k * 0.95, y = (k % 2) * 0.12; ball(pelicans, BROWN, x, y, 0, 0.24, 0.075, 0.085); for (const s of [-1, 1]) bar(pelicans, s * (k % 2 - 0.5) > 0 ? BROWN : DARK, [x - 0.07, y + 0.01, s * 0.3 - 0.3], [x + 0.09, y + 0.035, s * 0.3 + 0.3]).rotation.y = s * 0.35; ball(pelicans, WHITE, x + 0.22, y + 0.05, 0, 0.06); dab(pelicans, new T.ConeGeometry(0.025, 0.26, 5), YELLOW, x + 0.4, y + 0.02, 0).rotation.z = -Math.PI / 2; }
   bake(pelicans);
   // A harbour seal, which puts its head up in one quiet spot after another, looks about, and sinks again.
   const haunts = [[-5.5, 8.6], [6.6, 4.4], [9.6, 9.8]], seal = prop(haunts[0][0], SEA + 0.06, haunts[0][1], 0.6);
