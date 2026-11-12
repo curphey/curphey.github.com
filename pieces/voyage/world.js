@@ -37,7 +37,7 @@ const water = view.water === false ? null : createWater(view.water); if (water) 
 const lite = params.has('lite');
 const pipeline = createPipeline(renderer, { lite }), sky = createSkyEnvironment(renderer);
 const save = createSave((() => { try { return window.localStorage; } catch { return null; } })() ?? { getItem() { return null; }, setItem() {} });
-const sound = createSound({ AudioContextCtor: window.AudioContext ?? window.webkitAudioContext, scale: data.scale, timbre: data.timbre });
+const sound = createSound({ AudioContextCtor: window.AudioContext ?? window.webkitAudioContext, scale: data.scale, timbre: data.timbre, ambience: data.ambience ?? 'sea' });
 
 // The travellers, each with an invisible tap target, and a brass ring under whoever is active.
 const ghost = () => new T.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
