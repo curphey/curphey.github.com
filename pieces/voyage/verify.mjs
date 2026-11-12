@@ -160,6 +160,7 @@ const tapPlay = async phone => {
   const only = process.env.SCENES?.split(','), ids = ['trinidad', 'founders', 'pier', 'bridge', 'monterey', 'needle', 'return', 'departure'].filter(id => !only || only.includes(id));
   for (const id of ids) {
     const page = await open(phone ? { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 } : {}, `?chapter=${id}`); let taps = 0;
+    if (phone) await page.tap('#begin'); else await page.click('#begin'); await page.waitForTimeout(200); await idle(page); // as a player would
     for (let i = 0; i < 160; i++) {
       const s = await state(page); if (s.won) break;
       const move = await page.evaluate(() => { const v = window.__voyage, m = v.model.hint(); return m.who && m.who !== v.model.active ? { type: 'switch', who: m.who } : m; });

@@ -295,7 +295,7 @@ function takeCard() {
 }
 // Completion: a rise of golden motes from where the scene was won.
 const moteMap = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(255,255,255,.75)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new T.CanvasTexture(c); })();
-const motes = new T.Points(new T.BufferGeometry(), new T.PointsMaterial({ color: data.motes ?? '#ffd978', map: moteMap, size: 16 * Math.min(devicePixelRatio, 2), sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: T.AdditiveBlending }));
+const motes = new T.Points(new T.BufferGeometry(), new T.PointsMaterial({ color: data.motes ?? '#ffd978', map: moteMap, size: 9 * Math.min(devicePixelRatio, 2), sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false, depthTest: false }));
 motes.geometry.setAttribute('position', new T.BufferAttribute(new Float32Array(90 * 3), 3)); motes.frustumCulled = false; motes.renderOrder = 8; scene.add(motes);
 let party = null;
 function celebrate() {
@@ -307,7 +307,7 @@ function updateParty(dt) {
   if (!party) return;
   party.t += dt; const p = motes.geometry.attributes.position, t = party.t;
   party.seeds.forEach((s, i) => { const k = Math.max(0, t - s.d); p.setXYZ(i, party.at.x + Math.cos(s.a + k) * s.r * Math.min(1, k), party.at.y + 0.3 + k * s.v, party.at.z + Math.sin(s.a + k) * s.r * Math.min(1, k)); });
-  p.needsUpdate = true; motes.material.opacity = Math.max(0, Math.min(1, t * 2) * (1 - t / 4.5));
+  p.needsUpdate = true; motes.material.opacity = 0.8 * Math.max(0, Math.min(1, t * 2) * (1 - t / 4.5));
   if (t > 4.5) { party = null; motes.material.opacity = 0; }
 }
 function restart() {
@@ -317,7 +317,7 @@ function restart() {
 }
 // A hint is also shown: a ring pulses on whoever must move next if that is someone else, otherwise on the place
 // to walk to or the thing to work. It goes when the player does anything.
-const hintRing = new T.Mesh(new T.RingGeometry(0.36, 0.44, 44), new T.MeshBasicMaterial({ color: '#fff1bf', transparent: true, opacity: 0, depthWrite: false, depthTest: false, side: T.DoubleSide })); hintRing.renderOrder = 9; hintRing.visible = false; scene.add(hintRing);
+const hintRing = new T.Mesh(new T.RingGeometry(0.3, 0.46, 44), new T.MeshBasicMaterial({ color: '#ffc531', transparent: true, opacity: 0, depthWrite: false, depthTest: false, side: T.DoubleSide })); hintRing.renderOrder = 9; hintRing.visible = false; scene.add(hintRing);
 let hinting = null;
 function showHint(move) {
   if (!move || model.won) return;
@@ -327,7 +327,7 @@ function showHint(move) {
 }
 function updateHint(dt, still) {
   hintRing.visible = !!hinting && !walk; if (!hinting) return;
-  hinting.t += dt; const k = still ? 0.3 : (hinting.t % 1.3) / 1.3; hintRing.position.copy(hinting.at()); hintRing.quaternion.copy(camera.quaternion); hintRing.scale.setScalar(0.8 + k * 1.5); hintRing.material.opacity = 0.95 * (1 - k);
+  hinting.t += dt; const k = still ? 0.3 : (hinting.t % 1.3) / 1.3; hintRing.position.copy(hinting.at()); hintRing.quaternion.copy(camera.quaternion); hintRing.scale.setScalar((0.8 + k * 1.5) * Math.min(3, Math.max(1, 14 / (0.46 * canvas.clientHeight / (camera.top - camera.bottom) * camera.zoom)))); hintRing.material.opacity = 0.95 * (1 - k);
   if (hinting.t > 9) hinting = null;
 }
 // A nudge for anyone who has not moved for a while: once per scene, and never over other text that matters.
@@ -465,6 +465,7 @@ function tapFor(move, touch = false) {
   for (const p of spots) {
     const [fx, fy] = screenOf(p), x = Math.round(fx), y = Math.round(fy); if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
     // Whole pixels, and the same answer two pixels either side: a place a person could actually hit.
+    if (document.elementFromPoint(x, y) !== canvas) continue; // under a button or a pill: not a place a person could tap
     if ([[0, 0], [2, 0], [-2, 0], [0, 2], [0, -2]].every(([dx, dy]) => same(intentOf(pick({ clientX: x + dx, clientY: y + dy }), x + dx, y + dy, touch)))) return [x, y];
   }
   return null;
@@ -540,7 +541,7 @@ function updatePassage(dt) {
   // Glide on in the direction of travel while leaving; glide in from behind while arriving.
   focus.copy(home).addScaledVector(RIGHT, (travel.kind === 'leave' ? p.glide : -p.glide) * GLIDE); aim();
   if (travel.kind === 'leave') { pipeline.uniforms.haze.value.copy(hazeHere).lerp(hazeNext, p.mix); $('#passage').style.opacity = p.text; }
-  if (p.done) { const kind = travel.kind; if (kind === 'leave') { if (!travel.left) { travel.left = true; leave(); } /* once only: asking twice aborts the first */ } else { travel = null; pipeline.uniforms.veil.value = 0; focus.copy(home); aim(); } }
+  if (p.done) { const kind = travel.kind; if (kind === 'leave') { if (!travel.left) { travel.left = true; leave(); } /* once only: asking twice aborts the first */ } else { travel = null; pipeline.uniforms.veil.value = 0; focus.copy(home); aim(); setTimeout(() => { if (!begun && !model.won) started(); }, 3200); } }
 }
 canvas.addEventListener('pointerdown', () => { if (travel?.kind === 'leave' && travel.t > 0.4 && !travel.left) { travel.left = true; leave(); } });
 
@@ -587,9 +588,9 @@ function frame(now) {
   updateSeams(dt / timeScale); updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now); updateLead(dt); updateWin(dt / timeScale); updateHint(dt / timeScale, still); if (!auto && !model.won) nudge(now);
   if (finale) { // pull back and follow her out
     finale.t += dt; const k = still ? 1 : Math.min(1, finale.t / 18), e = k * k * (3 - 2 * k), boat = live(Object.keys(data.nodes).find(n => data.nodes[n].arm === data.finale));
-    setZoom(1 / (1 + 0.32 * e)); focus.copy(home).lerp(boat, 0.72 * e); aim();
+    setZoom(1 / (1 + 0.32 * e)); focus.copy(home).lerp(boat, 0.9 * e).addScaledVector(UP, -(canvas.clientWidth < canvas.clientHeight ? 0.2 : 0.1) * (camera.top - camera.bottom) / camera.zoom * e); aim();
     if (water) water.uniforms.glitter.value = 0.35 + 0.65 * ease(finale.t / 8);
-    if ((finale.t > 12 || still) && $('#finish').hidden) showFinish();
+    if ((finale.t > 17 || still) && $('#finish').hidden) showFinish();
   }
   for (const [id, w] of Object.entries(walkers)) w.update(dt, time, walk?.who === id, still);
   const lead = walkers[model.active].group.position; marker.position.set(lead.x, lead.y + 0.02, lead.z); marker.visible = model.travellers.length > 1 && walkers[model.active].group.visible && !walk?.points[0]?.slide; if (!still) marker.scale.setScalar(1 + Math.sin(time * 3) * 0.06);
