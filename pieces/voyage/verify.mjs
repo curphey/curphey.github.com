@@ -13,7 +13,7 @@ const GPU = !!process.env.VERIFY_GPU;
 // VERIFY_LITE=1 loads every scene in the game's low-detail mode, for machines without a graphics card.
 const LITE = !!process.env.VERIFY_LITE;
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..'), out = process.env.VERIFY_OUT;
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
 const server = http.createServer(async (req, res) => {
   let p = normalize(decodeURIComponent(new URL(req.url, 'http://x').pathname)); if (p.endsWith('/')) p += 'index.html';
   try { const body = await readFile(join(root, p)); res.writeHead(200, { 'content-type': types[extname(p)] ?? 'application/octet-stream' }); res.end(body); } catch { res.writeHead(404); res.end(); }
@@ -266,6 +266,21 @@ checks.eggs = async () => {
     }
   }
   await context.close();
+};
+// Installed and offline: after one visit, every scene loads with the network switched off.
+checks.offline = async () => {
+  const site = url.replace(/pieces\/.*$/, ''), context = await browser.newContext({ viewport: { width: 1440, height: 900 } }), page = await context.newPage();
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto(`${site}?sw`, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage, null, { timeout: 120000 });
+  const manifest = await page.evaluate(async () => (await fetch(document.querySelector('link[rel=manifest]').href)).json()); assert.equal(manifest.display, 'standalone'); assert.ok(manifest.icons.length >= 3);
+  await page.evaluate(() => navigator.serviceWorker.ready); await page.waitForFunction(async () => (await (await caches.open('curphey-v1')).keys()).length > 40, null, { timeout: 60000 });
+  await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller, null, { timeout: 30000 }); // now under the worker's control
+  await context.setOffline(true);
+  for (const id of ['monterey', 'return']) { // scenes never visited in this browser
+    await page.goto(`${site}?chapter=${id}`, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage && document.querySelector('#loading').classList.contains('done'), null, { timeout: 120000 });
+    assert.equal(await page.evaluate(() => window.__voyage.model.data.id), id, `${id} loads offline`);
+  }
+  await shot(page, 'offline'); await context.close();
 };
 // Frame rate, scene by scene. Only meaningful, and only enforced, on a real graphics card (VERIFY_GPU=1).
 checks.perf = async () => {

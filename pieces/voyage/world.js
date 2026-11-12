@@ -424,6 +424,11 @@ function updateIntro(now) {
   if (!params.has('chapter') && resume && resume.number > data.number) { $('#continue').hidden = false; $('#continue').textContent = `Continue at ${resume.title}`; $('#continue').onclick = () => { location.search = `?chapter=${resume.id}`; }; }
   $('#over').onclick = () => { location.search = `?chapter=${built[0].id}`; }; }
 
+// ---- installable, and playable offline ------------------------------------------
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || params.has('sw'))) navigator.serviceWorker.register('/sw.js').catch(() => { /* the game works without it */ });
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); $('#install').hidden = false; $('#install').onclick = async () => { $('#menu').open = false; e.prompt(); await e.userChoice; $('#install').hidden = true; }; });
+addEventListener('appinstalled', () => { $('#install').hidden = true; });
+
 // ---- frame ------------------------------------------------------------------
 let last = 0, time = 0, timeScale = 1;
 function frame(now) {

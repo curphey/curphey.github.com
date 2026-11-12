@@ -5,7 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Curphey Family Web Site</title>
-<link rel="icon" href="data:,">
+<meta name="theme-color" content="#27405c">
+<meta name="description" content="The Curphey family's story as a puzzle in eight scenes.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icons/favicon-48.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Curphey">
 <link rel="stylesheet" href="/pieces/voyage/style.css">
 </head>
 <body>
@@ -16,8 +24,8 @@
     <details id="menu">
       <summary aria-label="Help and options"><span></span><span></span><span></span></summary>
       <div class="panel">
-        <p>Tap a walkway to walk there. Drag a tower's bridge to turn it, or tap its brass handle.</p>
-        <div class="row"><button id="hint">Hint</button><button id="sound" aria-pressed="false">Sound off</button><button id="restart">Begin again</button><button id="auto" aria-pressed="false">Watch it play</button><button id="switch" hidden>Switch traveller</button></div>
+        <p>Tap a path to walk there. Tap a lever to work it. When you are standing on something that turns, tap it under your feet, or drag it round.</p>
+        <div class="row"><button id="hint">Hint</button><button id="sound" aria-pressed="false">Sound off</button><button id="restart">Begin again</button><button id="auto" aria-pressed="false">Watch it play</button><button id="install" hidden>Install as an app</button><button id="switch" hidden>Switch traveller</button></div>
         <details class="keys"><summary>Keyboard controls</summary>
           <h2>Walk to</h2><div id="walks" class="row"></div>
           <h2>Turn</h2><div id="turns" class="row"></div>
@@ -27,11 +35,11 @@
     </details>
   </header>
   <p id="goal"><span>Goal</span><b></b></p>
-  <section class="title" id="title"><span class="eyebrow"></span><h1></h1><p id="subtitle"></p></section>
+  <section class="title" id="title"><span class="eyebrow"></span><h1></h1><p id="subtitle"></p><div class="row" id="starters" hidden><button id="with-sound">Play with sound</button><button id="continue" hidden></button></div></section>
   <p id="who"><i></i><span>Moving</span><b></b></p>
   <p id="status" role="status"></p>
   <p id="passage" aria-live="polite"></p>
-  <section class="finish" id="finish" hidden><span class="eyebrow">Scene complete</span><h2></h2><p></p><div class="row centre"><button id="again">Play again</button><button id="next" hidden>Next scene</button></div></section>
+  <section class="finish" id="finish" hidden><span class="eyebrow">Scene complete</span><h2></h2><p></p><div id="cards" hidden></div><div class="row centre"><button id="again">Play again</button><button id="next" hidden>Next scene</button><button id="over" hidden>Start over from Trinidad</button></div></section>
   <section id="term" hidden aria-label="Terminal"><pre id="term-out"></pre><form><label for="term-in">007@disco-volante:~#</label><input id="term-in" autocomplete="off" autocapitalize="off" spellcheck="false"></form></section>
   <p id="loading">Laying bricks…</p>
   <script>/* Arriving from a passage: stay in the mist instead of showing the loading card. */(function () { var q = new URLSearchParams(location.search), m = q.get('mist'); if (q.has('arrive') && /^[0-9a-f]{6}$/i.test(m || '')) { var l = document.getElementById('loading'); l.textContent = ''; l.style.background = '#' + m; } })();</script>
