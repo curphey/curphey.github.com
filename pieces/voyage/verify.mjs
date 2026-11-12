@@ -285,6 +285,18 @@ checks.offline = async () => {
   }
   await shot(page, 'offline'); await context.close();
 };
+// For working out why a machine cannot run the game: loads one scene and reports what happens, second by second.
+checks.diag = async () => {
+  const context = await browser.newContext({ viewport: { width: 800, height: 500 } }), page = await context.newPage(), t0 = Date.now(), at = () => `${((Date.now() - t0) / 1000).toFixed(1)}s`;
+  page.on('console', m => console.log(`     [${at()}] console ${m.type()}: ${m.text().slice(0, 300)}`)); page.on('pageerror', e => console.log(`     [${at()}] page error: ${e.message}`));
+  await page.goto(`${url}?chapter=founders${LITE ? '&lite' : ''}`, { waitUntil: 'commit', timeout: 60000 }); console.log(`     [${at()}] committed`);
+  for (let i = 0; i < 24; i++) {
+    const s = await Promise.race([page.evaluate(() => ({ ready: !!window.__voyage, done: document.querySelector('#loading')?.classList.contains('done'), frames: window.__frames ?? null, q: window.__voyage?.quality })), new Promise(r => setTimeout(() => r('page did not answer within 4s'), 4000))]);
+    console.log(`     [${at()}] ${JSON.stringify(s)}`); await new Promise(r => setTimeout(r, 5000));
+  }
+  const info = await Promise.race([page.evaluate(() => { const gl = document.createElement('canvas').getContext('webgl2'), ext = gl?.getExtension('WEBGL_debug_renderer_info'); return { webgl2: !!gl, renderer: ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : null, cores: navigator.hardwareConcurrency }; }), new Promise(r => setTimeout(() => r('no answer'), 8000))]);
+  console.log(`     ${JSON.stringify(info)}`); await context.close();
+};
 // Frame rate, scene by scene. Only meaningful, and only enforced, on a real graphics card (VERIFY_GPU=1).
 checks.perf = async () => {
   const slow = [];
@@ -298,7 +310,7 @@ checks.perf = async () => {
   }
   assert.equal(slow.length, 0, `below 30 frames a second: ${slow.join(', ')}`);
 };
-const wanted = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(checks).filter(c => c !== 'perf'); let failed = 0;
+const wanted = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(checks).filter(c => c !== 'perf' && c !== 'diag'); let failed = 0;
 for (const name of wanted) {
   try { await checks[name](); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); }
 }

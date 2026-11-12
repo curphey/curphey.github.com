@@ -461,7 +461,7 @@ let last = 0, time = 0, timeScale = 1;
 function frame(now) {
   requestAnimationFrame(frame);
   const gap = now - last, dt = Math.min(gap / 1000 || 0, 0.05) * timeScale; last = now; if (document.hidden) return; time += dt;
-  if (++frameCount > 20) watchFrameRate(gap);
+  if (++frameCount > 20) watchFrameRate(gap); window.__frames = frameCount;
   const still = reduced.matches;
   for (const [id, m] of Object.entries(mechs)) {
     const diff = m.target - m.angle;

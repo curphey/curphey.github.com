@@ -5,6 +5,10 @@ on:
     branches: [master]
   pull_request:
   workflow_dispatch:
+    inputs:
+      checks:
+        description: Browser checks to run
+        default: loads founders-scene taps ride eggs passage departure
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,7 +40,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       # "taps" plays each scene with real taps only; the rest cover loading, layout, passages and the hidden things.
-      - run: node pieces/voyage/verify.mjs loads founders-scene taps ride eggs passage departure
+      - run: node pieces/voyage/verify.mjs ${{ inputs.checks || 'loads founders-scene taps ride eggs passage departure' }}
         env: { VERIFY_OUT: screenshots, VERIFY_LITE: 1 }
       - uses: actions/upload-artifact@v4
         if: always()
