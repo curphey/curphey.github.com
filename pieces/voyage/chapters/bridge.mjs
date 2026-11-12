@@ -54,6 +54,7 @@ function build({ id, number, word, palette, travellers, liftPlate, five = false,
       blocked: 'Nobody walks where they cannot see, and some ways are shut or too small.'
     },
     finish,
+    music: { pace: 1.3, warmth: 0.8 }, // the score: how slow, how open
     scale: [196, 220, 246.94, 293.66, 329.63, 392, 440, 493.88]
   };
 }

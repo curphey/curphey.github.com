@@ -46,7 +46,7 @@ const lite = params.has('lite');
 const thin = Math.max(1, Number(params.get('thin')) || 1);
 const pipeline = createPipeline(renderer, { lite }), sky = createSkyEnvironment(renderer);
 const save = createSave((() => { try { return window.localStorage; } catch { return null; } })() ?? { getItem() { return null; }, setItem() {} });
-const sound = createSound({ AudioContextCtor: window.AudioContext ?? window.webkitAudioContext, scale: data.scale, timbre: data.timbre, ambience: data.ambience ?? 'sea' });
+const sound = createSound({ AudioContextCtor: window.AudioContext ?? window.webkitAudioContext, scale: data.scale, timbre: data.timbre, ambience: data.ambience ?? 'sea', music: data.music });
 
 // The travellers, each with an invisible tap target, and a brass ring under whoever is active.
 const ghost = () => new T.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
@@ -236,7 +236,7 @@ let finale = null;
 // Is the active traveller standing on something they can turn from where they are?
 function rideable() { const arm = data.nodes[model.at].arm; return !!arm && model.riding(arm) && model.canTurn(arm); }
 function finish() {
-  started(); say('arrived'); sound.chord(); document.querySelector('main').classList.add(data.finale ? 'finale' : 'won'); if (!data.finale && !reduced.matches) winCam = { t: 0 };
+  started(); say('arrived'); sound.chord(); document.querySelector('main').classList.add(data.finale ? 'finale' : 'won'); if (!data.finale && !reduced.matches) winCam = { t: 0 }; if (data.finale) sound.lift(45);
   // The last chapter: cast off, let her sail, and only then show the card.
   if (data.finale) { const id = data.finale; model.rotate(id, 1); mechs[id].target -= Math.PI / 2; mechs[id].moving = true; if (reduced.matches) mechs[id].angle = mechs[id].target; finale = { t: 0 }; }
   else showFinish();

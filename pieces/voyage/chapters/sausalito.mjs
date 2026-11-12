@@ -52,5 +52,6 @@ export const sausalito = {
     blocked: 'No way there: the boat is full, or too small, or the planks stop.'
   },
   finish: { title: 'Five, on the roof deck.', body: 'One last passage, and then home waters.' },
+  music: { pace: 1.1, warmth: 1 }, // the score: how slow, how open
   scale: [196, 220, 246.94, 293.66, 329.63, 369.99, 440, 493.88]
 };
