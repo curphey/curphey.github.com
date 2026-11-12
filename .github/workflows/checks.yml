@@ -18,8 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22 }
-      - run: node --test pieces/voyage/
+        with: { node-version: 24 }
+      - run: npm test
 
   browser:
     name: Play every scene in a browser
@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: npm }
+        with: { node-version: 24, cache: npm }
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       # "taps" plays each scene with real taps only; the rest cover loading, layout, passages and the hidden things.
