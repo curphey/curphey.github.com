@@ -34,11 +34,8 @@ export function createNeedleScene(kit, data) {
   for (const [a, b] of [[[9, 0, 7.5], [22, 0.04, 15]], [[-22, 0, 6], [-6, 0.04, 15]], [[12, 0, -22], [22, 0.04, -10]], [[-22, 0, -22], [-13, 0.04, -9]]]) box(group, mats.lawn, a, b).castShadow = false;
   // The plaza runs on towards the camera, so no edge of it shows; another lawn and a few firs stand down there.
   box(group, wet, [-60, -1.6, 16], [60, 0, 46]).castShadow = false; box(group, mats.lawn, [-21, 0, 18], [-3, 0.04, 30]).castShadow = false; box(group, mats.lawn, [4, 0, 19], [20, 0.04, 30]).castShadow = false;
-  // Paving: two pale rings round the foot of the Needle with spokes between them, and puddles where the rain lies.
-  for (const [r0, r1] of [[4.3, 4.5], [7, 7.2]]) add(flat(new T.RingGeometry(r0, r1, 72)), pale, 0, 0.006, 0, group).castShadow = false;
-  for (let i = 0; i < 12; i++) { const a = (15 + i * 30) * Math.PI / 180, s = add(new T.BoxGeometry(2.5, 0.012, 0.1), pale, Math.cos(a) * 5.75, 0, Math.sin(a) * 5.75, group); s.rotation.y = -a; s.castShadow = false; }
-  const PUDDLES = [[5.4, -2.3, 1.0, 0.6, 0.4], [-3.4, 2.6, 0.9, 0.55, 1.1], [-6.6, -2.8, 1.1, 0.6, 2.0], [3.4, 5.8, 0.8, 0.5, 0.2], [8.6, 1.4, 0.9, 0.5, 2.6], [-1.8, -6.4, 1.0, 0.55, 0.9], [1.6, 9.4, 0.7, 0.45, 1.7]];
-  for (const [x, z, rx, rz, rot] of PUDDLES) for (const [dx, dz, k] of [[0, 0, 1], [rx * 0.6, rz * 0.5, 0.6]]) { const p = add(flat(new T.CircleGeometry(1, 28)), puddle, x + dx, 0.012, z + dz, group); p.scale.set(rx * k, 1, rz * k); p.rotation.y = rot; p.castShadow = false; }
+  // Paving: pale spokes that run out from the foot of the Needle, under the rings laid further down.
+  for (let i = 0; i < 12; i++) { const a = (15 + i * 30) * Math.PI / 180, s = add(new T.BoxGeometry(3.7, 0.012, 0.1), pale, Math.cos(a) * 6.75, 0, Math.sin(a) * 6.75, group); s.rotation.y = -a; s.castShadow = false; }
   // ---- the Needle ----
   for (let y = 0; y < 9.4; y += 0.6) { box(group, rust, [-0.5, y, -0.5], [0.5, y + 0.06, 0.5]); for (const [x, z] of [[-0.46, -0.46], [0.46, -0.46], [-0.46, 0.46], [0.46, 0.46]]) box(group, rust, [x - 0.04, y, z - 0.04], [x + 0.04, y + 0.6, z + 0.04]); const d = add(new T.BoxGeometry(1.1, 0.04, 0.04), rust, 0, y + 0.3, 0.47, group); d.rotation.z = (Math.round(y / 0.6) % 2 ? 1 : -1) * 0.55; const e = add(new T.BoxGeometry(0.04, 0.04, 1.1), rust, 0.47, y + 0.3, 0, group); e.rotation.x = (Math.round(y / 0.6) % 2 ? 1 : -1) * 0.55; }
   box(group, mats.white, [-0.3, 0, -0.3], [0.3, 9.4, 0.3]);
@@ -56,7 +53,9 @@ export function createNeedleScene(kit, data) {
   { const t = box(group, mats.walk, [1.5, -0.02, -0.5], [2.5, 0.004, 0.5]); t.userData.near = ['lobby']; hits.push(t); t.castShadow = false; }
   // The lift: a gold car on the outside of the core.
   const car = new T.Group(); car.userData.dynamic = true; group.add(car);
-  { const f = box(car, gold, [-0.45, -0.25, -0.45], [0.45, 0.004, 0.45]); f.userData.near = ['car']; hits.push(f); for (const [x, z] of [[-0.42, -0.42], [-0.42, 0.42]]) cyl(car, gold, x, 0, 1.25, z, 0.025, { seg: 6 }); box(car, gold, [-0.45, 1.25, -0.45], [-0.2, 1.3, 0.45]); box(car, mats.glass, [-0.46, 0.1, -0.43], [-0.44, 1.2, 0.43]); }
+  { const f = box(car, gold, [-0.45, -0.25, -0.45], [0.45, 0.004, 0.45]); f.userData.near = ['car']; hits.push(f); for (const [x, z] of [[-0.42, -0.42], [-0.42, 0.42]]) cyl(car, gold, x, 0, 1.25, z, 0.025, { seg: 6 }); box(car, gold, [-0.45, 1.25, -0.45], [-0.2, 1.3, 0.45]); box(car, mats.glass, [-0.46, 0.1, -0.43], [-0.44, 1.2, 0.43]);
+    // The whole cabin is the tap target, not just its floor.
+    const cabin = add(new T.BoxGeometry(1, 1.3, 1), ghost(), 0, 0.65, 0, car); cabin.castShadow = cabin.receiveShadow = false; cabin.userData.near = ['car']; hits.push(cabin); }
   box(group, mats.iron, [0.52, 0, -0.06], [0.58, 9.6, 0.06]); mechs.lift = { group: car, hub: new T.Vector3(1, 5, 0) };
   // The saucer: a turning deck, its underside, a sloped band of lit windows under the lip, the halo on its spokes,
   // and the white roof on slim columns, with the spire and its beacon above. Its fixed parts are baked together.
@@ -75,7 +74,7 @@ export function createNeedleScene(kit, data) {
     const knob = add(new T.SphereGeometry(0.4, 12, 8), ghost(), -3, 10.4, 0, saucer); knob.castShadow = knob.receiveShadow = false; knob.userData = { mech: 'saucer', handle: true }; hits.push(knob); cyl(saucer, mats.brass, -3, 10, 10.5, 0, 0.03, { seg: 8 }); add(new T.SphereGeometry(0.08, 12, 10), mats.brass, -3, 10.55, 0, saucer); }
   bake(saucer); mechs.saucer = { group: saucer, hub: new T.Vector3(0, 10, 0) };
   // The kiosk that works the lift, and the two levers on the mid ring.
-  box(group, mats.glass, [2.6, 0, 1.3], [3.5, 1.1, 1.7]); box(group, mats.white, [2.5, 1.1, 1.2], [3.6, 1.2, 1.8]); lever(2.5, 0, 0.75, 'lift', 'lobby', gold);
+  box(group, mats.glass, [3.1, 0, -1.7], [4.0, 1.1, -1.3]); box(group, mats.white, [3.0, 1.1, -1.8], [4.1, 1.2, -1.2]); lever(2.5, 0, 0.75, 'lift', 'lobby', gold);
   lever(2.2, 5, -0.38, 'saucer', 'ring', mats.white); const sluiceWheel = add(new T.TorusGeometry(0.16, 0.03, 8, 20), mats.blue, 2.35, 5.3, 0.4, group); sluiceWheel.userData.dynamic = true; cyl(group, mats.iron, 2.35, 5, 5.3, 0.4, 0.025, { seg: 6 });
   { const p = add(new T.CylinderGeometry(0.3, 0.3, 0.03, 28), mats.brass, 2, 5.016, 0, group); p.castShadow = false; }
   // ---- the pool, its pontoon, the island and the white arches ----
@@ -99,17 +98,26 @@ export function createNeedleScene(kit, data) {
   box(group, mats.stone, [STOP - 2.6, 2.42, -12.56], [STOP + 2.6, 2.58, -11.7]); for (const x of [STOP - 2.2, STOP + 2.2]) { box(group, mats.stone, [x - 0.12, 0, -12.25], [x + 0.12, 2.42, -12.01]); cyl(group, mats.white, x, 2.58, 3.75, -11.85, 0.035, { seg: 6 }); } box(group, mats.white, [STOP - 2.5, 3.75, -12.5], [STOP + 2.5, 3.81, -11.65]);
   for (let i = 0; i < 7; i++) box(group, mats.stone, [STOP + 2.6 + i * 0.3, 2.42 - (i + 1) * 0.345, -12.4], [STOP + 2.9 + i * 0.3, 2.58 - i * 0.345, -11.8]); // steps down to the plaza
   for (const [x, z, s] of [[10.5, 9, 1.5], [14, 11.5, 1.8], [18, 9.5, 1.6], [20, 13, 2.0], [-9, 8, 1.6], [-13, 10.5, 1.9], [-17, 8, 1.7], [-20, 12, 2.1], [14, -15, 1.9], [18, -12.5, 1.6], [21, -17, 2.2], [-15, -12, 1.8], [-19, -15, 2.1], [-16.5, -19, 1.7], [-21, -5, 1.9], [-14.5, 3.5, 1.4], [16.5, 3, 1.3], [-16, 21, 1.9], [-9, 24, 2.1], [-5, 20, 1.6], [9, 23, 2.0], [16, 21, 1.7]]) fir(x, z, s);
+  // ---- life on the plaza: paving rings, puddles, cafe umbrellas and a garden of blown glass ----
+  for (const [r0, r1, m] of [[4.6, 4.9, mats.walk], [6.6, 6.8, gold], [8.6, 9.0, mats.walk]]) { const ring = add(new T.RingGeometry(r0, r1, 96), m, 0, 0.012, 0, group); ring.rotation.x = -Math.PI / 2; ring.castShadow = false; }
+  const PUDDLES = [[5.5, 2.2, 0.9], [7.2, -1.5, 0.6], [3.2, 6.4, 1.1], [-1.5, 6.8, 0.7], [-5.5, 2.5, 1.0], [6.2, 5.6, 0.5], [9.5, 2.6, 0.8], [1.0, -6.5, 0.9], [-3.5, -4.2, 0.6], [-6.8, 5.6, 0.7]];
+  for (const [x, z, r] of PUDDLES) { const p = add(new T.CircleGeometry(r, 28), pond, x, 0.009, z, group); p.rotation.x = -Math.PI / 2; p.scale.y = 0.7; p.castShadow = false; }
+  for (const [x, z, m] of [[6.4, 3.6, mats.red], [7.6, 4.6, mats.yellow], [5.4, 5.0, mats.teal], [8.0, 0.6, mats.orange], [-2.6, 7.4, mats.blue]]) { cyl(group, mats.white, x, 0, 0.45, z, 0.32, { seg: 16 }); cyl(group, mats.iron, x, 0.45, 1.5, z, 0.025, { seg: 6 }); cone(group, m, x, 1.3, 1.75, z, 0.85, 10); }
+  { const glassMat = c => new T.MeshStandardMaterial({ color: c, roughness: 0.08, metalness: 0.2, emissive: c, emissiveIntensity: 0.35 });
+    const cols = ['#e2452f', '#f08a2f', '#f2c744', '#d63a7a', '#3f8fd0'].map(glassMat);
+    for (let i = 0; i < 26; i++) { const a = i * 2.4, r = 0.3 + (i * 0.37 % 1) * 1.5, h = 0.9 + (i * 0.61 % 1) * 1.6, s = cone(group, cols[i % 5], -5.2 + Math.cos(a) * r, 0, h, 6.6 + Math.sin(a) * r * 0.8, 0.07, 6); s.rotation.set(Math.cos(a) * 0.3, 0, Math.sin(a) * 0.3); }
+    const globe = add(new T.SphereGeometry(0.42, 20, 14), cols[2], -5.2, 0.42, 6.6, group); }
   // ---- lamps: a globe on a post, a pool of warm light on the wet paving, and its reflection drawn towards the eye ----
-  const gp = [], gc = [], fan = (cx, cz, ux, uz, a, b, k) => { for (let i = 0; i < 18; i++) { gp.push(cx, 0.05, cz); gc.push(k, k * 0.6, k * 0.24); for (const t of [i * Math.PI / 9, (i + 1) * Math.PI / 9]) { gp.push(cx + Math.cos(t) * a * ux - Math.sin(t) * b * uz, 0.05, cz + Math.cos(t) * a * uz + Math.sin(t) * b * ux); gc.push(0, 0, 0); } } };
-  for (const [x, z] of [[5.5, -3.5], [-4.5, -4.5], [-4.5, 3.5], [5.5, 8.5], [13, 2.5], [0.5, 12], [-9, -10], [3, -8.5]]) {
-    cyl(group, mats.iron, x, 0, 0.12, z, 0.1, { seg: 10 }); cyl(group, mats.iron, x, 0.12, 1.66, z, 0.03, { seg: 6 }); add(new T.SphereGeometry(0.13, 12, 10), lamp, x, 1.76, z, group).castShadow = false;
-    fan(x, z, 1, 0, 1.7, 1.7, 0.3); fan(x + 1.4, z + 1.4, S, S, 1.6, 0.26, 0.4);
+  const gp = [], gc = [], fan = (cx, cz, ux, uz, a, b, k) => { for (let i = 0; i < 18; i++) { gp.push(cx, 0.022, cz); gc.push(k, k * 0.6, k * 0.24); for (const t of [i * Math.PI / 9, (i + 1) * Math.PI / 9]) { gp.push(cx + Math.cos(t) * a * ux - Math.sin(t) * b * uz, 0.022, cz + Math.cos(t) * a * uz + Math.sin(t) * b * ux); gc.push(0, 0, 0); } } };
+  for (const [x, z] of [[4.4, 4.4], [8.4, -3.2], [-2.2, 4.6], [1.2, 8.2], [-6.4, 0.8], [10.6, 5.6], [-4.5, -4.5], [0.8, 12.6], [-9, -10], [3, -8.5]]) {
+    cyl(group, mats.iron, x, 0, 0.12, z, 0.1, { seg: 10 }); cyl(group, mats.iron, x, 0, 2.2, z, 0.035, { seg: 6 }); add(new T.SphereGeometry(0.13, 12, 10), lamp, x, 2.3, z, group).castShadow = false;
+    fan(x, z, 1, 0, 1.7, 1.7, 0.3); fan(x + 1.8, z + 1.8, S, S, 1.7, 0.26, 0.4);
   }
   fan(0, 0, 1, 0, 3.4, 3.4, 0.28); fan(1.9, 1.9, S, S, 1.9, 0.8, 0.2); // light spilling from the lobby
   const glowGeo = new T.BufferGeometry(); glowGeo.setAttribute('position', new T.Float32BufferAttribute(gp, 3)); glowGeo.setAttribute('color', new T.Float32BufferAttribute(gc, 3));
   const glowMat = new T.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide }), glow = new T.Mesh(glowGeo, glowMat); glow.userData.dynamic = true; group.add(glow);
   // ---- the fountain: a steel dome in a bowl, a ring of jets that rise and fall in a slow wave, and something yellow afloat ----
-  const FX = -2.5, FZ = 9.5; cyl(group, mats.stone, FX, 0, 0.16, FZ, 1.75, { seg: 40 }); cyl(group, puddle, FX, 0.16, 0.2, FZ, 1.55, { seg: 40 }).castShadow = false;
+  const FX = -1.5, FZ = 10.6; cyl(group, mats.stone, FX, 0, 0.16, FZ, 1.75, { seg: 40 }); cyl(group, puddle, FX, 0.16, 0.2, FZ, 1.55, { seg: 40 }).castShadow = false;
   { const d = add(new T.SphereGeometry(0.55, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), mats.lead, FX, 0.2, FZ, group); d.scale.y = 0.75; }
   const JETS = 11, DROPS = 7, jetPos = new Float32Array(JETS * DROPS * 3), jetGeo = new T.BufferGeometry(); jetGeo.setAttribute('position', new T.BufferAttribute(jetPos, 3));
   const jets = new T.Points(jetGeo, new T.PointsMaterial({ color: '#f4f8fa', size: 1.7, transparent: true, opacity: 0.8, depthWrite: false })); jets.userData.dynamic = true; jets.frustumCulled = false; group.add(jets);
@@ -123,21 +131,16 @@ export function createNeedleScene(kit, data) {
   spray(0);
   const duck = new T.Group(); group.add(duck); { const b = add(new T.SphereGeometry(0.13, 12, 8), mats.yellow, 0, 0.06, 0, duck); b.scale.set(1.25, 0.8, 0.9); add(new T.SphereGeometry(0.08, 10, 8), mats.yellow, 0.12, 0.2, 0, duck); const beak = add(new T.ConeGeometry(0.035, 0.09, 8), mats.orange, 0.22, 0.19, 0, duck); beak.rotation.z = -Math.PI / 2; } bake(duck); duck.position.set(FX + 1.05, 0.2, FZ);
   // ---- people out in the rain, each under an umbrella; now and then one is shaken dry ----
-  const brollies = []; for (const [x, z, coat, top] of [[-0.2, 7.9, mats.blue, '#c8402f'], [-4.9, 8.7, mats.iron, '#f0c348'], [6.6, 2.9, mats.lead, '#2aa39a']]) {
+  const brollies = []; for (const [x, z, coat, top] of [[0.7, 10.3, mats.blue, '#c8402f'], [-3.0, 6.0, mats.iron, '#f0c348'], [7.4, -5.6, mats.lead, '#2aa39a']]) {
     cyl(group, coat, x, 0, 0.5, z, 0.11, { rTop: 0.07, seg: 10 }); add(new T.SphereGeometry(0.075, 10, 8), mats.cream, x, 0.57, z, group); cyl(group, mats.iron, x + 0.08, 0.3, 0.86, z, 0.012, { seg: 5 });
     const c = add(new T.ConeGeometry(0.36, 0.15, 8, 1, true), new T.MeshStandardMaterial({ color: top, roughness: 0.6, side: T.DoubleSide }), x + 0.08, 0.9, z, group); c.userData.dynamic = true; brollies.push(c);
   }
-  // ---- the glass garden: reeds and globes of bright blown glass in a dark bed, under white hoops ----
-  { const glassy = c => new T.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.45, roughness: 0.12, metalness: 0.2 }), tints = ['#ff7a1c', '#ffd23a', '#e2342c', '#3b7bff', '#7ad04a'].map(glassy);
-    box(group, mats.trunk, [7.2, 0, 3.4], [10.4, 0.07, 6.4]);
-    for (let i = 0; i < 26; i++) { const x = 7.45 + rnd(i, 11) * 2.7, z = 3.65 + rnd(i, 12) * 2.5, m = tints[i % 5]; if (i % 3) { const h = 0.5 + rnd(i, 13) * 0.9, r = cone(group, m, x, 0.07, 0.07 + h, z, 0.05, 6); r.rotation.set((rnd(i, 14) - 0.5) * 0.3, 0, (rnd(i, 15) - 0.5) * 0.3); } else add(new T.SphereGeometry(0.13 + rnd(i, 13) * 0.12, 12, 8), m, x, 0.2, z, group); }
-    for (const x of [7.3, 8.8, 10.3]) { const pts = []; for (let i = 0; i <= 12; i++) { const t = i / 12 * Math.PI; pts.push(new T.Vector3(x, Math.sin(t) * 1.7, 4.9 - Math.cos(t) * 1.5)); } add(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 24, 0.03, 6), mats.white, 0, 0, 0, group); } }
   // ---- ripple rings, blinking where drops land in the puddles ----
   const RINGS = 16, ripples = new T.InstancedMesh(flat(new T.RingGeometry(0.82, 1, 20)), new T.MeshBasicMaterial({ transparent: true, blending: T.AdditiveBlending, depthWrite: false }), RINGS), rm = new T.Matrix4(), rc = new T.Color();
   ripples.userData.dynamic = true; ripples.frustumCulled = false; ripples.castShadow = ripples.receiveShadow = false; group.add(ripples);
   function drip(time) {
-    for (let i = 0; i < RINGS; i++) { const p = PUDDLES[i % PUDDLES.length], u = time / (1.7 + rnd(i, 5) * 1.6) + rnd(i, 6), n = Math.floor(u), t = u - n, s = 0.04 + 0.22 * t, w = Math.min(p[2], p[3]) * 1.2;
-      rm.makeScale(s, 1, s).setPosition(p[0] + (rnd(i + n * 7.3, 7) - 0.5) * w, 0.03, p[1] + (rnd(i + n * 7.3, 8) - 0.5) * w); ripples.setMatrixAt(i, rm); ripples.setColorAt(i, rc.setScalar((1 - t) * (1 - t) * 0.5)); }
+    for (let i = 0; i < RINGS; i++) { const p = PUDDLES[i % PUDDLES.length], u = time / (1.7 + rnd(i, 5) * 1.6) + rnd(i, 6), n = Math.floor(u), t = u - n, s = 0.04 + 0.22 * t, w = p[2] * 0.9;
+      rm.makeScale(s, 1, s).setPosition(p[0] + (rnd(i + n * 7.3, 7) - 0.5) * w, 0.016, p[1] + (rnd(i + n * 7.3, 8) - 0.5) * w); ripples.setMatrixAt(i, rm); ripples.setColorAt(i, rc.setScalar((1 - t) * (1 - t) * 0.5)); }
     ripples.instanceMatrix.needsUpdate = true; ripples.instanceColor.needsUpdate = true;
   }
   drip(0);
