@@ -1,10 +1,12 @@
 # Curphey.com
 
-> The Curphey family homepage, presented as a gallery wall of framed gold disc awards.
+> The Curphey family website: a puzzle game in eight scenes that tells the family's story.
 
-This is a personal family website for the Curphey family. It is styled as a music industry gold disc presentation wall, published by the fictional "Transatlantic Chaos Records" label.
+This is a personal family website for the Curphey family. The homepage is a small 3D puzzle game, in the manner of perspective-puzzle games, played in a web browser. Each scene is a real place modelled as a miniature, and the number of players grows as the family does.
 
-The site features six family members — Mark, Cara, Jack, Gabe, Marg (a chihuahua), and one anonymous "[REDACTED] Curphey" (the shyest family member, identity withheld at subject's request) — each with their own framed gold record and unique animations. The family has lived in London, Brighton, Seattle, and Mill Valley.
+The scenes, in order: Trinidad (Cara); Egham, at the Founder's Building of Royal Holloway (Mark); Brighton, on the Palace Pier, where Mark and Cara meet; Mill Valley, at the Golden Gate, where Jack joins; Monterey, at the aquarium, where a fourth player joins who is shown only as "[REDACTED]" (identity withheld at the subject's request); Seattle, at the Space Needle, where Gabe joins; Mill Valley again, sailing dinghies on Richardson Bay; and Brighton once more, where Mark and Cara board their catamaran, Disco Volante, and sail away. Marg, a chihuahua, is hidden in every scene.
+
+The family has lived in London, Brighton, Seattle, and Mill Valley.
 
 ## Contact
 - Site: https://curphey.com

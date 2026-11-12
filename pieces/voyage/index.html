@@ -1,1 +1,41 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>The Anchorage — A voyage aboard Disco Volante</title><link rel="icon" href="data:,"><link rel="stylesheet" href="style.css"></head><body><header><a href="/">curphey<span>.</span></a><span>A VOYAGE ABOARD DISCO VOLANTE</span><details id="menu"><summary aria-label="Help and options">•••</summary><div class="menu-panel"><p>Click a quay to walk. Click a brass hub to turn a pontoon. At a light tower, click its optic to use it.</p><button id="reset" aria-label="Restart chapter">Begin again ↺</button><section id="menu-anchorage"><button id="preview" class="preview">Preview the sailing →</button><details class="keyboard-options"><summary>Keyboard controls</summary><div class="rotations"><span>TURN A PONTOON</span><button data-turn="a">I <b>↻</b></button><button data-turn="b">II <b>↻</b></button><button data-turn="c">III <b>↻</b></button></div><div class="destinations"><span>WALK TO</span><button data-go="arrival">Board yacht</button><button data-go="court">Sail court</button><button data-go="light">Lantern</button><button data-go="gate">Beacon</button></div></details></section><section id="menu-reef" hidden><div><button id="reef-action" disabled>Visit a tower to turn its optic</button><button id="reef-hint">Hint</button><button id="reef-reset">Restart this island ↺</button></div><details class="keyboard-options"><summary>Keyboard controls</summary><div class="reef-walk" aria-label="Walk to a destination"><button data-reef-go="dock">Disembark</button><button data-reef-go="west">West tower</button><button data-reef-go="court">Gate court</button><button data-reef-go="east">East tower</button><button data-reef-go="grotto">Pearl grotto</button><button data-reef-go="gate">Sea gate</button><button data-reef-go="boat">Back aboard</button></div></details></section><section id="menu-later" hidden><button id="later-hint">Hint</button><button id="later-reset">Restart this island ↺</button><details class="keyboard-options"><summary>Keyboard controls</summary><div id="later-destinations"></div><button id="later-action">Use nearby mechanism</button></details></section><details class="keyboard-options"><summary>Visit a chapter</summary><button data-chapter="1">1 · The Anchorage</button><button data-chapter="2">2 · The Coral Gate</button><button data-chapter="3">3 · The Wind Garden</button><button data-chapter="4">4 · The Tidal Stair</button><button data-chapter="5">5 · The Home Light</button></details><section id="menu-passage" hidden><button id="pause-passage">Pause passage</button><button id="skip">Skip to arrival →</button></section></div></details></header><main><canvas aria-label="A sailing harbour puzzle with Disco Volante at the quay. Rotate three pontoons and collect two lights to activate the harbour beacon."></canvas><section class="title"><span class="eyebrow">CHAPTER ONE</span><h1>The Anchorage</h1><p>A sheltered lagoon.<br>A passage waiting to begin.</p></section><div class="legend"><span id="count">○ ○</span><p>Two lights.<br>One passage onward.</p></div><div class="controls"><p id="status" role="status">Click the quays to walk. Turn the brass hubs to connect them.</p></div><div class="finish" hidden><span class="eyebrow">CHAPTER COMPLETE</span><h2>The next horizon awaits.</h2><p>The harbour light is lit. Disco Volante is ready to sail.</p><button id="replay">Explore again ↺</button></div><div class="passage-controls" hidden><p id="passage-status" role="status">Preparing to leave…</p></div><div class="coral-controls" hidden><p id="coral-status" role="status">Step ashore to explore the Coral Gate.</p><p id="reef-inventory">Two missing prisms. Two changing causeways.</p></div><div id="scene-hint" hidden aria-hidden="true"></div><div class="later-status" hidden><p id="later-status" role="status"></p></div><p id="loading">Building your little world…</p></main><footer><span>Take your time. The tide can wait.</span><span>01 / THE ANCHORAGE</span></footer><script type="module" src="world.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Curphey Family Web Site</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <canvas id="view" aria-label="A puzzle scene"></canvas>
+  <header>
+    <a class="brand" href="/">curphey<span>.</span></a>
+    <details id="menu">
+      <summary aria-label="Help and options"><span></span><span></span><span></span></summary>
+      <div class="panel">
+        <p>Tap a walkway to walk there. Drag a tower's bridge to turn it, or tap its brass handle.</p>
+        <div class="row"><button id="hint">Hint</button><button id="sound" aria-pressed="false">Sound off</button><button id="restart">Begin again</button><button id="auto" aria-pressed="false">Watch it play</button><button id="switch" hidden>Switch traveller</button></div>
+        <details class="keys"><summary>Keyboard controls</summary>
+          <h2>Walk to</h2><div id="walks" class="row"></div>
+          <h2>Turn</h2><div id="turns" class="row"></div>
+        </details>
+        <details class="keys"><summary>Scenes</summary><div id="chapters" class="row"></div></details>
+      </div>
+    </details>
+  </header>
+  <p id="goal"><span>Goal</span><b></b></p>
+  <section class="title" id="title"><span class="eyebrow"></span><h1></h1><p id="subtitle"></p></section>
+  <p id="who"><i></i><span>Moving</span><b></b></p>
+  <p id="status" role="status"></p>
+  <p id="passage" aria-live="polite"></p>
+  <section class="finish" id="finish" hidden><span class="eyebrow">Scene complete</span><h2></h2><p></p><div class="row centre"><button id="again">Play again</button><button id="next" hidden>Next scene</button></div></section>
+  <section id="term" hidden aria-label="Terminal"><pre id="term-out"></pre><form><label for="term-in">007@disco-volante:~#</label><input id="term-in" autocomplete="off" autocapitalize="off" spellcheck="false"></form></section>
+  <p id="loading">Laying bricks…</p>
+  <script>/* Arriving from a passage: stay in the mist instead of showing the loading card. */(function () { var q = new URLSearchParams(location.search), m = q.get('mist'); if (q.has('arrive') && /^[0-9a-f]{6}$/i.test(m || '')) { var l = document.getElementById('loading'); l.textContent = ''; l.style.background = '#' + m; } })();</script>
+</main>
+<script type="module" src="world.js"></script>
+</body>
+</html>
