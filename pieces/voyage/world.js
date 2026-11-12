@@ -34,7 +34,8 @@ sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096); sun.shadow.bias = -0.
 Object.assign(sun.shadow.camera, { left: -shadowSize, right: shadowSize, top: shadowSize, bottom: -shadowSize, near: 1, far: 170 });
 sun.shadow.camera.updateProjectionMatrix(); scene.add(sun, sun.target, fill);
 const water = view.water === false ? null : createWater(view.water); if (water) scene.add(water.mesh);
-const pipeline = createPipeline(renderer), sky = createSkyEnvironment(renderer);
+const lite = params.has('lite');
+const pipeline = createPipeline(renderer, { lite }), sky = createSkyEnvironment(renderer);
 const save = createSave((() => { try { return window.localStorage; } catch { return null; } })() ?? { getItem() { return null; }, setItem() {} });
 const sound = createSound({ AudioContextCtor: window.AudioContext ?? window.webkitAudioContext, scale: data.scale, timbre: data.timbre });
 
@@ -54,6 +55,25 @@ const eggHits = [cursor.target, marg.target];
 const terminal = createTerminal({ scenes: built, here: data, save, onRoot: on => { model.root = on; model.plan = model.asked = null; syncMenu(); }, onMatrix: on => document.body.classList.toggle('matrix', on) });
 model.root = !!save.load().root; document.body.classList.toggle('matrix', !!save.load().matrix);
 function foundCursor() { const s = save.load(), eggs = [...new Set([...s.eggs, data.id])]; save.store({ eggs }); sound.join(); terminal.open(`cursor found in ${data.title} (${eggs.length}/${built.length}).`); }
+
+// What can be tapped right now: a pale ring on every spot the active traveller can walk to, a brighter one on
+// each lever or handle they can work from where they stand, and one under their feet when they can turn what they ride.
+const markMat = new T.MeshBasicMaterial({ color: '#fff3c9', transparent: true, opacity: 0.7, depthWrite: false, side: T.DoubleSide });
+const useMat = new T.MeshBasicMaterial({ color: '#ffd35c', transparent: true, opacity: 0.9, depthWrite: false, depthTest: false, side: T.DoubleSide });
+const spotMarks = {}; for (const id of Object.keys(data.nodes)) { const m = new T.Mesh(new T.RingGeometry(0.15, 0.2, 28), markMat); m.rotation.x = -Math.PI / 2; m.visible = false; m.renderOrder = 5; scene.add(m); spotMarks[id] = m; }
+const useMarks = view.hits.filter(h => h.userData.lever || h.userData.handle).map(h => { const m = new T.Mesh(new T.RingGeometry(0.24, 0.3, 32), useMat); m.visible = false; m.renderOrder = 6; scene.add(m); return { hit: h, mesh: m }; });
+const rideMark = new T.Mesh(new T.RingGeometry(0.4, 0.46, 36), useMat); rideMark.rotation.x = -Math.PI / 2; rideMark.visible = false; rideMark.renderOrder = 6; scene.add(rideMark);
+let reachable = new Set();
+function updateMarks(time, still) {
+  const idle = !walk && !model.won && !travel && !Object.values(mechs).some(m => m.moving), pulse = still ? 1 : 0.75 + 0.25 * Math.sin(time * 3.2), spot = new T.Vector3();
+  markMat.opacity = 0.62 * pulse; useMat.opacity = 0.9 * pulse;
+  for (const [id, m] of Object.entries(spotMarks)) { m.visible = idle && reachable.has(id); if (m.visible) { const p = live(id); m.position.set(p.x, p.y + 0.035, p.z); } }
+  for (const u of useMarks) {
+    const d = u.hit.userData, on = idle && (d.lever ? d.near[0] === model.at && model.canTurn(d.lever) : model.canTurn(d.mech));
+    u.mesh.visible = on; if (on) { u.hit.getWorldPosition(spot); u.mesh.position.copy(spot); u.mesh.quaternion.copy(camera.quaternion); }
+  }
+  rideMark.visible = idle && rideable(); if (rideMark.visible) { const p = live(model.at); rideMark.position.set(p.x, p.y + 0.04, p.z); }
+}
 
 // A few birds circling.
 const birds = [], flock = view.birds ?? { x: 0, z: 9, h: 11 };
@@ -87,6 +107,20 @@ function aim() {
   sun.target.position.copy(focus); sun.position.copy(focus).addScaledVector(sun.userData.dir, 70); sun.target.updateMatrixWorld();
 }
 addEventListener('resize', resize);
+// Quality: 2 is everything; 1 drops resolution and shadow detail; 0 also drops reflections, contact shading and
+// depth of field. It starts at 2 and steps down if the device cannot hold a steady frame rate. ?lite starts at 0.
+let quality = 2, slowFrames = 0, sampled = 0, frameCount = 0;
+function setQuality(q) {
+  quality = q; renderer.setPixelRatio(q === 2 ? Math.min(devicePixelRatio, 2) : q === 1 ? Math.min(devicePixelRatio, 1.25) : 1);
+  const size = 1024 << q;
+  if (sun.shadow.mapSize.x !== size) { sun.shadow.mapSize.set(size, size); sun.shadow.map?.dispose(); sun.shadow.map = null; }
+  pipeline.uniforms.detail.value = q === 0 ? 0 : 1; resize();
+}
+function watchFrameRate(ms) {
+  if (quality === 0 || ms > 500) return; // a long gap is a hidden tab, not a slow device
+  sampled++; if (ms > 40) slowFrames++;
+  if (sampled >= 50) { if (slowFrames > 30) setQuality(quality - 1); sampled = slowFrames = 0; }
+}
 
 // ---- mechanisms -------------------------------------------------------------
 const angleOf = state => -state * Math.PI / 2;
@@ -180,12 +214,49 @@ function finish() {
   say('arrived'); sound.chord();
   // The last chapter: cast off, let her sail, and only then show the card.
   if (data.finale) { const id = data.finale; model.rotate(id, 1); mechs[id].target -= Math.PI / 2; mechs[id].moving = true; if (reduced.matches) mechs[id].angle = mechs[id].target; finale = { t: 0 }; }
-  else $('#finish').hidden = false;
+  else showFinish();
+  wantCard = true; celebrate();
   const s = save.load(); save.store({ furthest: Math.max(s.furthest, data.number + 1), done: [...new Set([...s.done, data.id])] });
-  if (!reduced.matches) setTimeout(() => $('#again').focus({ preventScroll: true }), 1500);
+  if (!reduced.matches) setTimeout(() => (nextChapter ? $('#next') : $('#again')).focus({ preventScroll: true }), 1500);
+}
+// The end card. On the last scene it carries a postcard from every place played.
+function showFinish() {
+  const last = !nextChapter, cards = save.load().cards, have = built.filter(c => cards[c.id]);
+  if (last && have.length) {
+    const box = $('#cards'); box.replaceChildren();
+    have.forEach((c, i) => { const f = document.createElement('figure'), img = document.createElement('img'), cap = document.createElement('figcaption'); img.src = cards[c.id]; img.alt = `A postcard from ${c.title}`; cap.textContent = c.title.replace(/,.*/, ''); f.style.animationDelay = `${0.25 + i * 0.22}s`; f.append(img, cap); box.append(f); });
+    box.hidden = false; $('#finish').classList.add('wide');
+  }
+  $('#over').hidden = !last; $('#finish').hidden = false;
+}
+// A postcard: a small picture of the scene as it stands when it is completed, kept in the browser.
+let wantCard = false;
+function takeCard() {
+  wantCard = false;
+  try {
+    const c = document.createElement('canvas'); c.width = 320; c.height = 200; const g = c.getContext('2d'), w = canvas.width, h = canvas.height, sw = Math.min(w, h * 1.6), sh = sw / 1.6;
+    g.drawImage(canvas, (w - sw) / 2, (h - sh) / 2, sw, sh, 0, 0, 320, 200);
+    save.store({ cards: { ...save.load().cards, [data.id]: c.toDataURL('image/jpeg', 0.62) } });
+  } catch { /* no postcard, no harm */ }
+}
+// Completion: a rise of golden motes from where the scene was won.
+const motes = new T.Points(new T.BufferGeometry(), new T.PointsMaterial({ color: '#ffd978', size: 5, sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false, depthTest: false }));
+motes.geometry.setAttribute('position', new T.BufferAttribute(new Float32Array(90 * 3), 3)); motes.frustumCulled = false; motes.renderOrder = 8; scene.add(motes);
+let party = null;
+function celebrate() {
+  if (reduced.matches) return;
+  const at = live(data.goal.node), seeds = Array.from({ length: 90 }, (_, i) => ({ a: i * 2.4, r: 0.2 + (i * 0.37 % 1) * 1.5, v: 1 + (i * 0.61 % 1) * 1.8, d: (i * 0.23 % 1) * 1.2 }));
+  party = { t: 0, at, seeds };
+}
+function updateParty(dt) {
+  if (!party) return;
+  party.t += dt; const p = motes.geometry.attributes.position, t = party.t;
+  party.seeds.forEach((s, i) => { const k = Math.max(0, t - s.d); p.setXYZ(i, party.at.x + Math.cos(s.a + k) * s.r * Math.min(1, k), party.at.y + 0.3 + k * s.v, party.at.z + Math.sin(s.a + k) * s.r * Math.min(1, k)); });
+  p.needsUpdate = true; motes.material.opacity = Math.max(0, Math.min(1, t * 2) * (1 - t / 4.5));
+  if (t > 4.5) { party = null; motes.material.opacity = 0; }
 }
 function restart() {
-  model.reset(); model.root = !!save.load().root; walk = null; drag = null; finale = null; camera.zoom = 1; camera.updateProjectionMatrix(); $('#finish').hidden = true; $('#menu').open = false;
+  model.reset(); model.root = !!save.load().root; walk = null; drag = null; finale = null; party = null; motes.material.opacity = 0; $('#cards').hidden = true; $('#finish').classList.remove('wide'); camera.zoom = 1; camera.updateProjectionMatrix(); $('#finish').hidden = true; $('#menu').open = false;
   for (const id of Object.keys(mechs)) { mechs[id].angle = mechs[id].target = angleOf(model.mechs[id]); mechs[id].moving = false; }
   placeWalkers(); for (const w of Object.values(walkers)) w.face(1, 1); view.update.wonAt = undefined; say('start'); syncMenu();
 }
@@ -263,6 +334,7 @@ function intentOf(hit, x, y) {
 }
 function act(intent) {
   if (!intent) return;
+  try { navigator.vibrate?.(8); } catch { /* not available */ }
   if (intent.type === 'egg') foundCursor(); else if (intent.type === 'marg') { marg.yap(); sound.note(7); say('marg'); }
   else if (intent.type === 'flag') { view.blackFlag?.(); say('flag'); } else if (intent.type === 'select') switchTo(intent.who);
   else if (intent.type === 'turn') turn(intent.id, 1); else go(intent.to);
@@ -297,7 +369,7 @@ for (const [id, n] of Object.entries(data.nodes)) { const b = document.createEle
 for (const [id, m] of Object.entries(data.mechs)) for (const dir of [1, -1]) { const b = document.createElement('button'); b.textContent = `${cap(m.label)} ${dir > 0 ? '↻' : '↺'}`; b.setAttribute('aria-label', `Turn ${m.label} ${dir > 0 ? 'clockwise' : 'anticlockwise'}`); b.dataset.turn = id; b.onclick = () => turn(id, dir); $('#turns').append(b); }
 for (const c of built) { const b = document.createElement('button'); b.textContent = `${c.number} · ${c.title}`; b.disabled = c === data; b.onclick = () => { location.search = `?chapter=${c.id}`; }; $('#chapters').append(b); }
 $('#switch').hidden = model.travellers.length < 2; $('#switch').onclick = () => { switchTo(); $('#menu').open = false; };
-function syncMenu() { const busy = !!walk || model.won; $('#who b').textContent = (people[model.active]?.name ?? '') + (model.root && model.active === 'one' ? ' · 007' : ''); $('#who i').style.background = people[model.active]?.coat ?? '#888';
+function syncMenu() { const busy = !!walk || model.won; reachable = busy ? new Set() : model.reach(); $('#who b').textContent = (people[model.active]?.name ?? '') + (model.root && model.active === 'one' ? ' · 007' : ''); $('#who i').style.background = people[model.active]?.coat ?? '#888';
   if (model.travellers.length > 1) $('#switch').textContent = `Switch to ${people[model.travellers[(model.travellers.indexOf(model.active) + 1) % model.travellers.length]].name}`; document.querySelectorAll('[data-go]').forEach(b => b.disabled = busy || b.dataset.go === model.at); document.querySelectorAll('[data-turn]').forEach(b => b.disabled = busy || !model.canTurn(b.dataset.turn)); $('#switch').disabled = busy; }
 $('#hint').onclick = () => { started(); $('#status').textContent = hintText(model, model.hint()); $('#menu').open = false; };
 $('#restart').onclick = restart; $('#again').onclick = restart;
@@ -326,7 +398,7 @@ function startPassage() {
   if (travel || !nextChapter) return;
   travel = { kind: 'leave', t: 0 }; $('#passage').textContent = data.passage ?? ''; document.querySelector('main').classList.add('travelling');
 }
-function leave() { const q = new URLSearchParams({ chapter: nextChapter.id, arrive: '1', mist: hazeNext.getHexString() }); if (auto) q.set('auto', '1'); location.search = `?${q}`; }
+function leave() { const q = new URLSearchParams({ chapter: nextChapter.id, arrive: '1', mist: hazeNext.getHexString() }); if (auto) q.set('auto', '1'); if (lite) q.set('lite', '1'); location.search = `?${q}`; }
 function updatePassage(dt) {
   if (!travel || travel.left) return;
   travel.t += dt; const still = reduced.matches, p = travel.kind === 'leave' ? leaving(travel.t, still) : arriving(travel.t, still);
@@ -338,11 +410,26 @@ function updatePassage(dt) {
 }
 canvas.addEventListener('pointerdown', () => { if (travel?.kind === 'leave' && travel.t > 0.4 && !travel.left) { travel.left = true; leave(); } });
 
+// ---- arrival: the camera eases in from a little further out ---------------------
+let intro = reduced.matches || lite || params.has('arrive') ? null : { from: 0 };
+function updateIntro(now) {
+  if (!intro || finale) return;
+  intro.from ||= now; const k = Math.min(1, (now - intro.from) / 1400), e = 1 - Math.pow(1 - k, 3);
+  camera.zoom = 1.1 - 0.1 * e; camera.updateProjectionMatrix(); if (k >= 1) intro = null;
+}
+// ---- the buttons under the title, before play starts ---------------------------
+{ const s = save.load(), resume = built.find(c => c.number === Math.min(s.furthest, built.length));
+  $('#starters').hidden = false; $('#with-sound').hidden = $('#sound').getAttribute('aria-pressed') === 'true' || !!s.sound;
+  $('#with-sound').onclick = () => { setSound(true); $('#with-sound').hidden = true; };
+  if (!params.has('chapter') && resume && resume.number > data.number) { $('#continue').hidden = false; $('#continue').textContent = `Continue at ${resume.title}`; $('#continue').onclick = () => { location.search = `?chapter=${resume.id}`; }; }
+  $('#over').onclick = () => { location.search = `?chapter=${built[0].id}`; }; }
+
 // ---- frame ------------------------------------------------------------------
 let last = 0, time = 0, timeScale = 1;
 function frame(now) {
   requestAnimationFrame(frame);
-  const dt = Math.min((now - last) / 1000 || 0, 0.05) * timeScale; last = now; if (document.hidden) return; time += dt;
+  const gap = now - last, dt = Math.min(gap / 1000 || 0, 0.05) * timeScale; last = now; if (document.hidden) return; time += dt;
+  if (++frameCount > 20) watchFrameRate(gap);
   const still = reduced.matches;
   for (const [id, m] of Object.entries(mechs)) {
     const diff = m.target - m.angle;
@@ -351,29 +438,31 @@ function frame(now) {
     else m.angle += diff * Math.min(1, dt * (m.dragging ? 18 : 7));
     if (!data.mechs[id].track) view.mechs[id].group.rotation[data.mechs[id].axis ?? 'y'] = m.angle;
   }
-  updatePassage(dt); updateAuto(dt); updateWalk(dt);
+  updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now);
   if (finale) { // pull back and follow her out
     finale.t += dt; const k = still ? 1 : Math.min(1, finale.t / 18), e = k * k * (3 - 2 * k), boat = live(Object.keys(data.nodes).find(n => data.nodes[n].arm === data.finale));
     camera.zoom = 1 / (1 + 0.5 * e); camera.updateProjectionMatrix(); focus.copy(baseFocus).lerp(boat, 0.45 * e); aim();
-    if ((finale.t > 9 || still) && $('#finish').hidden) $('#finish').hidden = false;
+    if ((finale.t > 9 || still) && $('#finish').hidden) showFinish();
   }
   for (const [id, w] of Object.entries(walkers)) w.update(dt, time, walk?.who === id, still);
   const lead = walkers[model.active].group.position; marker.position.set(lead.x, lead.y + 0.02, lead.z); marker.visible = model.travellers.length > 1 && walkers[model.active].group.visible && !walk?.points[0]?.slide; if (!still) marker.scale.setScalar(1 + Math.sin(time * 3) * 0.06);
-  view.update(time, model, still, mechs, live); cursor.update(time, still); marg.update(dt, time, still);
+  view.update(time, model, still, mechs, live); cursor.update(time, still); marg.update(dt, time, still); updateMarks(time, still);
   if (!still) for (const b of birds) { const u = b.userData, a = time * u.speed + u.phase; b.position.set(flock.x + Math.cos(a) * u.r, u.h + Math.sin(a * 2.3) * 0.5, flock.z + Math.sin(a) * u.r); b.rotation.y = -a; const flap = Math.sin(time * 9 + u.phase) * 0.12, p = b.geometry.attributes.position; p.setY(1, flap); p.setY(5, flap); p.needsUpdate = true; }
   if (water) water.uniforms.time.value = still ? 0 : time;
   pipeline.uniforms.focus.value = DIST - lead.clone().sub(focus).dot(TOWARD) * 0.3;
-  water?.renderReflection(renderer, scene, camera); pipeline.render(scene, camera, still ? 0 : time);
+  if (water && quality > 0 && (quality === 2 || frameCount % 2 === 0)) water.renderReflection(renderer, scene, camera);
+  pipeline.render(scene, camera, still ? 0 : time);
+  if (wantCard) takeCard();
 }
 
-applyPalette(palette); resize(); restart();
+applyPalette(palette); resize(); if (lite) setQuality(0); restart();
 // A small handle for automated checks; not used by the game itself.
 window.__voyage = {
   set speed(v) { timeScale = v; }, model, go, turn, restart, switchTo, mechs, get travelling() { return travel?.kind ?? null; }, get walking() { return !!walk; }, get zoom() { return camera.zoom; },
   // For automated checks only: play the solver's moves through at once and show the finish card.
   solve() { for (let i = 0; i < 200 && !model.won; i++) model.apply(model.hint()); for (const id of Object.keys(mechs)) mechs[id].angle = mechs[id].target = angleOf(model.mechs[id]); walk = null; finish(); },
   screenOf: id => screenOf(live(id)), screenAt: p => screenOf(new T.Vector3(...p)), walkerOf: id => screenOf(walkers[id].group.position.clone().setY(walkers[id].group.position.y + 0.5)),
-  tapFor, whatAt: (x, y) => { const h = pick({ clientX: x, clientY: y }); return { intent: intentOf(h, x, y), data: h && Object.fromEntries(Object.entries(h.data).filter(([, v]) => typeof v !== 'object' || Array.isArray(v))) }; },
+  get quality() { return quality; }, tapFor, whatAt: (x, y) => { const h = pick({ clientX: x, clientY: y }); return { intent: intentOf(h, x, y), data: h && Object.fromEntries(Object.entries(h.data).filter(([, v]) => typeof v !== 'object' || Array.isArray(v))) }; },
   leverOf: node => { const k = view.hits.find(h => h.userData.lever && h.userData.near[0] === node); return screenOf(k.getWorldPosition(new T.Vector3())); },
   hubOf: id => screenOf(view.mechs[id].hub), flagAt: () => (view.flagPoint ? screenOf(view.flagPoint()) : null), eggAt: () => screenOf(cursor.group.position.clone().setY(cursor.group.position.y + 0.2)), margAt: () => screenOf(marg.group.position.clone().setY(marg.group.position.y + 0.25)), get busy() { return !!walk || Object.values(mechs).some(m => m.moving); },
   frame: view.frame.map(p => screenOf(new T.Vector3(...p)))

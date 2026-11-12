@@ -10,6 +10,8 @@ const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ? pathToFileURL(
   .catch(() => { console.error('Playwright is not installed: run npm install in the repository root.'); process.exit(2); });
 // VERIFY_GPU=1 uses the machine's graphics card (full Chromium); otherwise a software renderer, as on CI.
 const GPU = !!process.env.VERIFY_GPU;
+// VERIFY_LITE=1 loads every scene in the game's low-detail mode, for machines without a graphics card.
+const LITE = !!process.env.VERIFY_LITE;
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..'), out = process.env.VERIFY_OUT;
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css' };
 const server = http.createServer(async (req, res) => {
@@ -24,6 +26,7 @@ async function open(options = {}, query = '?chapter=founders') {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ...options }), page = await context.newPage();
   page.on('pageerror', e => errors.push(e.message)); page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('request', r => { if (!r.url().startsWith('http://127.0.0.1')) errors.push(`external request ${r.url()}`); });
+  if (LITE) query += (query ? '&' : '?') + 'lite';
   await page.goto(url + query, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage && document.querySelector('#loading').classList.contains('done'), null, { timeout: 120000 }); await page.waitForTimeout(1500);
   await page.evaluate(() => { window.__voyage.speed = 14; });
   return page;
@@ -241,7 +244,7 @@ checks.eggs = async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } }), page = await context.newPage(); // one context, so finds add up
   page.on('pageerror', e => errors.push(e.message));
   for (const [n, id] of ids.entries()) {
-    await page.goto(`${url}?chapter=${id}`, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage && document.querySelector('#loading').classList.contains('done'), null, { timeout: 120000 }); await page.waitForTimeout(1200);
+    await page.goto(`${url}?chapter=${id}${LITE ? '&lite' : ''}`, { timeout: 120000 }); await page.waitForFunction(() => window.__voyage && document.querySelector('#loading').classList.contains('done'), null, { timeout: 120000 }); await page.waitForTimeout(1200);
     const marg = await page.evaluate(() => window.__voyage.margAt()); await page.mouse.click(...marg); await page.waitForTimeout(300);
     assert.match(await page.textContent('#status'), /Marg/, `${id}: Marg can be found and tapped`);
     const at = await page.evaluate(() => window.__voyage.eggAt()); await page.mouse.click(...at); await page.waitForTimeout(300);
