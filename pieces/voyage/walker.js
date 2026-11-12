@@ -23,16 +23,17 @@ export function createWalker(way = 'one') {
     part(new T.CapsuleGeometry(0.04, 0.18, 4, 10), coat, 0, -0.11, 0, arm); part(new T.SphereGeometry(0.038, 10, 8), skin, 0, -0.24, 0, arm); arms.push(arm);
   }
   group.scale.setScalar(c.size ?? 1);
-  let amount = 0, phase = 0, facing = 0;
+  let amount = 0, phase = 0, facing = 0, hop = 0;
   return {
-    group, head,
+    group, head, hop() { hop = 1; },
     face(dx, dz) { if (Math.abs(dx) + Math.abs(dz) > 1e-4) facing = Math.atan2(dx, dz); },
     update(dt, time, moving, still) {
       amount += ((moving ? 1 : 0) - amount) * Math.min(1, dt * 10);
       phase += dt * 11 * amount;
       const swing = still ? 0 : Math.sin(phase) * 0.55 * amount;
       legs[0].rotation.x = swing; legs[1].rotation.x = -swing; arms[0].rotation.x = -swing * 0.7; arms[1].rotation.x = swing * 0.7;
-      body.position.y = still ? 0 : Math.abs(Math.cos(phase)) * 0.025 * amount + Math.sin(time * 1.7) * 0.006 * (1 - amount);
+      hop = Math.max(0, hop - dt * 2.6);
+      body.position.y = still ? 0 : Math.abs(Math.cos(phase)) * 0.025 * amount + Math.sin(time * 1.7) * 0.006 * (1 - amount) + Math.sin(hop * Math.PI) * 0.22;
       head.rotation.y = still ? 0 : Math.sin(time * 0.45) * 0.35 * (1 - amount);
       let d = facing - group.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); group.rotation.y += d * Math.min(1, dt * 12);
     }

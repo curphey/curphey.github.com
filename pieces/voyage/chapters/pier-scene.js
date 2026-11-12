@@ -147,6 +147,8 @@ export function createPierScene(kit, data) {
   // Disco Volante at the end of the pier, with a gangway down to her deck.
   let boat = null;
   if (away) { boat = createBoat({ scale: 0.75 }); boat.group.userData.dynamic = true; group.add(boat.group); boat.setLanterns(3); boat.face(1, 0); hits.push(boat.tap);
+    // Her whole deck is the way aboard.
+    const deckTap = add(new T.BoxGeometry(2.4, 0.7, 3.6), ghost(), 0, boat.deck + 0.2, 0, boat.group); deckTap.castShadow = deckTap.receiveShadow = false; deckTap.userData.near = ['aboard']; hits.push(deckTap);
     const gw = add(new T.BoxGeometry(2.9, 0.08, 0.7), mats.deck, 20.4, -1.2, 0, group); gw.rotation.z = -1.0; gw.userData.near = ['berth', 'aboard']; hits.push(gw); }
 
   // ---- the rest of the pier head, as in the aerial photograph ----

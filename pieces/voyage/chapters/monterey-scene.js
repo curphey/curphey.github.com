@@ -27,8 +27,9 @@ export function createMontereyScene(kit, data) {
   for (const x of [-6.6, -4.2, 2.4]) { box(group, mats.glass, [x - 0.7, 3.4, -5.02], [x + 0.7, 6.2, -4.98]); box(group, mats.white, [x - 0.76, 6.2, -5.04], [x + 0.76, 6.3, -4.96]); }
   for (let i = 0; i < 4; i++) { const x0 = -8.5 + i * 3.18; const g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute([x0, 7.6, -5, x0 + 3.18, 7.6, -5, x0, 9.1, -5, x0, 7.6, -7.4, x0 + 3.18, 7.6, -7.4, x0, 9.1, -7.4], 3)); g.setIndex([0, 1, 2, 3, 5, 4, 2, 1, 4, 2, 4, 5, 0, 2, 5, 0, 5, 3]); g.computeVertexNormals(); const uv = new Float32Array(12); g.setAttribute('uv', new T.BufferAttribute(uv, 2)); add(g, tinDark, 0, 0, 0, group); }
   for (const x of [-7, -5.2, -3.4]) { cyl(group, mats.rock, x, 7.6, 12.6, -6.4, 0.42, { rTop: 0.34, seg: 20 }); cyl(group, mats.iron, x, 12.6, 12.8, -6.4, 0.37, { seg: 20 }); }
-  box(group, mats.iron, [-8.5, 7.6, 2.9], [8.2, 7.85, 3.1]); box(group, mats.iron, [-8.5, 7.6, -1.1], [8.2, 7.85, -0.9]); for (const x of [8.1]) for (const z of [3, -1]) box(group, mats.iron, [x - 0.1, 0, z - 0.1], [x + 0.1, 7.6, z + 0.1]);
-  { const b = add(new T.PlaneGeometry(4.6, 0.72), new T.MeshStandardMaterial({ map: boardTexture('MONTEREY BAY', '#12324a', '#f1e6cf'), roughness: 0.6 }), -5.9, 2.0, -4.97, group); b.castShadow = false; b.userData.dynamic = true; }
+  // Slim roof trusses, from which the whale hangs.
+  for (const z of [3, -1]) { box(group, tinDark, [-8.5, 7.6, z - 0.05], [8.2, 7.72, z + 0.05]); box(group, tinDark, [-8.5, 7.25, z - 0.03], [8.2, 7.31, z + 0.03]); for (let x = -8; x < 8; x += 1) { const d = add(new T.BoxGeometry(1.07, 0.035, 0.035), tinDark, x + 0.5, 7.48, z, group); d.rotation.z = (Math.round(x) % 2 ? 1 : -1) * 0.36; } box(group, tinDark, [8.05, 0, z - 0.07], [8.2, 7.6, z + 0.07]); }
+  { const b = add(new T.PlaneGeometry(4.6, 0.72), new T.MeshStandardMaterial({ map: boardTexture('MONTEREY BAY', '#12324a', '#f1e6cf'), roughness: 0.6 }), -5.4, 6.85, -4.97, group); b.castShadow = false; b.userData.dynamic = true; }
   // The touch pool, and the mouth of the children's crawl tunnel.
   cyl(group, mats.rock, -3.4, 0, 0.45, 0.6, 1.2, { seg: 9 }); cyl(group, mats.glass, -3.4, 0.45, 0.47, 0.6, 0.95, { seg: 24 }); box(group, mats.rock, [-2.3, 0, 0.9], [-1.5, 0.7, 1.7]); box(group, mats.iron, [-1.52, 0, 1.05], [-1.48, 0.5, 1.55]);
   // ---- the kelp forest tank ----
@@ -68,7 +69,13 @@ export function createMontereyScene(kit, data) {
   for (const [x, z, r, h] of [[10, 9.5, 1.3, 0.9], [3, 7.6, 1.6, 0.7], [-3.5, 7, 2.2, 0.6], [11.5, 4, 1.1, 1.1], [-8, 7.4, 1.8, 0.5], [7, 11.5, 1.0, 0.5], [10.5, -2, 2.4, 1.2]]) cyl(group, mats.rock, x, SEA - 1, SEA + h, z, r, { rTop: r * 0.6, seg: 8 });
   for (const [x, z, s] of [[1, 10.5, 1.6], [6, 13, 2.0], [12.5, 8, 1.4], [-5, 11, 1.8], [13, 12.5, 1.5]]) for (let i = 0; i < 5; i++) { const k = add(new T.SphereGeometry(0.5 * s, 8, 6), kelp, x + Math.cos(i * 2.2) * 0.8 * s, SEA + 0.02, z + Math.sin(i * 2.2) * 0.6 * s, group); k.scale.set(1, 0.05, 0.6); k.castShadow = false; }
   const otters = []; for (const [x, z, a] of [[1.6, 10.2, 0.4], [6.6, 12.6, 2.0], [-4.4, 10.6, 1.1]]) { const o = new T.Group(); o.userData.dynamic = true; o.position.set(x, SEA + 0.06, z); o.rotation.y = a; group.add(o); const b = add(new T.CapsuleGeometry(0.13, 0.5, 4, 10), otter, 0, 0, 0, o); b.rotation.z = Math.PI / 2; add(new T.SphereGeometry(0.11, 10, 8), mats.cream, 0.38, 0.04, 0, o); add(new T.SphereGeometry(0.06, 8, 6), otter, -0.42, 0.02, 0, o); otters.push(o); }
-  box(group, mats.rock, [-40, SEA - 1, -40], [-9, -0.3, 5]).castShadow = false; box(group, mats.rock, [-9, SEA - 1, -40], [30, -0.3, -6]).castShadow = false;
+  // Cannery Row: the street behind, its pavements, and the crossover between the old canneries with its sign.
+  box(group, mats.road, [-40, SEA - 1, -40], [-9, -0.3, 5]).castShadow = false; box(group, mats.road, [-9, SEA - 1, -40], [30, -0.3, -6]).castShadow = false;
+  box(group, mats.walk, [-40, -0.3, -6.2], [30, -0.22, -5.2]).castShadow = false; box(group, mats.walk, [-40, -0.3, -9.6], [30, -0.22, -8.9]).castShadow = false; box(group, mats.walk, [-9.6, -0.3, -5.2], [-8.7, -0.22, 5]).castShadow = false;
+  for (let x = -38; x < 29; x += 2.2) { const d = box(group, mats.yellow, [x, -0.3, -7.6], [x + 1.1, -0.29, -7.5]); d.castShadow = false; }
+  box(group, mats.cream, [-13.4, 3.1, -9.5], [-11.6, 4.5, -5.2]); box(group, tinDark, [-13.5, 4.5, -9.5], [-11.5, 4.7, -5.2]); for (const z of [-8.6, -7.3, -6.1]) box(group, mats.glass, [-11.61, 3.5, z - 0.4], [-11.58, 4.1, z + 0.4]);
+  { const c = add(new T.PlaneGeometry(3.6, 0.6), new T.MeshStandardMaterial({ map: boardTexture('CANNERY ROW', '#f1e6cf', '#12324a'), roughness: 0.6 }), -11.57, 2.75, -7.35, group); c.rotation.y = Math.PI / 2; c.castShadow = false; c.userData.dynamic = true; }
+  for (const [x, z, col] of [[-16, -6.9, mats.red], [-22, -8.1, mats.teal], [4, -6.9, mats.cream], [12, -8.1, mats.blue]]) { box(group, col, [x, -0.18, z - 0.42], [x + 1.9, 0.32, z + 0.42]); box(group, mats.glass, [x + 0.4, 0.32, z - 0.36], [x + 1.4, 0.62, z + 0.36]); }
   for (let i = 0; i < 9; i++) { const x = -30 + i * 4.3, h = 2.4 + (i * 37 % 3) * 0.8; box(group, i % 2 ? tin : mats.cream, [x, -0.3, -13], [x + 3.6, h, -9.5]); box(group, tinDark, [x - 0.1, h, -13.1], [x + 3.7, h + 0.25, -9.4]); }
 
   for (const [id, n] of Object.entries(data.nodes)) if (n.pos) { const h = add(new T.BoxGeometry(1, 0.06, 1), ghost(), n.pos[0], n.pos[1] + 0.03, n.pos[2], group); h.castShadow = h.receiveShadow = false; h.userData.near = [id]; hits.push(h); }
@@ -82,6 +89,6 @@ export function createMontereyScene(kit, data) {
       fronds.forEach((f, i) => { f.rotation.z = Math.sin(time * 0.8 + i) * 0.25; }); jellies.forEach((j, i) => { j.position.y = 3.6 + ((time * 0.12 + i * 0.37) % 1) * 0.8; j.scale.setScalar(1 + Math.sin(time * 2 + i) * 0.12); });
       otters.forEach((o2, i) => { o2.position.y = SEA + 0.06 + Math.sin(time * 1.2 + i) * 0.03; o2.rotation.y += 0.002; }); }
   }
-  const frame = [[-8.6, 0, 4.6], [-8.6, 7.6, -5], [-3.4, 12.8, -6.4], [8.4, 0, 2.2], [8.4, 0, 8], [8.6, 7, 3], [4.3, SEA, 8.2], [5, 6.6, 6.7]];
+  const frame = [[-8.6, 0, 4.6], [-8.6, 7.6, -5], [-3.4, 10.6, -6.4], [8.4, 0, 2.2], [8.4, 0, 8], [8.6, 7, 3], [4.3, SEA, 8.2], [5, 6.6, 6.7]];
   return { group, hits, mechs, update, frame, routes: { 'surface>deck': V(longSlide), 'jellies>deck': V(shortSlide) }, water: SEA, birds: { x: 4, z: 8, h: 6, color: '#f4f4f0' }, shadowSize: 30 };
 }

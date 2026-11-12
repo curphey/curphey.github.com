@@ -34,6 +34,7 @@ export const founders = {
     { a: 'gallery', b: 'belfry', kind: 'solid' }
   ],
   items: { key: 'roofEnd', book: { at: 'balcony', needs: 'key' } },
+  ambience: 'garden',
   egg: [-2.4, 0, 7.6], marg: [-2.1, 0, -9.4],
   goal: { node: 'belfry', needs: ['book'] },
   word: 'two', next: 'pier', passage: 'Years pass. Then a train south, to the sea.', goalText: 'Get Mark to the clock tower, with the book from the library.',
