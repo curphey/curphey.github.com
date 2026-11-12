@@ -164,7 +164,7 @@ const tapPlay = async phone => {
       const states = await page.evaluate(m => (m.type === 'turn' ? window.__voyage.model.data.mechs[m.id].states ?? 4 : 0), move);
       const times = move.type === 'turn' && move.dir < 0 ? states - 1 : 1; // a tap only turns one way, so go the long way round
       for (let k = 0; k < times; k++) {
-        const at = await page.evaluate(m => window.__voyage.tapFor(m), move);
+        const at = await page.evaluate(([m, touch]) => window.__voyage.tapFor(m, touch), [move, phone]);
         assert.ok(at, `${id}: no tap makes the move ${JSON.stringify(move)} with ${JSON.stringify(await page.evaluate(() => window.__voyage.model.where))}`);
         if (phone) await page.touchscreen.tap(...at); else await page.mouse.click(...at); taps++; await page.waitForTimeout(120);
         await idle(page).catch(async e => { throw new Error(`${id}: still busy after "${move.type} ${move.who ?? move.to ?? move.id}": ${JSON.stringify(await page.evaluate(() => ({ walking: window.__voyage.walking, mechs: Object.fromEntries(Object.entries(window.__voyage.mechs).map(([k, m]) => [k, [m.angle.toFixed(2), m.target.toFixed(2), m.moving, !!m.dragging]])) })))}`); });

@@ -279,18 +279,6 @@ function pick(e) {
     const gap = h => { const c = centre(h); return Math.hypot(c[0] - e.clientX, c[1] - e.clientY); };
     hit = others.sort((a, b) => gap(a) - gap(b))[0];
   }
-  // A finger is blunter than a pointer: a touch that lands just beside a lever, a handle, a person or a hidden
-  // thing counts as a touch on it.
-  const small = d => d && (d.lever || d.handle || d.walker || d.egg || d.marg);
-  if (e.pointerType === 'touch' && !small(hit?.object.userData)) {
-    let best = null, bestGap = 26; const at = new T.Vector3();
-    for (const o of [...eggHits, ...walkerHits, ...view.hits]) {
-      const d = o.userData; if (!small(d) || d.walker === model.active || (d.lever && d.near[0] !== model.at)) continue;
-      const [x, y] = screenOf(o.getWorldPosition(at)), gap = Math.hypot(x - e.clientX, y - e.clientY);
-      if (gap < bestGap) { bestGap = gap; best = o; }
-    }
-    if (best) return { data: best.userData, point: best.getWorldPosition(new T.Vector3()) };
-  }
   return hit ? { data: hit.object.userData, point: hit.point } : null;
 }
 function pointerAngle(e, id) {
@@ -328,10 +316,26 @@ function release(e) {
     return;
   }
   if (!d.hit || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 12) return;
-  act(intentOf(d.hit, e.clientX, e.clientY));
+  act(intentOf(d.hit, e.clientX, e.clientY, e.pointerType === 'touch'));
+}
+// A finger is blunter than a pointer. When a touch would otherwise do nothing (it missed, or it asks to walk to
+// where you already are, or to somewhere you cannot go), a lever, handle, person or hidden thing just beside it counts.
+function nearSmall(x, y) {
+  let best = null, bestGap = 26; const at = new T.Vector3();
+  for (const o of [...eggHits, ...walkerHits, ...view.hits]) {
+    const d = o.userData; if (!(d.lever || d.handle || d.walker || d.egg || d.marg) || d.walker === model.active || (d.lever && d.near[0] !== model.at)) continue;
+    const [sx, sy] = screenOf(o.getWorldPosition(at)), gap = Math.hypot(sx - x, sy - y);
+    if (gap < bestGap) { bestGap = gap; best = o; }
+  }
+  return best && { data: best.userData, point: best.getWorldPosition(new T.Vector3()) };
 }
 // What a tap on this spot means. The game and the tap-only check both go through here.
-function intentOf(hit, x, y) {
+function intentOf(hit, x, y, touch = false) {
+  const direct = meaning(hit, x, y);
+  if (!touch || (direct && !(direct.type === 'walk' && (direct.to === model.at || !model.path(direct.to))))) return direct;
+  return meaning(nearSmall(x, y), x, y) ?? direct;
+}
+function meaning(hit, x, y) {
   if (!hit) return null;
   const h = hit.data;
   if (h.egg) return { type: 'egg' }; if (h.marg) return { type: 'marg' }; if (h.yacht) return { type: 'flag' };
@@ -352,7 +356,7 @@ function act(intent) {
   else if (intent.type === 'turn') turn(intent.id, 1); else go(intent.to);
 }
 // For the tap-only check: a screen point where a real tap would make this move, or null if there is none.
-function tapFor(move) {
+function tapFor(move, touch = false) {
   const r = canvas.getBoundingClientRect(), want = move.type === 'switch' ? { type: 'select', who: move.who } : move.type === 'walk' ? { type: 'walk', to: move.to } : { type: 'turn', id: move.id };
   const same = i => i && i.type === want.type && (i.who ?? i.to ?? i.id) === (want.who ?? want.to ?? want.id), spots = [];
   const around = (p, reach = 0.4) => { for (const [dx, dz] of [[0, 0], [reach, 0], [-reach, 0], [0, reach], [0, -reach], [reach, reach], [-reach, -reach], [reach, -reach], [-reach, reach]]) spots.push(new T.Vector3(p.x + dx, p.y + 0.02, p.z + dz)); };
@@ -361,7 +365,7 @@ function tapFor(move) {
   else { for (const h of view.hits) if ((h.userData.lever === want.id) || (h.userData.handle && h.userData.mech === want.id)) spots.push(h.getWorldPosition(new T.Vector3())); around(live(model.at)); }
   for (const p of spots) {
     const [x, y] = screenOf(p); if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
-    if (same(intentOf(pick({ clientX: x, clientY: y }), x, y))) return [x, y];
+    if (same(intentOf(pick({ clientX: x, clientY: y }), x, y, touch))) return [x, y];
   }
   return null;
 }
