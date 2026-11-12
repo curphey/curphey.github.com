@@ -120,7 +120,7 @@ export function createNeedleScene(kit, data) {
   const FX = -0.6, FZ = 10.2; cyl(group, mats.stone, FX, 0, 0.16, FZ, 1.75, { seg: 40 }); cyl(group, puddle, FX, 0.16, 0.2, FZ, 1.55, { seg: 40 }).castShadow = false;
   { const d = add(new T.SphereGeometry(0.55, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), mats.lead, FX, 0.2, FZ, group); d.scale.y = 0.75; }
   const JETS = 11, DROPS = 7, jetPos = new Float32Array(JETS * DROPS * 3), jetGeo = new T.BufferGeometry(); jetGeo.setAttribute('position', new T.BufferAttribute(jetPos, 3));
-  const jets = new T.Points(jetGeo, new T.PointsMaterial({ color: '#f4f8fa', size: 1.7, transparent: true, opacity: 0.8, depthWrite: false })); jets.userData.dynamic = true; jets.frustumCulled = false; group.add(jets);
+  const jets = new T.Points(jetGeo, new T.PointsMaterial({ color: '#f4f8fa', size: 2.4, transparent: true, opacity: 0.8, depthWrite: false, map: (() => { const c = document.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d'), r = g.createRadialGradient(16, 16, 0, 16, 16, 16); r.addColorStop(0, '#fff'); r.addColorStop(0.5, 'rgba(255,255,255,.7)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 32, 32); return new T.CanvasTexture(c); })() }) /* round drops, not square ones */); jets.userData.dynamic = true; jets.frustumCulled = false; group.add(jets);
   function spray(time) {
     for (let j = 0; j < JETS; j++) for (let d = 0; d < DROPS; d++) {
       const u = (time * 0.55 + d / DROPS + j * 0.37) % 1, k = (j * DROPS + d) * 3, a = j * Math.PI * 0.2, mid = j === JETS - 1, h = mid ? 1.7 + Math.sin(time * 0.25) * 0.5 : 0.75 + Math.sin(time * 0.4 + j * 0.63) * 0.35, r = mid ? 0.04 * u : 0.32 + 0.85 * u;

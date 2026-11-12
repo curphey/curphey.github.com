@@ -24,9 +24,9 @@ renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
 
 const built = Object.values(chapters).filter(c => scenes[c.id]);
 const data = built.find(c => c.id === params.get('chapter')) ?? built[0], model = new Chapter(data), palette = palettes[data.palette];
-const scene = new T.Scene(), DIST = 70, TOWARD = new T.Vector3(1, 1, 1).normalize();
+const scene = new T.Scene(), DIST = 110, TOWARD = new T.Vector3(1, 1, 1).normalize();
 const RIGHT = new T.Vector3(1, 0, -1).normalize(), UP = new T.Vector3(-1, 2, -1).normalize();
-const camera = new T.OrthographicCamera(-20, 20, 12, -12, 0.1, 300), focus = new T.Vector3();
+const camera = new T.OrthographicCamera(-20, 20, 12, -12, 0.1, 360) /* far enough back that a tall, pulled-back view never cuts the sea */, focus = new T.Vector3();
 // While the title is up on a phone the scene sits lower, clear of the words; `lead` runs from 1 to 0 as play begins
 // and the camera glides to where it frames the puzzle. `home` is where the camera rests at this moment.
 const home = new T.Vector3(), baseFocus = new T.Vector3(); let lead = 1, leadT = 0, shiftV = 0;
