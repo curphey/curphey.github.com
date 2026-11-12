@@ -5,12 +5,12 @@ import * as T from '../../tower/vendor/three.js';
 // few cars; to the west the sand, the ice plant and the cypresses. Built from memory, not from photographs.
 // Positions must agree with chapters/monterey.mjs.
 const SEA = -2;
-// The lettering over the hall, fitted to its board, and corrugated iron: both are drawn here, so nothing is loaded.
-function signTexture(text) {
-  const c = document.createElement('canvas'); c.width = 1792; c.height = 256; const g = c.getContext('2d'); let px = 176;
-  g.fillStyle = '#12324a'; g.fillRect(0, 0, 1792, 256); g.strokeStyle = '#f1e6cf'; g.lineWidth = 10; g.strokeRect(14, 14, 1764, 228);
-  do { px -= 4; g.font = `900 ${px}px Georgia, serif`; } while (g.measureText(text).width > 1560);
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#f1e6cf'; g.fillText(text, 896, 134);
+// A lettered board, with the lettering fitted to it however long the name, and corrugated iron: both are drawn here, so nothing is loaded.
+function signTexture(text, w, bg, fg) {
+  const c = document.createElement('canvas'); c.width = w; c.height = 256; const g = c.getContext('2d'); let px = 176;
+  g.fillStyle = bg; g.fillRect(0, 0, w, 256); g.strokeStyle = fg; g.lineWidth = 10; g.strokeRect(14, 14, w - 28, 228);
+  do { px -= 4; g.font = `900 ${px}px Georgia, serif`; } while (g.measureText(text).width > w * 0.87);
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = fg; g.fillText(text, w / 2, 134);
   const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8; return t;
 }
 function ribTexture() {
@@ -58,9 +58,10 @@ export function createMontereyScene(kit, data) {
   for (const x of [-6.6, -4.2, 2.4]) pane('z', x, 4.8, -5, 1.4, 2.8); pane('x', -8.5, 3.35, 0.5, 1.4, 2.1); pane('x', -8.5, 3.35, -3.3, 1.4, 2.1, false);
   for (let i = 0; i < 4; i++) { const x0 = -8.5 + i * 3.18; const g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute([x0, 7.6, -5, x0 + 3.18, 7.6, -5, x0, 9.1, -5, x0, 7.6, -7.4, x0 + 3.18, 7.6, -7.4, x0, 9.1, -7.4], 3)); g.setIndex([0, 1, 2, 3, 5, 4, 2, 1, 4, 2, 4, 5, 0, 2, 5, 0, 5, 3]); g.computeVertexNormals(); const uv = new Float32Array(12); g.setAttribute('uv', new T.BufferAttribute(uv, 2)); add(g, tinDark, 0, 0, 0, group); }
   for (const x of [-7, -5.2, -3.4]) { cyl(group, mats.rock, x, 7.6, 12.6, -6.4, 0.42, { rTop: 0.34, seg: 20 }); cyl(group, mats.iron, x, 12.6, 12.8, -6.4, 0.37, { seg: 20 }); }
-  // The roof beams rest on a column at each end; the far one stands in the water.
-  box(group, mats.iron, [-8.5, 7.6, 2.9], [8.2, 7.85, 3.1]); box(group, mats.iron, [-8.5, 7.6, -1.1], [8.2, 7.85, -0.9]); for (const x of [8.1]) for (const z of [3, -1]) box(group, mats.iron, [x - 0.1, z < 2 ? SEA - 1 : 0, z - 0.1], [x + 0.1, 7.6, z + 0.1]); box(group, mats.iron, [-8.5, 0, 2.9], [-8.3, 7.6, 3.1]);
-  { const b = add(new T.PlaneGeometry(6.9, 0.96), new T.MeshStandardMaterial({ map: signTexture('MONTEREY BAY AQUARIUM'), roughness: 0.6 }), -4.85, 6.93, -4.97, group); b.castShadow = false; b.userData.dynamic = true; }
+  // Slim roof trusses, from which the whale hangs. Each rests on a post at its seaward end, one of them standing in the water, and the nearer on a post by the way in.
+  for (const z of [3, -1]) { box(group, tinDark, [-8.5, 7.6, z - 0.05], [8.2, 7.72, z + 0.05]); box(group, tinDark, [-8.5, 7.25, z - 0.03], [8.2, 7.31, z + 0.03]); for (let x = -8; x < 8; x += 1) { const d = add(new T.BoxGeometry(1.07, 0.035, 0.035), tinDark, x + 0.5, 7.48, z, group); d.rotation.z = (Math.round(x) % 2 ? 1 : -1) * 0.36; } box(group, tinDark, [8.05, z < 2 ? SEA - 1 : 0, z - 0.07], [8.2, 7.6, z + 0.07]); }
+  box(group, tinDark, [-8.5, 0, 2.93], [-8.35, 7.6, 3.07]);
+  { const b = add(new T.PlaneGeometry(6.9, 0.96), new T.MeshStandardMaterial({ map: signTexture('MONTEREY BAY AQUARIUM', 1792, '#12324a', '#f1e6cf'), roughness: 0.6 }), -4.85, 6.93, -4.97, group); b.castShadow = false; b.userData.dynamic = true; }
   // The touch pool, and the mouth of the children's crawl tunnel.
   cyl(group, mats.rock, -3.4, 0, 0.45, 0.6, 1.2, { seg: 9 }); cyl(group, mats.glass, -3.4, 0.45, 0.47, 0.6, 0.95, { seg: 24 }); box(group, mats.rock, [-2.3, 0, 0.9], [-1.5, 0.7, 1.7]); box(group, mats.iron, [-1.52, 0, 1.05], [-1.48, 0.5, 1.55]);
   // Somebody lives in the touch pool, and comes up for a look round every so often.
@@ -152,6 +153,9 @@ export function createMontereyScene(kit, data) {
   for (let r = 0; r < 2; r++) for (let i = 0; i < 9 - r; i++) { const x = -9.8 + i * 4.4 + r * 1.7, z1 = r ? -16.8 : -10.8, h = 2.2 + ((i * 37 + r * 5) % 4) * 0.7;
     box(group, sheds[(i * 3 + r) % 4], [x, -0.3, z1 - 3.2], [x + 3.9, h, z1]); roof(group, (i + r) % 3 ? tinDark : rust, [x - 0.12, z1 - 3.32], [x + 4.02, z1 + 0.12], h, 0.9, { alongZ: i % 2 === 0, hip: 0 });
     for (let k = 0; k < 3; k++) box(group, glazing, [x + 0.45 + k * 1.15, h * 0.42, z1], [x + 1.15 + k * 1.15, h * 0.42 + 0.62, z1 + 0.03]).castShadow = false; }
+  // The crossover between the old canneries, high over the street, with its sign; it lands on a stair tower by the promenade.
+  box(group, mats.cream, [5.1, 3.1, -10.8], [6.9, 4.5, -7.1]); box(group, tinDark, [5, 4.5, -10.9], [7, 4.7, -7]); for (const z of [-10, -8.95, -7.9]) box(group, glazing, [6.9, 3.5, z - 0.4], [6.93, 4.1, z + 0.4]).castShadow = false; box(group, sheds[1], [5.1, -0.3, -8], [6.9, 3.1, -7.1]);
+  { const c = add(new T.PlaneGeometry(3.0, 0.6), new T.MeshStandardMaterial({ map: signTexture('CANNERY ROW', 1280, '#f1e6cf', '#12324a'), roughness: 0.6 }), 6.94, 2.78, -9.1, group); c.rotation.y = Math.PI / 2; c.castShadow = false; c.userData.dynamic = true; }
   // The promenade east of the aquarium, with a rail along the sea wall and three lamps.
   box(group, mats.white, [4.7, 0.18, -6.2], [30, 0.21, -6.17]); for (let x = 4.7; x <= 30; x += 1.4) cyl(group, mats.white, x, -0.23, 0.2, -6.185, 0.022, { seg: 6 });
   for (const x of [7, 13.5, 20]) { cyl(group, mats.iron, x, -0.23, 1.9, -7.2, 0.035, { seg: 8 }); add(new T.SphereGeometry(0.11, 10, 8), mats.white, x, 1.98, -7.2, group); }
@@ -195,6 +199,6 @@ export function createMontereyScene(kit, data) {
     const o = model.pressed('surface') ? 1 : 0; open = still ? o : open + (o - open) * 0.1; door.position.z = 3.5 - open * 1.7; plate.position.y = 6.016 - open * 0.02;
     if (!still) life(time);
   }
-  const frame = [[-8.6, 0, 4.6], [-8.6, 7.6, -5], [-3.4, 12.8, -6.4], [8.4, 0, 2.2], [8.4, 0, 8], [8.6, 7, 3], [4.3, SEA, 8.2], [5, 6.6, 6.7]];
+  const frame = [[-8.6, 0, 4.6], [-8.6, 7.6, -5], [-3.4, 10.6, -6.4], [8.4, 0, 2.2], [8.4, 0, 8], [8.6, 7, 3], [4.3, SEA, 8.2], [5, 6.6, 6.7]];
   return { group, hits, mechs, update, frame, routes: { 'surface>deck': V(longSlide), 'jellies>deck': V(shortSlide) }, water: SEA, birds: { x: 4, z: 8, h: 6, color: '#f4f4f0' }, shadowSize: 30 };
 }
