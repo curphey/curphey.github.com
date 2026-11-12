@@ -3,14 +3,19 @@
 html,body{margin:0;height:100%;background:#d9d5c8;color:var(--ink);font:14px/1.5 "Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
 main{position:fixed;inset:0}
 main::before{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;background:radial-gradient(ellipse 62% 58% at 0 0,rgba(243,238,226,.92),rgba(243,238,226,.6) 45%,rgba(243,238,226,0) 100%);transition:opacity 1.6s}
-main.playing::before{opacity:0}
+main.playing::before{opacity:.55;background:radial-gradient(ellipse 38% 30% at 0 0,rgba(243,238,226,.95),rgba(243,238,226,.6) 50%,rgba(243,238,226,0) 100%)}
 canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}
 header{position:absolute;z-index:3;top:max(18px,env(safe-area-inset-top));left:max(20px,4vw);right:max(20px,4vw);display:flex;justify-content:space-between;align-items:center;pointer-events:none}
 header>*{pointer-events:auto}
 .brand{font-size:22px;font-weight:650;letter-spacing:-.04em;color:var(--ink);text-decoration:none}
 .brand span{color:var(--gold)}
 .title{position:absolute;z-index:2;top:max(84px,11vh);left:max(20px,4vw);max-width:min(520px,80vw);pointer-events:none;transition:opacity 1.2s ease,transform 1.2s ease}
-.title.away{opacity:0;transform:translateY(-8px)}
+.title h1,.title .banner,.title p{transition:font-size .9s ease,margin .9s ease,opacity .9s ease,max-height .9s ease}
+/* Once play starts the place name stays, smaller, so it is always clear which scene this is. */
+.title.away h1{font-size:clamp(24px,2.6vw,36px);margin:6px 0 0}
+.title.away .banner{font-size:12px;margin-bottom:10px}
+.title.away p{opacity:0;max-height:0;overflow:hidden}
+.title p{max-height:120px}
 .eyebrow{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);font-weight:600}
 h1{font:400 clamp(34px,5vw,64px)/1.05 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;letter-spacing:-.02em;margin:10px 0 12px;text-wrap:balance}
 .title p{margin:0;font-size:14px;line-height:1.7;color:#3f4d52}
@@ -23,7 +28,7 @@ h1{font:400 clamp(34px,5vw,64px)/1.05 "Iowan Old Style","Palatino Linotype",Pala
 #who i{width:12px;height:12px;border-radius:50%;display:block}#who span{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#66757a}#who b{font-weight:600}
 main.travelling #who{opacity:0}
 .banner{display:block;font:600 clamp(15px,1.7vw,22px)/1.2 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);margin-bottom:22px}
-@media(max-width:700px){#who{bottom:auto;top:66px;font-size:12px;padding:6px 10px 6px 8px}}
+@media(max-width:700px){#who{left:auto;right:20px;bottom:max(132px,calc(env(safe-area-inset-bottom) + 132px));font-size:12px;padding:6px 10px 6px 8px}main .title{top:118px}.title .eyebrow{display:none}.title.away h1{font-size:22px}#goal{left:auto;right:76px;transform:none;max-width:calc(100vw - 200px)}#who{top:auto}}
 #term{position:absolute;z-index:6;left:0;right:0;bottom:0;height:min(46vh,380px);display:flex;flex-direction:column;background:rgba(4,10,6,.93);color:#39ff6a;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;padding:14px max(16px,4vw);box-shadow:0 -10px 40px rgba(0,0,0,.4);border-top:1px solid #1d6b34}
 #term[hidden]{display:none}
 #term-out{flex:1;margin:0;overflow:auto;white-space:pre-wrap;font:inherit;text-shadow:0 0 6px rgba(57,255,106,.45)}
