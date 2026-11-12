@@ -76,10 +76,12 @@ let reachable = new Set();
 function updateMarks(time, still) {
   const idle = !walk && !model.won && !travel && !Object.values(mechs).some(m => m.moving), pulse = still ? 1 : 0.75 + 0.25 * Math.sin(time * 3.2), spot = new T.Vector3();
   markMat.opacity = 0.62 * pulse; useMat.opacity = 0.9 * pulse;
-  for (const [id, m] of Object.entries(spotMarks)) { m.visible = idle && reachable.has(id); if (m.visible) { const p = live(id); m.position.set(p.x, p.y + 0.035, p.z); } }
+  // On a small screen showing a large scene the rings would be a pixel or two across: keep them visible.
+  const ppu = canvas.clientHeight / (camera.top - camera.bottom) * camera.zoom, big = Math.min(3.2, Math.max(1, 6.5 / (0.2 * ppu)));
+  for (const [id, m] of Object.entries(spotMarks)) { m.visible = idle && reachable.has(id); if (m.visible) { const p = live(id); m.position.set(p.x, p.y + 0.035, p.z); m.scale.setScalar(big); } }
   for (const u of useMarks) {
     const d = u.hit.userData, on = idle && (d.lever ? d.near[0] === model.at && model.canTurn(d.lever) : model.canTurn(d.mech));
-    u.mesh.visible = on; if (on) { u.hit.getWorldPosition(spot); u.mesh.position.copy(spot); u.mesh.quaternion.copy(camera.quaternion); }
+    u.mesh.visible = on; if (on) { u.hit.getWorldPosition(spot); u.mesh.position.copy(spot); u.mesh.quaternion.copy(camera.quaternion); u.mesh.scale.setScalar(Math.min(big, 2.2)); }
   }
   rideMark.visible = idle && rideable(); if (rideMark.visible) { const p = live(model.at); rideMark.position.set(p.x, p.y + 0.04, p.z); }
 }
@@ -112,8 +114,18 @@ function resize() {
   aim();
   pipeline.uniforms.hazeNear.value = DIST + 6; pipeline.uniforms.hazeFar.value = DIST + 55;
 }
+// The player may look closer: pinch on a touch screen, or the wheel. `userZoom` multiplies whatever zoom the game
+// has set and `pan` moves the view, never beyond the framing that shows the whole scene.
+let userZoom = 1, baseZoom = 1; const pan = new T.Vector3(), eye = new T.Vector3();
+function setZoom(z) { baseZoom = z; camera.zoom = z * userZoom; camera.updateProjectionMatrix(); }
+function look(zoom, cx, cy, dx = 0, dy = 0) { // zoom to `zoom` about the screen point (cx, cy), then slide the view by (dx, dy) pixels
+  const r = canvas.getBoundingClientRect(), wpp = (camera.right - camera.left) / r.width, z = Math.min(3.4, Math.max(1, zoom)), ox = cx - (r.left + r.width / 2), oy = cy - (r.top + r.height / 2), k = 1 / userZoom - 1 / z;
+  let u = pan.dot(RIGHT) + ox * wpp * k - dx * wpp / z, v = pan.dot(UP) - oy * wpp * k + dy * wpp / z; userZoom = z;
+  const mu = (camera.right - camera.left) / 2 * (1 - 1 / z), mv = (camera.top - camera.bottom) / 2 * (1 - 1 / z); u = Math.min(mu, Math.max(-mu, u)); v = Math.min(mv, Math.max(-mv, v));
+  pan.copy(RIGHT).multiplyScalar(u).addScaledVector(UP, v); setZoom(baseZoom); aim();
+}
 function aim() {
-  camera.position.copy(focus).addScaledVector(TOWARD, DIST); camera.up.set(0, 1, 0); camera.lookAt(focus); camera.updateMatrixWorld();
+  eye.copy(focus).add(pan); camera.position.copy(eye).addScaledVector(TOWARD, DIST); camera.up.set(0, 1, 0); camera.lookAt(eye); camera.updateMatrixWorld();
   sun.target.position.copy(focus); sun.position.copy(focus).addScaledVector(sun.userData.dir, 70); sun.target.updateMatrixWorld();
 }
 addEventListener('resize', resize);
@@ -247,8 +259,9 @@ function finish() {
 // The camera leans in a little on the place where the scene was won.
 let winCam = null; const winAt = new T.Vector3();
 function updateWin(dt) {
+  if ((winCam || finale) && (userZoom > 1 || pan.lengthSq() > 0)) { userZoom = Math.max(1, userZoom - dt * 1.6 * userZoom); pan.multiplyScalar(Math.max(0, 1 - dt * 3)); if (userZoom === 1 && pan.lengthSq() < 1e-4) pan.set(0, 0, 0); setZoom(baseZoom); aim(); }
   if (!winCam) return;
-  winCam.t += dt; const k = ease(winCam.t / 5); camera.zoom = 1 + 0.09 * k; camera.updateProjectionMatrix();
+  winCam.t += dt; const k = ease(winCam.t / 5); setZoom(1 + 0.09 * k);
   // The winners end up a little above the middle of the screen, clear of the card that rises from the bottom.
   focus.copy(home).lerp(winAt.copy(live(data.goal.node)).addScaledVector(UP, -0.14 * (camera.top - camera.bottom)), 0.75 * k); aim(); if (winCam.t > 5) winCam = null;
 }
@@ -296,14 +309,29 @@ function updateParty(dt) {
   if (t > 4.5) { party = null; motes.material.opacity = 0; }
 }
 function restart() {
-  model.reset(); model.root = !!save.load().root; walk = null; drag = null; finale = null; party = null; winCam = null; document.querySelector('main').classList.remove('won', 'finale'); $('#card').hidden = true; if (water) water.uniforms.glitter.value = data.finale ? 0.35 : 0; focus.copy(home); motes.material.opacity = 0; $('#cards').hidden = true; $('#finish').classList.remove('wide'); camera.zoom = 1; camera.updateProjectionMatrix(); $('#finish').hidden = true; $('#menu').open = false;
+  model.reset(); model.root = !!save.load().root; walk = null; drag = null; finale = null; party = null; winCam = null; document.querySelector('main').classList.remove('won', 'finale'); $('#card').hidden = true; if (water) water.uniforms.glitter.value = data.finale ? 0.35 : 0; focus.copy(home); motes.material.opacity = 0; $('#cards').hidden = true; $('#finish').classList.remove('wide'); setZoom(1); $('#finish').hidden = true; $('#menu').open = false;
   for (const id of Object.keys(mechs)) { mechs[id].angle = mechs[id].target = angleOf(model.mechs[id]); mechs[id].moving = false; }
   placeWalkers(); for (const w of Object.values(walkers)) w.face(1, 1); view.update.wonAt = undefined; say('start'); syncMenu();
+}
+// A hint is also shown: a ring pulses on whoever must move next if that is someone else, otherwise on the place
+// to walk to or the thing to work. It goes when the player does anything.
+const hintRing = new T.Mesh(new T.RingGeometry(0.36, 0.44, 44), new T.MeshBasicMaterial({ color: '#fff1bf', transparent: true, opacity: 0, depthWrite: false, depthTest: false, side: T.DoubleSide })); hintRing.renderOrder = 9; hintRing.visible = false; scene.add(hintRing);
+let hinting = null;
+function showHint(move) {
+  if (!move || model.won) return;
+  const who = move.who ?? model.active, lever = move.type === 'turn' && (view.hits.find(h => h.userData.lever === move.id && h.userData.near[0] === model.where[who]) ?? view.hits.find(h => h.userData.handle && h.userData.mech === move.id));
+  const at = who !== model.active ? () => walkers[who].group.position.clone().setY(walkers[who].group.position.y + 0.45 * (people[who].size ?? 1)) : move.type === 'walk' ? () => live(move.to) : lever ? () => lever.getWorldPosition(new T.Vector3()) : () => live(model.where[who]);
+  hinting = { t: 0, at };
+}
+function updateHint(dt, still) {
+  hintRing.visible = !!hinting && !walk; if (!hinting) return;
+  hinting.t += dt; const k = still ? 0.3 : (hinting.t % 1.3) / 1.3; hintRing.position.copy(hinting.at()); hintRing.quaternion.copy(camera.quaternion); hintRing.scale.setScalar(0.8 + k * 1.5); hintRing.material.opacity = 0.95 * (1 - k);
+  if (hinting.t > 9) hinting = null;
 }
 // A nudge for anyone who has not moved for a while: once per scene, and never over other text that matters.
 let lastInput = performance.now(), nudged = false;
 function nudge(now) { if (nudged || begun && model.won || travel || now - lastInput < 30000) return; nudged = true; $('#status').textContent = 'Stuck? The three dots, top right, have a hint.'; }
-let begun = false; function started() { lastInput = performance.now(); if (!begun) { begun = true; $('#title').classList.add('away'); document.querySelector('main').classList.add('playing'); } }
+let begun = false; function started() { lastInput = performance.now(); hinting = null; if (!begun) { begun = true; $('#title').classList.add('away'); document.querySelector('main').classList.add('playing'); } }
 // The camera settles from the title framing into the play framing once play has begun.
 function updateLead(dt) {
   if (!begun || lead <= 0) return;
@@ -338,7 +366,24 @@ function pointerAngle(e, id) {
   return ray.ray.intersectPlane(plane, hitPoint) ? Math.atan2(-(hitPoint.z - hub.z), hitPoint.x - hub.x) : null;
 }
 function screenOf(v) { const r = canvas.getBoundingClientRect(), p = v.clone().project(camera); return [r.left + (p.x + 1) / 2 * r.width, r.top + (1 - p.y) / 2 * r.height]; }
+// Two fingers look closer and slide the view; they never walk anyone or turn anything.
+const fingers = new Map(); let pinch = null;
+const spread = () => { const [a, b] = [...fingers.values()]; return { d: Math.hypot(a[0] - b[0], a[1] - b[1]), x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 }; };
 canvas.addEventListener('pointerdown', e => {
+  if (e.pointerType !== 'touch') return; fingers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (fingers.size === 2 && !travel && !finale) {
+    if (drag?.active) { const m = mechs[drag.id]; m.dragging = false; m.target = nearest(angleOf(model.mechs[drag.id]), m.angle); m.moving = true; sound.grind(0); }
+    drag = null; pinch = { ...spread(), z: userZoom }; started();
+  }
+});
+canvas.addEventListener('pointermove', e => {
+  if (!fingers.has(e.pointerId)) return; fingers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pinch && fingers.size === 2) { const now = spread(); look(pinch.z * now.d / pinch.d, now.x, now.y, now.x - pinch.x, now.y - pinch.y); pinch.x = now.x; pinch.y = now.y; pinch.z = userZoom; pinch.d = now.d; }
+});
+for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type, e => { fingers.delete(e.pointerId); if (!fingers.size) setTimeout(() => { pinch = null; }, 0); });
+canvas.addEventListener('wheel', e => { e.preventDefault(); if (travel || finale) return; look(userZoom * Math.exp(-e.deltaY * (e.ctrlKey ? 0.012 : 0.0018)), e.clientX, e.clientY); }, { passive: false });
+canvas.addEventListener('pointerdown', e => {
+  if (pinch || fingers.size > 1) return;
   if (travel) return; if (terminal.isOpen) terminal.close();
   $('#menu').open = false; const hit = pick(e);
   drag = { x: e.clientX, y: e.clientY, pointer: e.pointerId, hit, active: false };
@@ -347,6 +392,7 @@ canvas.addEventListener('pointerdown', e => {
   canvas.setPointerCapture?.(e.pointerId);
 });
 canvas.addEventListener('pointermove', e => {
+  if (pinch) return;
   if (!drag || drag.pointer !== e.pointerId) { canvas.style.cursor = pick(e) ? 'pointer' : 'default'; return; }
   if (drag.deny && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 14) { drag.deny = false; say('far'); started(); }
   if (!drag.id || drag.from === null) return;
@@ -357,6 +403,7 @@ canvas.addEventListener('pointermove', e => {
   const m = mechs[drag.id]; m.target = nearest(drag.base + delta, m.angle); m.dragging = true; sound.grind(0.25);
 });
 function release(e) {
+  if (pinch) { drag = null; return; }
   if (!drag || drag.pointer !== e.pointerId) return;
   const d = drag; drag = null; sound.grind(0); canvas.style.cursor = 'default';
   if (d.active) {
@@ -424,6 +471,8 @@ canvas.addEventListener('pointerup', release); canvas.addEventListener('pointerc
 
 // ---- page text and menu -----------------------------------------------------
 const cap = s => s.replace(/^the /, '').replace(/^./, c => c.toUpperCase());
+document.querySelector('meta[name=theme-color]')?.setAttribute('content', palette.haze); // the browser's own chrome takes the scene's mist colour
+if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !navigator.standalone) $('#ios').hidden = false;
 document.title = data.banner ?? `${data.title} — Curphey Family Web Site`;
 if (data.banner) { const b = document.createElement('span'); b.className = 'banner'; b.textContent = data.banner; $('#title').prepend(b); }
 document.querySelector('.title .eyebrow').textContent = `Scene ${data.word} · ${listNames(model.travellers)}`;
@@ -449,11 +498,13 @@ function planReady() {
   return new Promise(done => { const t = ++ticket; waiting.set(t, d => { if (d?.moves && d.key === model.key()) model.plan = { key: d.key, moves: d.moves }; done(); });
     hintWorker.postMessage({ ticket: t, id: data.id, where: model.where, active: model.active, mechs: model.mechs, items: [...model.items], root: !!model.root }); });
 }
-$('#hint').onclick = async () => { started(); $('#menu').open = false; $('#status').textContent = 'Thinking…'; await planReady(); $('#status').textContent = hintText(model, model.hint()); };
+$('#hint').onclick = async () => { started(); $('#menu').open = false; $('#status').textContent = 'Thinking…'; await planReady(); const move = model.hint(); $('#status').textContent = hintText(model, move); showHint(move); };
 $('#restart').onclick = restart; $('#again').onclick = restart;
 function setSound(on) { if (on) on = sound.enable(); else sound.disable(); $('#sound').textContent = on ? 'Sound on' : 'Sound off'; $('#sound').setAttribute('aria-pressed', String(!!on)); save.store({ sound: !!on }); }
 $('#sound').onclick = () => setSound($('#sound').getAttribute('aria-pressed') !== 'true');
-if (save.load().sound) { $('#sound').textContent = 'Sound on (tap to start)'; addEventListener('pointerdown', () => setSound(true), { once: true }); }
+// Sound was on last time: start it at once where the browser allows (after a passage it usually does), and
+// otherwise on the first tap.
+if (save.load().sound) { setSound(true); if (!sound.enabled) { $('#sound').textContent = 'Sound on (tap to start)'; addEventListener('pointerdown', () => setSound(true), { once: true }); } }
 
 // ---- watch it play: follows the solver's moves, one at a time, with a pause between ----
 let auto = false, autoWait = 0, planning = false;
@@ -497,13 +548,15 @@ let intro = reduced.matches || lite || params.has('arrive') ? null : { from: 0 }
 function updateIntro(now) {
   if (!intro) return; if (finale || winCam) { pipeline.uniforms.veil.value = 0; intro = null; return; }
   intro.from ||= now; const k = Math.min(1, (now - intro.from) / 2600), e = 1 - Math.pow(1 - k, 3);
-  camera.zoom = 1.12 - 0.12 * e; camera.updateProjectionMatrix(); pipeline.uniforms.veil.value = 1 - ease(k * 1.25); if (k >= 1) intro = null;
+  setZoom(1.12 - 0.12 * e); pipeline.uniforms.veil.value = 1 - ease(k * 1.25); if (k >= 1) intro = null;
 }
 // ---- the buttons under the title, before play starts ---------------------------
 { const s = save.load(), resume = built.find(c => c.number === Math.min(s.furthest, built.length));
   $('#starters').hidden = false; $('#with-sound').hidden = $('#sound').getAttribute('aria-pressed') === 'true' || !!s.sound;
   $('#with-sound').onclick = () => { setSound(true); $('#with-sound').hidden = true; started(); };
-  $('#begin').onclick = () => started();
+  // On a touch screen, the first time only, say that two fingers look closer.
+  const tell = () => { if (matchMedia('(pointer: coarse)').matches && !save.load().told) { $('#status').textContent += ' Pinch to look closer.'; save.store({ told: true }); } };
+  $('#begin').onclick = () => { started(); tell(); }; $('#with-sound').addEventListener('click', tell);
   if (!params.has('chapter') && resume && resume.number > data.number) { $('#continue').hidden = false; $('#continue').textContent = `Continue at ${resume.title}`; $('#continue').onclick = () => { location.search = `?chapter=${resume.id}`; }; }
   $('#over').onclick = () => { location.search = `?chapter=${built[0].id}`; }; }
 
@@ -526,10 +579,10 @@ function frame(now) {
     else m.angle += diff * Math.min(1, dt * (m.dragging ? 18 : 7));
     if (!data.mechs[id].track) view.mechs[id].group.rotation[data.mechs[id].axis ?? 'y'] = m.angle;
   }
-  updateSeams(dt / timeScale); updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now); updateLead(dt); updateWin(dt / timeScale); if (!auto && !model.won) nudge(now);
+  updateSeams(dt / timeScale); updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now); updateLead(dt); updateWin(dt / timeScale); updateHint(dt / timeScale, still); if (!auto && !model.won) nudge(now);
   if (finale) { // pull back and follow her out
     finale.t += dt; const k = still ? 1 : Math.min(1, finale.t / 18), e = k * k * (3 - 2 * k), boat = live(Object.keys(data.nodes).find(n => data.nodes[n].arm === data.finale));
-    camera.zoom = 1 / (1 + 0.32 * e); camera.updateProjectionMatrix(); focus.copy(home).lerp(boat, 0.72 * e); aim();
+    setZoom(1 / (1 + 0.32 * e)); focus.copy(home).lerp(boat, 0.72 * e); aim();
     if (water) water.uniforms.glitter.value = 0.35 + 0.65 * ease(finale.t / 8);
     if ((finale.t > 12 || still) && $('#finish').hidden) showFinish();
   }
@@ -549,7 +602,7 @@ if (water && data.finale) water.uniforms.glitterFrom.value.set(data.mechs[data.f
 applyPalette(palette); resize(); if (lite) setQuality(0); restart();
 // A small handle for automated checks; not used by the game itself.
 window.__voyage = {
-  set speed(v) { timeScale = v; }, model, go, turn, restart, switchTo, mechs, get travelling() { return travel?.kind ?? null; }, get walking() { return !!walk; }, get zoom() { return camera.zoom; },
+  set speed(v) { timeScale = v; }, model, go, turn, restart, switchTo, mechs, get travelling() { return travel?.kind ?? null; }, get walking() { return !!walk; }, get zoom() { return camera.zoom; }, get userZoom() { return userZoom; },
   // For automated checks only: play the solver's moves through at once and show the finish card.
   solve() { for (let i = 0; i < 200 && !model.won; i++) model.apply(model.hint()); for (const id of Object.keys(mechs)) mechs[id].angle = mechs[id].target = angleOf(model.mechs[id]); walk = null; finish(); },
   screenOf: id => screenOf(live(id)), screenAt: p => screenOf(new T.Vector3(...p)), walkerOf: id => screenOf(walkers[id].group.position.clone().setY(walkers[id].group.position.y + 0.5)),

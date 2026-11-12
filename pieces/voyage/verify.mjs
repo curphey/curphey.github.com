@@ -277,6 +277,27 @@ checks.eggs = async () => {
   }
   await context.close();
 };
+// Looking closer: the wheel and a two-finger pinch zoom in, taps still land where they point, zooming out restores the
+// framing, and two fingers never walk anyone or turn anything.
+checks.zoom = async () => {
+  const page = await open({}, '?chapter=pier'), before = await page.evaluate(() => window.__voyage.screenOf('plaza'));
+  await page.mouse.move(700, 420); await page.mouse.wheel(0, -500); await page.waitForTimeout(300);
+  assert.ok(await page.evaluate(() => window.__voyage.userZoom) > 1.5, 'the wheel zooms in'); await shot(page, 'zoomed');
+  const target = await page.evaluate(() => { const v = window.__voyage; for (const id of v.model.reach()) { if (id === v.model.at) continue; const at = v.tapFor({ type: 'walk', to: id }); if (at) return { id, at }; } return null; });
+  assert.ok(target, 'something reachable is on screen when zoomed in'); await page.mouse.click(...target.at); await page.waitForTimeout(150); await idle(page);
+  assert.equal((await state(page)).at, target.id, 'a tap lands where it points when zoomed in');
+  await page.mouse.wheel(0, 4000); await page.waitForTimeout(300);
+  const after = await page.evaluate(() => ({ z: window.__voyage.userZoom, at: window.__voyage.screenOf('plaza') }));
+  assert.equal(after.z, 1, 'zooming out stops at the whole scene'); assert.ok(Math.hypot(after.at[0] - before[0], after.at[1] - before[1]) < 1.5, 'and the framing is as it was');
+  await page.context().close();
+  if (ENGINE !== 'chromium') return;
+  const phone = await open({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, '?chapter=pier'), cdp = await phone.context().newCDPSession(phone), was = await state(phone);
+  const touch = (type, gap) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x: 195 - gap, y: 520, id: 1 }, { x: 195 + gap, y: 520, id: 2 }] });
+  await touch('touchStart', 40); for (const gap of [60, 80, 100, 120, 140]) { await touch('touchMove', gap); await phone.waitForTimeout(40); } await touch('touchEnd'); await phone.waitForTimeout(300);
+  assert.ok(await phone.evaluate(() => window.__voyage.userZoom) > 2, 'a pinch zooms in'); await shot(phone, 'pinched');
+  const now = await state(phone); assert.equal(now.at, was.at, 'two fingers walk no one'); assert.deepEqual(now.mechs, was.mechs, 'and turn nothing');
+  await phone.context().close();
+};
 // Installed and offline: after one visit, every scene loads with the network switched off.
 checks.offline = async () => {
   const site = url.replace(/pieces\/.*$/, ''), context = await browser.newContext({ viewport: { width: 1440, height: 900 } }), page = await context.newPage();

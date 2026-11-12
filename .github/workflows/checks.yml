@@ -8,7 +8,7 @@ on:
     inputs:
       checks:
         description: Browser checks to run
-        default: loads founders-scene taps taps-phone ride eggs passage departure offline
+        default: loads founders-scene taps taps-phone ride eggs passage departure offline zoom
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -38,7 +38,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       # "taps" plays each scene with real taps only; the rest cover loading, layout, passages and the hidden things.
-      - run: node pieces/voyage/verify.mjs ${{ inputs.checks || 'loads founders-scene taps taps-phone ride eggs passage departure offline' }}
+      - run: node pieces/voyage/verify.mjs ${{ inputs.checks || 'loads founders-scene taps taps-phone ride eggs passage departure offline zoom' }}
         env: { VERIFY_OUT: screenshots, VERIFY_LITE: 1 }
       - uses: actions/upload-artifact@v4
         if: always()
