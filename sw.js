@@ -14,6 +14,7 @@ const ASSETS = [
   '/pieces/voyage/boat.js',
   '/pieces/voyage/chapter.mjs',
   '/pieces/voyage/eggs.js',
+  '/pieces/voyage/hint-worker.mjs',
   '/pieces/voyage/palette.mjs',
   '/pieces/voyage/passage.mjs',
   '/pieces/voyage/people.mjs',

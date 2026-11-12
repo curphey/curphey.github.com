@@ -154,10 +154,10 @@ checks.passage = async () => {
 };
 // The first-time-player check. Every scene is played to the end with real taps and nothing else: the solver says
 // what to do, but each move has to be found as a place on screen where a tap does it. A move with no such place fails.
-checks.taps = async () => {
+const tapPlay = async phone => {
   const only = process.env.SCENES?.split(','), ids = ['trinidad', 'founders', 'pier', 'bridge', 'monterey', 'needle', 'return', 'departure'].filter(id => !only || only.includes(id));
   for (const id of ids) {
-    const page = await open({}, `?chapter=${id}`); let taps = 0;
+    const page = await open(phone ? { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 } : {}, `?chapter=${id}`); let taps = 0;
     for (let i = 0; i < 160; i++) {
       const s = await state(page); if (s.won) break;
       const move = await page.evaluate(() => { const v = window.__voyage, m = v.model.hint(); return m.who && m.who !== v.model.active ? { type: 'switch', who: m.who } : m; });
@@ -166,13 +166,16 @@ checks.taps = async () => {
       for (let k = 0; k < times; k++) {
         const at = await page.evaluate(m => window.__voyage.tapFor(m), move);
         assert.ok(at, `${id}: no tap makes the move ${JSON.stringify(move)} with ${JSON.stringify(await page.evaluate(() => window.__voyage.model.where))}`);
-        await page.mouse.click(...at); taps++; await page.waitForTimeout(120);
+        if (phone) await page.touchscreen.tap(...at); else await page.mouse.click(...at); taps++; await page.waitForTimeout(120);
         await idle(page).catch(async e => { throw new Error(`${id}: still busy after "${move.type} ${move.who ?? move.to ?? move.id}": ${JSON.stringify(await page.evaluate(() => ({ walking: window.__voyage.walking, mechs: Object.fromEntries(Object.entries(window.__voyage.mechs).map(([k, m]) => [k, [m.angle.toFixed(2), m.target.toFixed(2), m.moving, !!m.dragging]])) })))}`); });
       }
     }
-    assert.ok((await state(page)).won, `${id}: not finished by tapping alone`); console.log(`     ${id}: ${taps} taps`); await page.context().close();
+    assert.ok((await state(page)).won, `${id}: not finished by tapping alone`); console.log(`     ${id}: ${taps} taps${phone ? ' on a phone-sized touch screen' : ''}`); await page.context().close();
   }
 };
+checks.taps = () => tapPlay(false);
+// The same, on a phone-sized touch screen with finger taps.
+checks['taps-phone'] = () => tapPlay(true);
 checks.ride = async () => {
   const page = await open({}, '?chapter=trinidad');
   await tap(page, 'plank1'); assert.equal((await state(page)).at, 'plank1'); assert.match(await page.textContent('#status'), /under your feet/, 'the game says how to turn what you stand on');

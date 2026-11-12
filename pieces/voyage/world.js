@@ -279,6 +279,18 @@ function pick(e) {
     const gap = h => { const c = centre(h); return Math.hypot(c[0] - e.clientX, c[1] - e.clientY); };
     hit = others.sort((a, b) => gap(a) - gap(b))[0];
   }
+  // A finger is blunter than a pointer: a touch that lands just beside a lever, a handle, a person or a hidden
+  // thing counts as a touch on it.
+  const small = d => d && (d.lever || d.handle || d.walker || d.egg || d.marg);
+  if (e.pointerType === 'touch' && !small(hit?.object.userData)) {
+    let best = null, bestGap = 26; const at = new T.Vector3();
+    for (const o of [...eggHits, ...walkerHits, ...view.hits]) {
+      const d = o.userData; if (!small(d) || d.walker === model.active || (d.lever && d.near[0] !== model.at)) continue;
+      const [x, y] = screenOf(o.getWorldPosition(at)), gap = Math.hypot(x - e.clientX, y - e.clientY);
+      if (gap < bestGap) { bestGap = gap; best = o; }
+    }
+    if (best) return { data: best.userData, point: best.getWorldPosition(new T.Vector3()) };
+  }
   return hit ? { data: hit.object.userData, point: hit.point } : null;
 }
 function pointerAngle(e, id) {
@@ -371,20 +383,31 @@ for (const c of built) { const b = document.createElement('button'); b.textConte
 $('#switch').hidden = model.travellers.length < 2; $('#switch').onclick = () => { switchTo(); $('#menu').open = false; };
 function syncMenu() { const busy = !!walk || model.won; reachable = busy ? new Set() : model.reach(); $('#who b').textContent = (people[model.active]?.name ?? '') + (model.root && model.active === 'one' ? ' · 007' : ''); $('#who i').style.background = people[model.active]?.coat ?? '#888';
   if (model.travellers.length > 1) $('#switch').textContent = `Switch to ${people[model.travellers[(model.travellers.indexOf(model.active) + 1) % model.travellers.length]].name}`; document.querySelectorAll('[data-go]').forEach(b => b.disabled = busy || b.dataset.go === model.at); document.querySelectorAll('[data-turn]').forEach(b => b.disabled = busy || !model.canTurn(b.dataset.turn)); $('#switch').disabled = busy; }
-$('#hint').onclick = () => { started(); $('#status').textContent = hintText(model, model.hint()); $('#menu').open = false; };
+// Hints. The search runs in a worker; the model keeps the plan, so following hints costs one search.
+let hintWorker = null, ticket = 0; const waiting = new Map();
+try { hintWorker = new Worker(new URL('./hint-worker.mjs', import.meta.url), { type: 'module' }); hintWorker.onmessage = ({ data: d }) => { waiting.get(d.ticket)?.(d); waiting.delete(d.ticket); }; hintWorker.onerror = () => { hintWorker = null; for (const done of waiting.values()) done(null); waiting.clear(); }; } catch { hintWorker = null; }
+function planReady() {
+  const key = model.key();
+  if (model.won || !hintWorker || model.asked?.key === key || (model.plan?.key === key && model.plan.moves.length)) return Promise.resolve();
+  return new Promise(done => { const t = ++ticket; waiting.set(t, d => { if (d?.moves && d.key === model.key()) model.plan = { key: d.key, moves: d.moves }; done(); });
+    hintWorker.postMessage({ ticket: t, id: data.id, where: model.where, active: model.active, mechs: model.mechs, items: [...model.items], root: !!model.root }); });
+}
+$('#hint').onclick = async () => { started(); $('#menu').open = false; $('#status').textContent = 'Thinking…'; await planReady(); $('#status').textContent = hintText(model, model.hint()); };
 $('#restart').onclick = restart; $('#again').onclick = restart;
 function setSound(on) { if (on) on = sound.enable(); else sound.disable(); $('#sound').textContent = on ? 'Sound on' : 'Sound off'; $('#sound').setAttribute('aria-pressed', String(!!on)); save.store({ sound: !!on }); }
 $('#sound').onclick = () => setSound($('#sound').getAttribute('aria-pressed') !== 'true');
 if (save.load().sound) { $('#sound').textContent = 'Sound on (tap to start)'; addEventListener('pointerdown', () => setSound(true), { once: true }); }
 
 // ---- watch it play: follows the solver's moves, one at a time, with a pause between ----
-let auto = false, autoWait = 0;
+let auto = false, autoWait = 0, planning = false;
 function setAuto(on) { auto = on; autoWait = 1.2; $('#auto').textContent = on ? 'Stop watching' : 'Watch it play'; $('#auto').setAttribute('aria-pressed', String(on)); $('#menu').open = false; if (on && model.won) restart(); }
 $('#auto').onclick = () => setAuto(!auto);
 function updateAuto(dt) {
   if (!auto || travel || walk || drag || Object.values(mechs).some(m => m.moving)) { if (!model.won) autoWait = Math.max(autoWait, 0.9); return; }
   if (model.won) { if (nextChapter && params.has('auto')) { autoWait -= dt; if (autoWait < -3) startPassage(); } else setAuto(false); return; }
   autoWait -= dt; if (autoWait > 0) return;
+  if (planning) return; const key = model.key();
+  if (hintWorker && model.asked?.key !== key && !(model.plan?.key === key && model.plan.moves.length)) { planning = true; planReady().then(() => { planning = false; }); return; }
   const move = model.hint(); if (!move) return;
   if (move.who && move.who !== model.active) { switchTo(move.who); autoWait = 0.5; return; }
   if (move.type === 'walk') go(move.to); else if (move.type === 'switch') switchTo(); else turn(move.id, move.dir);
