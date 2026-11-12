@@ -249,6 +249,8 @@ let finale = null;
 function rideable() { const arm = data.nodes[model.at].arm; return !!arm && model.riding(arm) && model.canTurn(arm); }
 function finish() {
   started(); say('arrived'); sound.chord(); document.querySelector('main').classList.add(data.finale ? 'finale' : 'won'); if (!data.finale && !reduced.matches) winCam = { t: 0 }; if (data.finale) sound.lift(45);
+  // Everyone who made it gives a little jump, one after another, twice.
+  if (!data.finale && !reduced.matches) for (const round of [0, 1]) model.travellers.forEach((id, i) => setTimeout(() => { if (model.won) walkers[id].hop?.(); }, 350 + round * 1100 + i * 150));
   // The last chapter: cast off, let her sail, and only then show the card.
   if (data.finale) { const id = data.finale; model.rotate(id, 1); mechs[id].target -= Math.PI / 2; mechs[id].moving = true; if (reduced.matches) mechs[id].angle = mechs[id].target; finale = { t: 0 }; }
   else showFinish();
