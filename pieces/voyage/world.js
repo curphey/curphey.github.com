@@ -135,7 +135,7 @@ function turn(id, steps, dragged = false) {
   if (walk || model.won || !steps) return false;
   if (!model.canTurn(id)) { say('far'); started(); return false; }
   const rooted = model.root; model.root = false; const hacked = !model.canTurn(id); model.root = rooted;
-  const riding = model.riding(id), before = joined(), was = { ...model.mechs };
+  const riding = model.riding(id), before = joined(), was = { ...model.mechs }, edgesBefore = new Set(model.edges());
   for (let i = 0; i < Math.abs(steps); i++) model.turn(id, Math.sign(steps));
   let geared = false;
   for (const [k, m] of Object.entries(mechs)) {
@@ -143,9 +143,23 @@ function turn(id, steps, dragged = false) {
     // Turn the way the model turned, rather than the short way round.
     const by = k === id ? steps : steps * (data.mechs[id].gear?.[k] ?? 0);
     m.target = k === id && dragged ? nearest(angleOf(model.mechs[k]), m.angle) : m.target - by * Math.PI / 2;
-    m.moving = true; m.after = joined() > before; if (k !== id) geared = true; if (reduced.matches) m.angle = m.target;
+    m.moving = true; m.after = joined() > before; m.joinedBefore = edgesBefore; if (k !== id) geared = true; if (reduced.matches) m.angle = m.target;
   }
   sound.note(model.mechs[id]); say(hacked ? 'hacked' : data.text[`turned:${id}`] ? `turned:${id}` : riding ? 'carried' : geared ? 'geared' : 'turned'); started(); syncMenu(); return true;
+}
+
+// A flash of light where two pieces have just lined up: the moment the trick happens.
+const seamMat = new T.MeshBasicMaterial({ color: '#fff1bf', transparent: true, opacity: 0, depthWrite: false, depthTest: false, side: T.DoubleSide }), seams = [];
+function flashSeams(before) {
+  if (reduced.matches) return;
+  for (const e of model.edges()) {
+    if (e.kind !== 'apparent' || before.has(e)) continue;
+    const a = live(e.a), ring = new T.Mesh(new T.RingGeometry(0.42, 0.5, 40), seamMat.clone()); ring.position.set(a.x + e.step[0] * 0.5, a.y + 0.05, a.z + e.step[2] * 0.5); ring.quaternion.copy(camera.quaternion); ring.renderOrder = 7; scene.add(ring); seams.push({ ring, t: 0 });
+  }
+}
+function updateSeams(dt) {
+  for (let i = seams.length - 1; i >= 0; i--) { const s = seams[i]; s.t += dt; const k = s.t / 1.1; s.ring.scale.setScalar(1 + k * 2.2); s.ring.material.opacity = 0.9 * (1 - k);
+    if (k >= 1) { scene.remove(s.ring); s.ring.geometry.dispose(); s.ring.material.dispose(); seams.splice(i, 1); } }
 }
 
 // ---- travellers and walking -------------------------------------------------
@@ -208,7 +222,8 @@ function updateWalk(dt) {
 function switchTo(id) {
   if (walk || model.won || model.travellers.length < 2) return false;
   if (id && id === model.active) return false;
-  if (id) model.select(id); else model.switch(); $('#status').textContent = `Now moving ${people[model.active].name}.`; started(); syncMenu(); return true;
+  if (id) model.select(id); else model.switch();
+  walkers[model.active].hop?.(); $('#status').textContent = `Now moving ${people[model.active].name}.`; started(); syncMenu(); return true;
 }
 let finale = null;
 // Is the active traveller standing on something they can turn from where they are?
@@ -472,12 +487,12 @@ function frame(now) {
   const still = reduced.matches;
   for (const [id, m] of Object.entries(mechs)) {
     const diff = m.target - m.angle;
-    if (Math.abs(diff) < 0.002 || still) { m.angle = m.target; if (m.moving && !m.dragging) { m.moving = false; sound.click(); if (m.after) { sound.join(); m.after = false; } } }
+    if (Math.abs(diff) < 0.002 || still) { m.angle = m.target; if (m.moving && !m.dragging) { m.moving = false; sound.click(); if (m.after) { sound.join(); flashSeams(m.joinedBefore ?? new Set()); m.after = false; } } }
     else if (data.mechs[id].glide) m.angle += Math.sign(diff) * Math.min(Math.abs(diff), dt * (Math.PI / 2) / data.mechs[id].glide); // a slow, steady glide
     else m.angle += diff * Math.min(1, dt * (m.dragging ? 18 : 7));
     if (!data.mechs[id].track) view.mechs[id].group.rotation[data.mechs[id].axis ?? 'y'] = m.angle;
   }
-  updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now); if (!auto && !model.won) nudge(now);
+  updateSeams(dt / timeScale); updatePassage(dt); updateAuto(dt); updateWalk(dt); updateParty(dt / timeScale); updateIntro(now); if (!auto && !model.won) nudge(now);
   if (finale) { // pull back and follow her out
     finale.t += dt; const k = still ? 1 : Math.min(1, finale.t / 18), e = k * k * (3 - 2 * k), boat = live(Object.keys(data.nodes).find(n => data.nodes[n].arm === data.finale));
     camera.zoom = 1 / (1 + 0.5 * e); camera.updateProjectionMatrix(); focus.copy(baseFocus).lerp(boat, 0.45 * e); aim();
