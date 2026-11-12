@@ -11,6 +11,7 @@ const ASSETS = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
+  '/icons/share.jpg',
   '/pieces/voyage/boat.js',
   '/pieces/voyage/chapter.mjs',
   '/pieces/voyage/eggs.js',

@@ -165,7 +165,7 @@ function live(nodeId) {
 function placeWalkers() {
   // Travellers sharing a spot stand in a little cluster rather than inside one another.
   const at = {}; for (const id of model.travellers) if (walk?.who !== id) (at[model.where[id]] ??= []).push(id);
-  for (const [node, ids] of Object.entries(at)) ids.forEach((id, i) => { const p = live(node), n = ids.length; if (n > 1) { const a = i / n * Math.PI * 2 + 0.6, r = n > 3 ? 0.46 : n > 2 ? 0.38 : 0.24; p.x += Math.cos(a) * r; p.z += Math.sin(a) * r; } walkers[id].group.position.copy(p); });
+  for (const [node, ids] of Object.entries(at)) ids.forEach((id, i) => { const p = live(node), n = ids.length; if (model.won && view.afterWin && node === data.goal.node) p.add(view.afterWin()); if (n > 1) { const a = i / n * Math.PI * 2 + 0.6, r = n > 3 ? 0.46 : n > 2 ? 0.38 : 0.24; p.x += Math.cos(a) * r; p.z += Math.sin(a) * r; } walkers[id].group.position.copy(p); });
 }
 function go(to) {
   if (walk || model.won || Object.values(mechs).some(m => m.moving) || drag?.active) return false;

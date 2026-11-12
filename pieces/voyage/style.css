@@ -15,6 +15,8 @@ header>*{pointer-events:auto}
 .title.away h1{font-size:clamp(24px,2.6vw,36px);margin:6px 0 0}
 .title.away .banner{font-size:12px;margin-bottom:10px}
 .title.away p{opacity:0;max-height:0;overflow:hidden}
+.title .eyebrow{transition:opacity .9s ease}
+.title.away .eyebrow{opacity:0}
 .title p{max-height:120px}
 .eyebrow{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);font-weight:600}
 h1{font:400 clamp(34px,5vw,64px)/1.05 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;letter-spacing:-.02em;margin:10px 0 12px;text-wrap:balance}
