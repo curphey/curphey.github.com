@@ -1,6 +1,9 @@
 import * as T from '../../tower/vendor/three.js';
 // Every surface is drawn in code: an albedo canvas plus a height canvas turned into a normal map.
-const hash = (x, y, s = 0) => { const n = Math.sin(x * 127.1 + y * 311.7 + s * 74.7) * 43758.5453; return n - Math.floor(n); };
+// A pseudo-random number in [0, 1) for a lattice point. Whole numbers take an integer hash, which is many times
+// quicker than the sine it replaced: this is the inner loop of every texture, and was most of the loading time.
+const mix = (x, y, s) => { let h = Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(s + 1, 1442695041); h = Math.imul(h ^ (h >>> 15), 0x85ebca6b); h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+const hash = (x, y, s = 0) => { if (x === (x | 0) && y === (y | 0) && s === (s | 0)) return mix(x, y, s); const n = Math.sin(x * 127.1 + y * 311.7 + s * 74.7) * 43758.5453; return n - Math.floor(n); };
 function noise(x, y, s) {
   const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
   const a = hash(xi, yi, s), b = hash(xi + 1, yi, s), c = hash(xi, yi + 1, s), d = hash(xi + 1, yi + 1, s);
@@ -11,8 +14,9 @@ function fbm(x, y, p, s = 0) {
   let total = 0, amp = 0.5, f = 1;
   for (let o = 0; o < 4; o++) {
     const px = p * f, X = x * f, Y = y * f, xi = Math.floor(X), yi = Math.floor(Y), xf = X - xi, yf = Y - yi, u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
-    const h = (i, j) => hash(((xi + i) % px + px) % px, ((yi + j) % px + px) % px, s + o);
-    total += amp * (h(0, 0) + (h(1, 0) - h(0, 0)) * u + (h(0, 1) - h(0, 0)) * v + (h(0, 0) - h(1, 0) - h(0, 1) + h(1, 1)) * u * v);
+    const x0 = (xi % px + px) % px, x1 = (x0 + 1) % px, y0 = (yi % px + px) % px, y1 = (y0 + 1) % px, k = s + o;
+    const a = mix(x0, y0, k), b = mix(x1, y0, k), c = mix(x0, y1, k), d = mix(x1, y1, k);
+    total += amp * (a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v);
     amp *= 0.5; f *= 2;
   }
   return total;
