@@ -475,7 +475,8 @@ const hazeHere = new T.Color(palette.haze), hazeNext = new T.Color(nextChapter ?
 let travel = params.has('arrive') ? { kind: 'arrive', t: 0 } : null; if (travel) pipeline.uniforms.veil.value = 1;
 function startPassage() {
   if (travel || !nextChapter) return;
-  travel = { kind: 'leave', t: 0 }; $('#passage').replaceChildren(Object.assign(document.createElement('span'), { textContent: data.passage ?? '' }), Object.assign(document.createElement('small'), { textContent: `Scene ${nextChapter.word} · ${nextChapter.title}` })); document.querySelector('main').classList.add('travelling');
+  travel = { kind: 'leave', t: 0 }; const el = (tag, props) => Object.assign(document.createElement(tag), props), short = t => t.replace(/,.*/, ''), route = el('div', { className: 'route' }); route.append(el('b', { textContent: short(data.title) }), el('i', {}), el('b', { textContent: short(nextChapter.title) }));
+  $('#passage').replaceChildren(route, el('span', { textContent: data.passage ?? '' }), el('small', { textContent: `Scene ${nextChapter.word} · ${nextChapter.title}` })); document.querySelector('main').classList.add('travelling');
 }
 function leave() { const q = new URLSearchParams({ chapter: nextChapter.id, arrive: '1', mist: hazeNext.getHexString() }); if (auto) q.set('auto', '1'); if (lite) q.set('lite', '1'); if (thin > 1) q.set('thin', String(thin)); location.search = `?${q}`; }
 function updatePassage(dt) {
