@@ -47,6 +47,7 @@ export const pier = {
     { a: 'skelter', b: 'skelterTop', kind: 'solid', hidden: true }
   ],
   items: { key: 'lookout' },
+  motes: '#ff9db0',
   egg: [10.6, 1.42, -8], marg: [4.5, 0, -1.4],
   goal: { node: 'plaza', all: true },
   text: {
@@ -65,5 +66,6 @@ export const pier = {
     blocked: 'The way is shut, or does not join.'
   },
   finish: { title: 'Met on the pier.', body: 'MM, cut into the planks where they stand.' },
+  music: { pace: 0.85, warmth: 1.35 }, // the score: how slow, how open
   scale: [261.63, 293.66, 329.63, 392, 440, 523.25, 587.33, 659.25] // C major pentatonic, bright
 };

@@ -1,0 +1,64 @@
+{
+  "name": "Curphey Family Web Site",
+  "short_name": "Curphey",
+  "description": "The family's story as a puzzle in eight scenes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e9e2d2",
+  "theme_color": "#27405c",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "id": "/",
+  "categories": [
+    "games",
+    "entertainment"
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/screen-wide-1.jpg",
+      "sizes": "1280x800",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Brighton: the Palace Pier"
+    },
+    {
+      "src": "/icons/screen-wide-2.jpg",
+      "sizes": "1280x800",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Trinidad: dawn on the lagoon"
+    },
+    {
+      "src": "/icons/screen-narrow-1.jpg",
+      "sizes": "780x1688",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Trinidad: dawn on the lagoon"
+    },
+    {
+      "src": "/icons/screen-narrow-2.jpg",
+      "sizes": "780x1688",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Seattle: rain on the plaza"
+    }
+  ]
+}

@@ -33,6 +33,7 @@ export const needle = {
     { a: 'skyEnd', b: 'rim', kind: 'apparent', step: [1, 0, 0], when: { saucer: 2 }, only: 'child' }
   ],
   items: { sluice: 'ring' },
+  ambience: 'rain',
   egg: [3.05, 1.2, 1.5], marg: [4.6, 0, 2.4],
   goal: { node: 'crown', all: true },
   text: {
@@ -48,5 +49,6 @@ export const needle = {
     blocked: 'The door is shut, or the way is too small, or it is not there yet.'
   },
   finish: { title: 'Five, above the rain.', body: 'South again soon, to the bridge and the fog.' },
+  music: { pace: 1.5, warmth: 0.7 }, // the score: how slow, how open
   scale: [174.61, 196, 220, 261.63, 293.66, 349.23, 392, 440]
 };

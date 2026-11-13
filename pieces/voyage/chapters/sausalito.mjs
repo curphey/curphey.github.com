@@ -41,6 +41,7 @@ export const sausalito = {
   text: {
     start: 'Evening light on the bay, and Mount Tam dark above the town. Five of them on the yacht club dock.',
     won: 'All five on the roof deck, with the sun going down behind the mountain.',
+    marg: 'Marg. Mill Valley is where she joined the family, and she yaps once to say so.', // Mark: Marg came in San Francisco, not Seattle
     'turned:pram': 'The little dinghy heels and goes.', 'turned:skiff': 'The bigger dinghy fills her sail and goes.',
     'turned:davit': 'The davit swings out over the water.',
     carried: 'The davit carries you round, high over the water.',
@@ -51,5 +52,6 @@ export const sausalito = {
     blocked: 'No way there: the boat is full, or too small, or the planks stop.'
   },
   finish: { title: 'Five, on the roof deck.', body: 'One last passage, and then home waters.' },
+  music: { pace: 1.1, warmth: 1 }, // the score: how slow, how open
   scale: [196, 220, 246.94, 293.66, 329.63, 369.99, 440, 493.88]
 };

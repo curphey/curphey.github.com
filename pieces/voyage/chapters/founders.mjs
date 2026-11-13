@@ -34,6 +34,7 @@ export const founders = {
     { a: 'gallery', b: 'belfry', kind: 'solid' }
   ],
   items: { key: 'roofEnd', book: { at: 'balcony', needs: 'key' } },
+  ambience: 'garden',
   egg: [-2.4, 0, 7.6], marg: [-2.1, 0, -9.4],
   goal: { node: 'belfry', needs: ['book'] },
   word: 'two', next: 'pier', passage: 'Years pass. Then a train south, to the sea.', goalText: 'Get Mark to the clock tower, with the book from the library.',
@@ -49,5 +50,6 @@ export const founders = {
     'goal-empty': 'The lectern in the belfry is empty.'
   },
   finish: { title: 'The bells ring out.', body: 'Next, the sea, and someone coming the other way.' },
+  music: { pace: 1, warmth: 1.1 }, // the score: how slow, how open
   scale: [196, 220, 261.63, 293.66, 329.63, 392, 440, 523.25] // G major pentatonic-ish, morning
 };
