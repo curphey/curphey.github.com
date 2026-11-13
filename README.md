@@ -14,6 +14,7 @@ The Curphey family website: the family's story as a puzzle game in eight scenes.
     npm run check:gpu             # frames a second, scene by scene
 
 `npm run check -- taps` plays every scene with real taps only; `taps-phone` does it at phone size with finger taps.
+`zoom` checks the pinch and the wheel. `VERIFY_BROWSER=webkit` runs any check in Safari's engine.
 `VERIFY_LITE=1` runs the checks in the game's low-detail mode, for machines with no graphics card.
 
 ## Publishing

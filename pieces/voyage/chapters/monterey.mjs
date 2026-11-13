@@ -54,5 +54,6 @@ export const monterey = {
     blocked: 'The door is shut, or the way is too small, or it is not there yet.'
   },
   finish: { title: 'Four, at the edge of the bay.', body: 'North next, and one more to come.' },
+  music: { pace: 1.2, warmth: 0.9 }, // the score: how slow, how open
   scale: [220, 246.94, 277.18, 329.63, 369.99, 440, 493.88, 554.37]
 };

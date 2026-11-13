@@ -2,14 +2,21 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#d9d5c8;color:var(--ink);font:14px/1.5 "Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
 main{position:fixed;inset:0}
-main::before{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;background:radial-gradient(ellipse 62% 58% at 0 0,rgba(243,238,226,.92),rgba(243,238,226,.6) 45%,rgba(243,238,226,0) 100%);transition:opacity 1.6s}
-main.playing::before{opacity:.55;background:radial-gradient(ellipse 38% 30% at 0 0,rgba(243,238,226,.95),rgba(243,238,226,.6) 50%,rgba(243,238,226,0) 100%)}
+main::before,main::after{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;transition:opacity 1.6s}
+main::before{background:radial-gradient(ellipse 66% 64% at 0 0,rgba(243,238,226,.96),rgba(243,238,226,.72) 45%,rgba(243,238,226,0) 100%)}
+main::after{opacity:0;background:radial-gradient(ellipse 38% 30% at 0 0,rgba(243,238,226,.95),rgba(243,238,226,.6) 50%,rgba(243,238,226,0) 100%)}
+main.playing::before{opacity:0}main.playing::after{opacity:.55}
+main.finale::after,main.travelling::after{opacity:0}
 canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}
-header{position:absolute;z-index:3;top:max(18px,env(safe-area-inset-top));left:max(20px,4vw);right:max(20px,4vw);display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+header{position:absolute;z-index:5;top:max(18px,env(safe-area-inset-top));left:max(20px,4vw);right:max(20px,4vw);display:flex;justify-content:space-between;align-items:center;pointer-events:none}
 header>*{pointer-events:auto}
 .brand{font-size:22px;font-weight:650;letter-spacing:-.04em;color:var(--ink);text-decoration:none}
 .brand span{color:var(--gold)}
 .title{position:absolute;z-index:2;top:max(84px,11vh);left:max(20px,4vw);max-width:min(520px,80vw);pointer-events:none;transition:opacity 1.2s ease,transform 1.2s ease}
+main:not(.ready) .title>*{opacity:0}
+main.ready .title>*{animation:rise 1s cubic-bezier(.2,.7,.2,1) backwards}
+main.ready .title>:nth-child(2){animation-delay:.12s}main.ready .title>:nth-child(3){animation-delay:.24s}main.ready .title>:nth-child(4){animation-delay:.36s}main.ready .title>:nth-child(5){animation-delay:.5s}
+#subtitle{max-width:36ch}
 .title h1,.title .banner,.title p{transition:font-size .9s ease,margin .9s ease,opacity .9s ease,max-height .9s ease}
 /* Once play starts the place name stays, smaller, so it is always clear which scene this is. */
 .title.away h1{font-size:clamp(24px,2.6vw,36px);margin:6px 0 0}
@@ -23,14 +30,34 @@ h1{font:400 clamp(34px,5vw,64px)/1.05 "Iowan Old Style","Palatino Linotype",Pala
 .title p{margin:0;font-size:14px;line-height:1.7;color:#3f4d52}
 #goal{position:absolute;z-index:3;top:max(22px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);margin:0;padding:8px 16px;max-width:min(520px,calc(100vw - 190px));text-align:center;font-size:13px;line-height:1.35;border-radius:999px;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 4px 18px rgba(20,40,50,.14);pointer-events:none}
 #goal span{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-right:10px}#goal b{font-weight:500}
-@media(max-width:700px){#goal{font-size:11px;border-radius:16px;padding:6px 12px}#goal span{display:block;margin:0 0 2px}}
-#status{position:absolute;z-index:2;left:50%;bottom:max(26px,env(safe-area-inset-bottom));transform:translateX(-50%);margin:0;padding:10px 18px;max-width:min(560px,calc(100vw - 32px));text-align:center;font-size:13px;line-height:1.5;border-radius:999px;background:var(--glass);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);box-shadow:0 6px 24px rgba(20,40,50,.14);pointer-events:none;transition:opacity .4s}
+@media(max-width:700px){#goal{font-size:12px;border-radius:16px}#goal span{display:block;margin:0 0 2px}}
+#foot{position:absolute;z-index:2;left:max(20px,4vw);right:max(20px,4vw);bottom:max(26px,env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:10px;pointer-events:none;transition:opacity .8s}
+#status{grid-column:2;margin:0;padding:10px 18px;max-width:min(560px,calc(100vw - 32px));text-align:center;font-size:13px;line-height:1.5;border-radius:999px;background:var(--glass);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);box-shadow:0 6px 24px rgba(20,40,50,.14);pointer-events:none;transition:opacity .4s}
 #status:empty{opacity:0}
-#who{position:absolute;z-index:2;left:max(20px,4vw);bottom:max(26px,env(safe-area-inset-bottom));margin:0;padding:8px 14px 8px 10px;display:flex;align-items:center;gap:8px;font-size:13px;border-radius:999px;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 4px 18px rgba(20,40,50,.14);pointer-events:none}
+#who{grid-column:1;justify-self:start;pointer-events:auto;margin:0;padding:8px 14px 8px 10px;display:flex;transition:opacity .8s;align-items:center;gap:8px;font-size:13px;border-radius:999px;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 4px 18px rgba(20,40,50,.14);border:0;min-height:0;color:inherit;font-family:inherit;cursor:pointer}
+#who:disabled{opacity:1;cursor:default}
+#who:not(:disabled)::after{content:"⇄";margin-left:2px;color:#66757a;font-size:12px}
 #who i{width:12px;height:12px;border-radius:50%;display:block}#who span{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#66757a}#who b{font-weight:600}
-main.travelling #who{opacity:0}
+main:not(.playing) #who{opacity:0;pointer-events:none}
+main.won #foot,main.won #goal,main.won .title,main.travelling #foot{opacity:0;pointer-events:none}
+main.won #who{pointer-events:none}
+#goal,.title,header{transition:opacity .8s}
 .banner{display:block;font:600 clamp(15px,1.7vw,22px)/1.2 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);margin-bottom:22px}
-@media(max-width:700px){#who{left:auto;right:20px;bottom:max(132px,calc(env(safe-area-inset-bottom) + 132px));font-size:12px;padding:6px 10px 6px 8px}main .title{top:118px}.title .eyebrow{display:none}.title.away h1{font-size:22px}#goal{left:auto;right:76px;transform:none;max-width:calc(100vw - 200px)}#who{top:auto}}
+#goal i{font-style:normal;display:none}
+main.playing #goal i{display:inline}
+.title.away{opacity:0}
+/* A phone: the title has the top of the screen to itself and the goal waits at the bottom; in play the goal is a
+   strip under the header that also carries the place name, and who is moving sits just above the status line. */
+@media(max-width:700px){
+main::before{background:linear-gradient(180deg,rgba(243,238,226,.97) 0,rgba(243,238,226,.9) 30%,rgba(243,238,226,0) 58%)}
+main::after{background:linear-gradient(180deg,rgba(243,238,226,.9) 0,rgba(243,238,226,0) 22%)}
+main .title{top:76px;right:20px;max-width:none}
+#goal{left:14px;right:14px;top:auto;bottom:max(22px,env(safe-area-inset-bottom));transform:none;max-width:none;text-align:left;padding:9px 14px}
+main.playing #goal{top:max(72px,calc(env(safe-area-inset-top) + 54px));bottom:auto;animation:rise .9s ease backwards}
+#foot{left:14px;right:14px;grid-template-columns:1fr;gap:8px;bottom:max(18px,env(safe-area-inset-bottom))}
+#who{grid-column:1;font-size:12px;padding:6px 10px 6px 8px}#status{grid-column:1;justify-self:stretch;max-width:none}
+main:not(.playing) #status{opacity:0}
+}
 #term{position:absolute;z-index:6;left:0;right:0;bottom:0;height:min(46vh,380px);display:flex;flex-direction:column;background:rgba(4,10,6,.93);color:#39ff6a;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;padding:14px max(16px,4vw);box-shadow:0 -10px 40px rgba(0,0,0,.4);border-top:1px solid #1d6b34}
 #term[hidden]{display:none}
 #term-out{flex:1;margin:0;overflow:auto;white-space:pre-wrap;font:inherit;text-shadow:0 0 6px rgba(57,255,106,.45)}
@@ -46,17 +73,41 @@ body.matrix{background:#020803}
 #cards{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 16px}
 #cards[hidden]{display:none}
 #cards figure{margin:0;position:relative;border-radius:8px;overflow:hidden;aspect-ratio:8/5;background:#d9d5c8;box-shadow:0 2px 8px rgba(20,40,50,.2);opacity:0;animation:card .7s ease forwards}
-@keyframes card{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 #cards img{width:100%;height:100%;object-fit:cover;display:block}
 #cards figcaption{position:absolute;left:0;right:0;bottom:0;padding:10px 4px 3px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:linear-gradient(transparent,rgba(10,20,30,.7))}
-.finish.wide{width:min(620px,calc(100vw - 32px))}
-@media(min-width:1000px){.finish.wide{left:max(20px,4vw);right:auto;margin:0;bottom:max(84px,10vh)}}
+/* The end of the voyage: no box. The words and the postcards lie over the evening, under letterbox bars. */
+.finish.wide{inset:auto 0 0 0;width:auto;max-width:none;border-radius:0;display:block;padding:120px max(24px,6vw) calc(max(34px,7vh) + 26px);background:linear-gradient(180deg,rgba(24,18,36,0),rgba(24,18,36,.62) 55%,rgba(24,18,36,.8));backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;color:#fbf3e4;animation:rise 2.4s ease both}
+.finish.wide h2{font-size:clamp(40px,6vw,76px);margin:10px 0 6px}.finish.wide p{color:#eadfce;font-size:15px}.finish.wide .eyebrow{color:#f2c98a}
+.finish.wide #card,.finish.wide #pips{display:none}
+.finish.wide #cards{display:flex;flex-wrap:wrap;gap:12px;margin:22px 0 24px}
+.finish.wide #cards figure{flex:none;width:min(132px,calc(25% - 9px));padding:5px 5px 0;background:#fffdf7;border-radius:3px;aspect-ratio:auto;overflow:visible;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.finish.wide #cards figure:nth-child(odd){transform:rotate(-2.5deg)}.finish.wide #cards figure:nth-child(even){transform:rotate(2deg) translateY(4px)}
+.finish.wide #cards img{aspect-ratio:8/5;height:auto;border-radius:2px}
+.finish.wide #cards figcaption{position:static;background:none;color:#3f4d52;font:italic 11px/1 "Iowan Old Style",Palatino,Georgia,serif;letter-spacing:0;text-transform:none;text-align:center;padding:6px 0 7px}
+.finish.wide button{background:rgba(255,253,247,.14);border-color:rgba(255,253,247,.4);color:#fbf3e4}.finish.wide button:hover{border-color:#f2c98a}
+@keyframes card{from{opacity:0;translate:0 14px}to{opacity:1;translate:0 0}}
+/* Letterbox bars and the low sun, for the last scene only. */
+.bar{position:absolute;z-index:3;left:0;right:0;height:max(34px,7vh);background:#120e1a;pointer-events:none;transition:transform 2.4s ease}
+.bar.top{top:0;transform:translateY(-101%)}.bar.bottom{bottom:0;transform:translateY(101%)}
+main.finale .bar{transform:none}
+#flare{position:absolute;z-index:1;inset:0;pointer-events:none;opacity:0;transition:opacity 6s ease;mix-blend-mode:screen;background:radial-gradient(ellipse 60% 75% at 104% 36%,rgba(255,196,120,.8),rgba(255,150,90,.38) 30%,rgba(255,120,80,0) 70%)}
+main.finale #flare{opacity:1}
+main.finale header{z-index:5}
 @media(prefers-reduced-motion:reduce){#cards figure{animation:none;opacity:1}}
 #passage{position:absolute;z-index:4;inset:0;margin:auto;height:max-content;max-width:min(680px,84vw);text-align:center;font:italic 400 clamp(22px,3.4vw,40px)/1.3 "Iowan Old Style",Palatino,Georgia,serif;color:var(--ink);opacity:0;pointer-events:none}
+/* The line of travel: this place, a dot crossing, the next place. */
+#passage .route{display:flex;align-items:center;justify-content:center;gap:16px;margin:0 auto 30px;font:600 11px/1 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:.24em;text-transform:uppercase;font-style:normal;color:#66757a}
+#passage .route i{position:relative;flex:0 1 220px;height:1px;background:linear-gradient(90deg,rgba(185,138,58,0),var(--gold) 20%,var(--gold) 80%,rgba(185,138,58,0))}
+#passage .route i::after{content:"";position:absolute;top:-3px;left:0;width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px rgba(185,138,58,.2);animation:cross 5.2s cubic-bezier(.45,0,.3,1) .6s both}
+@keyframes cross{from{left:0}to{left:calc(100% - 7px)}}
+@media(prefers-reduced-motion:reduce){#passage .route i::after{animation:none;left:calc(100% - 7px)}}
 #passage span{display:block}#passage small{display:block;margin-top:22px;font:600 12px/1 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:.24em;text-transform:uppercase;font-style:normal;color:var(--gold)}
 #chapters button.carded{background-size:cover;background-position:right center;padding-right:70px}
 main.travelling #goal,main.travelling #status,main.travelling header,main.travelling .finish,main.travelling .title{opacity:0;pointer-events:none;transition:opacity .8s}
+main.finale #goal,main.finale #foot,main.finale .title,main.finale .brand{opacity:0;pointer-events:none}
 button{font:inherit;color:inherit;cursor:pointer;min-height:44px;padding:8px 16px;border-radius:999px;border:1px solid rgba(29,42,48,.22);background:rgba(255,255,255,.5)}
+button.primary,#starters button.primary{background:var(--ink);color:var(--paper);border-color:var(--ink);padding:8px 22px;font-weight:500}
+button.primary:hover{background:#2c3d45}
 button:hover{border-color:var(--gold)}
 button:disabled{opacity:.4;cursor:default}
 button:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
@@ -66,17 +117,37 @@ button:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var
 #menu>summary span{width:4px;height:4px;border-radius:50%;background:var(--ink)}
 .panel{position:absolute;right:0;top:58px;width:min(340px,calc(100vw - 40px));max-height:72vh;overflow:auto;padding:18px;border-radius:18px;background:rgba(250,246,236,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 18px 50px rgba(20,40,50,.25)}
 .panel p{margin:0 0 12px;font-size:13px;color:#3f4d52}
+#ios{margin:12px 0 0}#ios[hidden]{display:none}
 .row{display:flex;flex-wrap:wrap;gap:6px}.row.centre{justify-content:center}
 .panel button{font-size:12px;min-height:40px;padding:6px 12px}
 .keys{margin-top:12px}
 .keys>summary{cursor:pointer;font-size:12px;padding:8px 0;color:#3f4d52}
 .keys h2{font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin:12px 0 6px;color:#66757a;font-weight:600}
-.finish{position:absolute;z-index:4;inset:auto 0 max(90px,12vh) 0;margin:auto;width:min(440px,calc(100vw - 32px));padding:26px 24px;text-align:center;border-radius:24px;background:rgba(250,246,236,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 20px 60px rgba(20,40,50,.3);animation:rise 1.4s ease both}
+.finish{position:absolute;z-index:4;inset:auto 0 max(34px,5vh) 0;margin:auto;width:max-content;max-width:min(640px,calc(100vw - 32px));padding:22px 26px;display:flex;align-items:center;gap:24px;text-align:left;border-radius:24px;background:rgba(250,246,236,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 20px 60px rgba(20,40,50,.3);animation:rise 1.2s cubic-bezier(.2,.7,.2,1) 1.5s both}
 .finish[hidden]{display:none}
-.finish h2{font:400 34px/1.15 "Iowan Old Style",Palatino,Georgia,serif;margin:10px 0 8px}
-.finish p{margin:0 0 16px;color:#3f4d52}
+.finish h2{font:400 32px/1.15 "Iowan Old Style",Palatino,Georgia,serif;margin:8px 0 6px;text-wrap:balance}
+.finish p{margin:0 0 14px;color:#3f4d52}
+.finish .row.centre{justify-content:flex-start}
+/* The postcard just earned: it drops onto the card a moment after the card arrives. */
+#card{flex:none;margin:0;width:176px;padding:7px 7px 0;background:#fffdf7;border-radius:4px;box-shadow:0 8px 22px rgba(20,40,50,.28);transform:rotate(-4deg);animation:drop .8s cubic-bezier(.2,.9,.3,1.2) 2.1s both}
+#card[hidden]{display:none}
+#card img{display:block;width:100%;aspect-ratio:8/5;object-fit:cover;border-radius:2px;background:#d9d5c8}
+#card figcaption{font:italic 13px/1 "Iowan Old Style",Palatino,Georgia,serif;text-align:center;padding:8px 0 9px;color:#3f4d52}
+@keyframes drop{from{opacity:0;transform:translateY(-26px) rotate(7deg) scale(1.12)}to{opacity:1;transform:rotate(-4deg)}}
+#pips{display:flex;gap:6px;margin:0 0 16px}
+#pips i{width:7px;height:7px;border-radius:50%;background:rgba(29,42,48,.16)}#pips i.done{background:var(--gold)}#pips i.now{box-shadow:0 0 0 3px rgba(185,138,58,.28)}
+@media(max-width:700px){.finish{inset:auto 0 0 0;width:auto;max-width:none;border-radius:24px 24px 0 0;padding:20px 20px max(20px,env(safe-area-inset-bottom));gap:16px}.finish h2{font-size:24px}#card{width:112px;padding:5px 5px 0}#card figcaption{font-size:11px;padding:6px 0 7px}.finish p{font-size:13px}}
 #loading{position:absolute;inset:0;z-index:5;margin:0;display:grid;place-items:center;background:#e9e2d2;color:var(--ink);font:italic 18px Georgia,serif;transition:opacity .8s}
-#loading.done{opacity:0;pointer-events:none}
+#loading.done{opacity:0;pointer-events:none;color:transparent}
 @keyframes rise{from{opacity:0;transform:translateY(16px)}}
 @media(max-width:700px){.title{top:76px}h1{font-size:34px}.title p{font-size:12px}#status{font-size:12px;border-radius:18px}}
-@media(prefers-reduced-motion:reduce){.title,#status,#loading{transition:none}.finish{animation:none}}
+@media(prefers-reduced-motion:reduce){.title,#status,#loading,.bar,#flare{transition:none}.finish,#card,main.ready .title>*,main.playing #goal{animation:none}}
+/* A phone on its side, or any short window: the title is set smaller, and the status line gives way to it. */
+@media(max-height:520px) and (min-width:701px){
+main::before{background:linear-gradient(90deg,rgba(243,238,226,.97) 0,rgba(243,238,226,.9) 34%,rgba(243,238,226,0) 62%)}
+.title{top:58px;max-width:44vw}h1{font-size:30px;margin:4px 0 6px}.banner{font-size:12px;margin-bottom:8px}.title p{font-size:12px;line-height:1.5}#starters{margin-top:10px}
+main:not(.playing) #status{opacity:0}
+#goal{max-width:calc(100vw - 330px);font-size:12px;padding:6px 14px}
+.finish{padding:14px 18px;gap:16px;inset:auto 0 12px 0}.finish h2{font-size:22px;margin:4px 0}.finish p{margin-bottom:8px;font-size:12px}#card{width:120px}#pips{margin-bottom:10px}
+.finish.wide{padding:40px max(24px,6vw) calc(max(34px,7vh) + 12px)}.finish.wide h2{font-size:34px}.finish.wide #cards{margin:10px 0 12px}.finish.wide #cards figure{width:84px}
+}

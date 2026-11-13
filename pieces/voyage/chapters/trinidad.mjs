@@ -68,5 +68,6 @@ export const trinidad = {
     blocked: 'The boards do not meet.'
   },
   finish: { title: 'Away at first light.', body: 'Across an ocean, someone else is setting out too.' },
+  music: { pace: 0.8, warmth: 1.3 }, // the score: how slow, how open
   scale: [261.63, 293.66, 329.63, 392, 440, 523.25, 587.33, 659.25]
 };

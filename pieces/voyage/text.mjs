@@ -21,6 +21,8 @@ export function hintText(model, move) {
   if (!move) return 'There is nothing left to do here.';
   if (move.type === 'switch') return 'Switch to the other traveller.';
   const who = model.travellers.length > 1 && move.who ? `${people[move.who].name}: ` : '', m = model.data.mechs[move.id];
-  const what = move.type === 'walk' ? `walk to ${model.data.nodes[move.to].label}.` : m.verb ? `${m.verb.toLowerCase()} ${m.label}.` : `turn ${m.label} ${way(move.dir)}.`;
+  // A tap only turns a thing one way, so the other way is said as a drag, or as so many taps.
+  const taps = m && !m.verb && move.dir < 0 ? (m.states ?? 4) - 1 : 0, times = ['', 'once', 'twice', 'three times', 'four times', 'five times'][taps] ?? `${taps} times`;
+  const what = move.type === 'walk' ? `walk to ${model.data.nodes[move.to].label}.` : m.verb ? `${m.verb.toLowerCase()} ${m.label}.` : taps ? `turn ${m.label} ${way(move.dir)}: drag it, or tap it ${times}.` : `turn ${m.label} ${way(move.dir)}.`;
   return who + (who ? what : what[0].toUpperCase() + what.slice(1));
 }

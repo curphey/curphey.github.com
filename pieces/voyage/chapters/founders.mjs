@@ -50,5 +50,6 @@ export const founders = {
     'goal-empty': 'The lectern in the belfry is empty.'
   },
   finish: { title: 'The bells ring out.', body: 'Next, the sea, and someone coming the other way.' },
+  music: { pace: 1, warmth: 1.1 }, // the score: how slow, how open
   scale: [196, 220, 261.63, 293.66, 329.63, 392, 440, 523.25] // G major pentatonic-ish, morning
 };

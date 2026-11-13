@@ -33,8 +33,9 @@
     <details id="menu">
       <summary aria-label="Help and options"><span></span><span></span><span></span></summary>
       <div class="panel">
-        <p>Tap a path to walk there. Tap a lever to work it. When you are standing on something that turns, tap it under your feet, or drag it round.</p>
+        <p>Tap a path to walk there. Tap a lever to work it. When you are standing on something that turns, tap it under your feet, or drag it round. Pinch, or use the wheel, to look closer.</p>
         <div class="row"><button id="hint">Hint</button><button id="sound" aria-pressed="false">Sound off</button><button id="restart">Begin again</button><button id="auto" aria-pressed="false">Watch it play</button><button id="install" hidden>Install as an app</button><button id="switch" hidden>Switch traveller</button></div>
+        <p id="ios" hidden>To keep this on your phone: tap Share, then Add to Home Screen.</p>
         <details class="keys"><summary>Keyboard controls</summary>
           <h2>Walk to</h2><div id="walks" class="row"></div>
           <h2>Turn</h2><div id="turns" class="row"></div>
@@ -44,11 +45,11 @@
     </details>
   </header>
   <p id="goal"><span>Goal</span><b></b></p>
-  <section class="title" id="title"><span class="eyebrow"></span><h1></h1><p id="subtitle"></p><div class="row" id="starters" hidden><button id="with-sound">Play with sound</button><button id="continue" hidden></button></div></section>
-  <p id="who"><i></i><span>Moving</span><b></b></p>
-  <p id="status" role="status"></p>
+  <section class="title" id="title"><span class="eyebrow"></span><h1></h1><p id="subtitle"></p><div class="row" id="starters" hidden><button id="begin" class="primary">Begin</button><button id="with-sound">Begin with sound</button><button id="continue" hidden></button></div></section>
+  <div id="foot"><button id="who"><i></i><span>Moving</span><b></b></button><p id="status" role="status"></p></div>
   <p id="passage" aria-live="polite"></p>
-  <section class="finish" id="finish" hidden><span class="eyebrow">Scene complete</span><h2></h2><p></p><div id="cards" hidden></div><div class="row centre"><button id="again">Play again</button><button id="next" hidden>Next scene</button><button id="over" hidden>Start over from Trinidad</button></div></section>
+  <section class="finish" id="finish" hidden><figure id="card" hidden><img alt=""><figcaption></figcaption></figure><div class="words"><span class="eyebrow">Scene complete</span><h2></h2><p></p><div id="pips" aria-hidden="true"></div><div id="cards" hidden></div><div class="row centre"><button id="next" class="primary" hidden>Next scene</button><button id="again">Play again</button><button id="over" hidden>Start over from Trinidad</button></div></div></section>
+  <div id="flare" aria-hidden="true"></div><div class="bar top" aria-hidden="true"></div><div class="bar bottom" aria-hidden="true"></div>
   <section id="term" hidden aria-label="Terminal"><pre id="term-out"></pre><form><label for="term-in">007@disco-volante:~#</label><input id="term-in" autocomplete="off" autocapitalize="off" spellcheck="false"></form></section>
   <p id="loading">Setting the scene…</p>
   <script>/* Arriving from a passage: stay in the mist instead of showing the loading card. */(function () { var q = new URLSearchParams(location.search), m = q.get('mist'); if (q.has('arrive') && /^[0-9a-f]{6}$/i.test(m || '')) { var l = document.getElementById('loading'); l.textContent = ''; l.style.background = '#' + m; } })();</script>

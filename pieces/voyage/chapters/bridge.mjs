@@ -43,6 +43,7 @@ function build({ id, number, word, palette, travellers, liftPlate, five = false,
   goal: { node: 'marin', all: true },
     text: {
       start, won,
+      marg: 'Marg. Mill Valley is where she joined the family, and she yaps once to say so.', // Mark: Marg came in San Francisco, not Seattle
       'turned:derrick': 'The derrick swings round, high above the strait.',
       carried: 'The derrick carries you round, high above the strait.',
       'turned:fog': 'The horn sounds, long and low, and the fog begins to move.',
@@ -53,6 +54,7 @@ function build({ id, number, word, palette, travellers, liftPlate, five = false,
       blocked: 'Nobody walks where they cannot see, and some ways are shut or too small.'
     },
     finish,
+    music: { pace: 1.3, warmth: 0.8 }, // the score: how slow, how open
     scale: [196, 220, 246.94, 293.66, 329.63, 392, 440, 493.88]
   };
 }

@@ -33,5 +33,6 @@ export const departure = {
     blocked: 'Not that way.'
   },
   finish: { eyebrow: 'Voyage complete', title: 'Fair winds.', body: 'Three lights at the masthead, and the whole sea ahead.' },
+  music: { pace: 1.2, warmth: 1.15, level: 1.15 }, // the score: how slow, how open
   scale: [174.61, 220, 261.63, 293.66, 349.23, 392, 440, 523.25]
 };
